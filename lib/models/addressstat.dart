@@ -77,7 +77,7 @@ class Stats {
         lastShare: json["lastShare"],
         balance: json["balance"],
         paid: json["paid"],
-        minPayoutLevel: json["minPayoutLevel"],
+        minPayoutLevel: json["minPayoutLevel"] ?? '2',
         hashrate: json["hashrate"] ?? "0",
       );
 
