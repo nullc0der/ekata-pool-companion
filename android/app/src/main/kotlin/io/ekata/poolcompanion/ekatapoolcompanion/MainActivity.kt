@@ -1,4 +1,4 @@
-package io.ekata.poolcompanion.ekatapoolcompanion
+package io.ekata.poolcompanion
 
 import io.flutter.embedding.android.FlutterActivity
 

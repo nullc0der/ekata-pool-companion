@@ -101,6 +101,15 @@ class _DashBoardState extends State<DashBoard> {
                 data: poolStat.network.reward.toString(),
                 iconData: Icons.payments),
             _StatRowItem(
+                title: 'Pool Network Share',
+                data: ((poolStat.pool.hashrate /
+                                (poolStat.network.difficulty /
+                                    poolStat.config.coinDifficultyTarget)) *
+                            100)
+                        .toStringAsFixed(2) +
+                    '%',
+                iconData: Icons.percent),
+            _StatRowItem(
                 title: 'Last Hash',
                 data: poolStat.network.hash
                         .substring(poolStat.network.hash.length - 10) +
@@ -119,6 +128,14 @@ class _DashBoardState extends State<DashBoard> {
   Widget build(BuildContext context) {
     var chartsProvider = Provider.of<ChartDataProvider>(context);
     var poolStatProvider = Provider.of<PoolStatProvider>(context);
+
+    double networkShare =
+        ((poolStatProvider.poolStat?.network.difficulty ?? 0) /
+            (poolStatProvider.poolStat?.config.coinDifficultyTarget ?? 0));
+    double poolShare = poolStatProvider.poolStat?.pool.hashrate.toDouble() ?? 0;
+    double otherSharePercent =
+        ((networkShare - poolShare) / networkShare) * 100;
+    double poolSharePercent = (poolShare / networkShare) * 100;
     return poolStatProvider.poolStat != null
         ? ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -175,6 +192,9 @@ class _DashBoardState extends State<DashBoard> {
                     Chart(
                         chartData: chartsProvider.difficulty,
                         chartName: 'Difficulty'),
+                    NetworkShareChart(
+                        poolSharePercent: poolSharePercent,
+                        otherSharePercent: otherSharePercent)
                   ],
                 ),
               )

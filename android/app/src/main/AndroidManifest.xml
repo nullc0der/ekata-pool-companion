@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="io.ekata.poolcompanion.ekatapoolcompanion">
+    package="io.ekata.poolcompanion">
    <application
         android:label="Ekata Pool Companion"
         android:name="${applicationName}"

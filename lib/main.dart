@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:ekatapoolcompanion/providers/addressstat.dart';
 import 'package:ekatapoolcompanion/providers/addressstatpayments.dart';
 import 'package:ekatapoolcompanion/providers/chart.dart';
@@ -8,8 +10,16 @@ import 'package:ekatapoolcompanion/screens/homepage.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:window_size/window_size.dart';
+
+// TODO: implement search
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (Platform.isLinux) {
+    setWindowMaxSize(const Size(450, 750));
+    setWindowMinSize(const Size(450, 750));
+  }
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => PoolStatProvider()),

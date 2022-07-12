@@ -170,7 +170,7 @@ class _PoolBlocksState extends State<PoolBlocks> {
             getInfoCard(
                 poolStat.pool.totalBlocks.toString(), "Total Block Mined"),
             getInfoCard(
-                poolStat.config.depth.toString(), "Maturity depth requirement"),
+                poolStat.config.depth.toString(), "Maturity Depth Requirement"),
             const SizedBox(
               height: 16,
             ),
