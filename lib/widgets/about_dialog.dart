@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<String> _getPackageInfo() async {
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
@@ -13,16 +14,19 @@ Future<void> showAboutAppDialog(BuildContext context) async {
     barrierDismissible: true,
     builder: (BuildContext context) {
       return AlertDialog(
-          title: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            const Icon(Icons.info),
-            Container(
-                margin: const EdgeInsets.only(left: 5.0),
-                child: const Text('About'))
-          ]),
+          title:const Center(child: Text("About"),),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                const Text('Ekata Pool Companion'),
+                GestureDetector(
+                  child: const Text("Ekata IO", style: TextStyle(decoration: TextDecoration.underline),),
+                  onTap: () async {
+                   if(!await launchUrl(Uri.parse('https://ekata.io'), mode: LaunchMode.externalApplication)) {
+                     throw 'could not launch ekata.io';
+                   }
+                  },
+                ),
+                const Text('Pool Companion'),
                 Text('Version: $version'),
               ],
             ),

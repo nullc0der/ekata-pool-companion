@@ -57,7 +57,7 @@ class _DashBoardState extends State<DashBoard> {
                 iconData: Icons.timer,
                 title: "Block Found",
                 data: timeago.format(DateTime.fromMillisecondsSinceEpoch(
-                    (int.tryParse(poolStat.pool.lastBlockFound) ?? 0) * 1000))),
+                    (int.tryParse(poolStat.pool.lastBlockFound) ?? 0)))),
             _StatRowItem(
                 iconData: Icons.group,
                 title: "Miners",
@@ -184,6 +184,9 @@ class _DashBoardState extends State<DashBoard> {
                       height: 8,
                     ),
                     ..._getNetworkStatRows(poolStatProvider.poolStat),
+                    NetworkShareChart(
+                        poolSharePercent: poolSharePercent,
+                        otherSharePercent: otherSharePercent),
                     Chart(
                         chartData: chartsProvider.hashrates,
                         chartName: 'Hashrates'),
@@ -192,9 +195,6 @@ class _DashBoardState extends State<DashBoard> {
                     Chart(
                         chartData: chartsProvider.difficulty,
                         chartName: 'Difficulty'),
-                    NetworkShareChart(
-                        poolSharePercent: poolSharePercent,
-                        otherSharePercent: otherSharePercent)
                   ],
                 ),
               )
