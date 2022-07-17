@@ -130,6 +130,7 @@ class _MyAccountState extends State<MyAccount> {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             TextFormField(
               validator: (value) {
@@ -147,13 +148,19 @@ class _MyAccountState extends State<MyAccount> {
                 }
               },
             ),
-            ElevatedButton(
-                onPressed: () {
-                  if (_walletAddressFormKey.currentState!.validate()) {
-                    _walletAddressFormKey.currentState!.save();
-                  }
-                },
-                child: const Text("Save"))
+            const SizedBox(
+              height: 8.0,
+            ),
+            SizedBox(
+              width: 150,
+              child: ElevatedButton(
+                  onPressed: () {
+                    if (_walletAddressFormKey.currentState!.validate()) {
+                      _walletAddressFormKey.currentState!.save();
+                    }
+                  },
+                  child: const Text("Save")),
+            )
           ],
         ),
       ),

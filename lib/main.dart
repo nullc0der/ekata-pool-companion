@@ -14,8 +14,7 @@ import 'package:provider/provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:window_size/window_size.dart';
 
-// TODO: implement search, change pool share text location,
-// add spcaing in my account page initial form
+// TODO: implement search
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

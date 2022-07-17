@@ -76,6 +76,15 @@ class _DashBoardState extends State<DashBoard> {
                 iconData: Icons.payments,
                 title: "Total Pool Fee",
                 data: poolStat.config.fee.toString() + '%'),
+            _StatRowItem(
+                title: 'Pool Network Share',
+                data: ((poolStat.pool.hashrate /
+                                (poolStat.network.difficulty /
+                                    poolStat.config.coinDifficultyTarget)) *
+                            100)
+                        .toStringAsFixed(2) +
+                    '%',
+                iconData: Icons.percent),
           ].map((item) {
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -110,15 +119,6 @@ class _DashBoardState extends State<DashBoard> {
                 title: 'Last Reward',
                 data: poolStat.network.reward.toString(),
                 iconData: Icons.payments),
-            _StatRowItem(
-                title: 'Pool Network Share',
-                data: ((poolStat.pool.hashrate /
-                                (poolStat.network.difficulty /
-                                    poolStat.config.coinDifficultyTarget)) *
-                            100)
-                        .toStringAsFixed(2) +
-                    '%',
-                iconData: Icons.percent),
             _StatRowItem(
                 title: 'Last Hash',
                 data: poolStat.network.hash
