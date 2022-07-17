@@ -46,6 +46,7 @@ dependencies:
             path: plugins/window_size
     package_info_plus: ^1.4.2
     url_launcher: ^6.1.5
+    matomo_tracker: ^1.2.0
 
 dev_dependencies:
     flutter_test:

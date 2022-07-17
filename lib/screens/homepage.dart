@@ -10,7 +10,9 @@ import 'package:ekatapoolcompanion/services/poolstat.dart';
 import 'package:ekatapoolcompanion/widgets/custom_app_bar.dart';
 import 'package:ekatapoolcompanion/widgets/custom_bottom_navigation.dart';
 import 'package:ekatapoolcompanion/widgets/pool_select_action_sheet.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -32,6 +34,9 @@ class _HomePageState extends State<HomePage> {
       Provider.of<PoolStatProvider>(context, listen: false).poolStat = value;
     });
     _fetchPoolStatPeriodically();
+    if (!kDebugMode) {
+      _initializeMatomoTracker();
+    }
   }
 
   @override
@@ -61,6 +66,13 @@ class _HomePageState extends State<HomePage> {
       default:
         return const DashBoard();
     }
+  }
+
+  Future<void> _initializeMatomoTracker() async {
+    await MatomoTracker.instance.initialize(
+      siteId: 16,
+      url: 'https://matomo.ekata.io/matomo.php',
+    );
   }
 
   @override

@@ -12,7 +12,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:window_size/window_size.dart';
 
-// TODO: implement search
+// TODO: implement search, add matomo, add sentry, change pool share text location,
+// add spcaing in my account page initial form
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

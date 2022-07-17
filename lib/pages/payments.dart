@@ -5,6 +5,7 @@ import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/widgets/info_card.dart';
 import 'package:ekatapoolcompanion/widgets/payment_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 import '../models/poolpayment.dart';
@@ -18,6 +19,15 @@ class Payments extends StatefulWidget {
 
 class _PaymentsState extends State<Payments> {
   bool _isNewPaymentsLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (MatomoTracker.instance.initialized) {
+      MatomoTracker.instance
+          .trackEvent(eventCategory: 'Page Change', action: 'Payments');
+    }
+  }
 
   void _onPressLoadMore() {
     var poolPaymentsProvider =

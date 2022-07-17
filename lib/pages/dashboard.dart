@@ -1,6 +1,7 @@
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/widgets/chart.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -16,6 +17,15 @@ class DashBoard extends StatefulWidget {
 }
 
 class _DashBoardState extends State<DashBoard> {
+  @override
+  void initState() {
+    super.initState();
+    if (MatomoTracker.instance.initialized) {
+      MatomoTracker.instance
+          .trackEvent(eventCategory: 'Page Change', action: 'Dashboard');
+    }
+  }
+
   Widget _statRow(IconData icon, String title, String data) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

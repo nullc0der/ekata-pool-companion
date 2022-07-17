@@ -10,6 +10,7 @@ import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/services/addressstat.dart';
 import 'package:ekatapoolcompanion/widgets/payment_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -35,6 +36,10 @@ class _MyAccountState extends State<MyAccount> {
   void initState() {
     super.initState();
     _loadWalletAddress();
+    if (MatomoTracker.instance.initialized) {
+      MatomoTracker.instance
+          .trackEvent(eventCategory: 'Page Change', action: 'My Account');
+    }
   }
 
   @override

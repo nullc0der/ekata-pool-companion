@@ -8,6 +8,7 @@ import 'package:ekatapoolcompanion/widgets/info_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 class PoolBlocks extends StatefulWidget {
@@ -19,6 +20,15 @@ class PoolBlocks extends StatefulWidget {
 
 class _PoolBlocksState extends State<PoolBlocks> {
   bool _isNewBlocksLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (MatomoTracker.instance.initialized) {
+      MatomoTracker.instance
+          .trackEvent(eventCategory: 'Page Change', action: 'Pool Blocks');
+    }
+  }
 
   void _onLongPressBlockHash(String text) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
