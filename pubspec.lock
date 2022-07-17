@@ -366,6 +366,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "6.0.3"
+  sentry:
+    dependency: transitive
+    description:
+      name: sentry
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.6.3"
+  sentry_flutter:
+    dependency: "direct main"
+    description:
+      name: sentry_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "6.6.3"
   shared_preferences:
     dependency: "direct main"
     description:

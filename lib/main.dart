@@ -8,20 +8,34 @@ import 'package:ekatapoolcompanion/providers/poolpayment.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/screens/homepage.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:window_size/window_size.dart';
 
-// TODO: implement search, add matomo, add sentry, change pool share text location,
+// TODO: implement search, change pool share text location,
 // add spcaing in my account page initial form
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isLinux) {
     setWindowMaxSize(const Size(450, 750));
     setWindowMinSize(const Size(450, 750));
   }
-  runApp(MultiProvider(
+  if (!kDebugMode) {
+    await SentryFlutter.init((options) {
+      options.dsn =
+          'https://93f420112d92434884109e77d8ecce56@o47401.ingest.sentry.io/6579571';
+      options.tracesSampleRate = 0.5;
+    }, appRunner: () => runApp(_mainApp()));
+  } else {
+    runApp(_mainApp());
+  }
+}
+
+Widget _mainApp() {
+  return MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => PoolStatProvider()),
       ChangeNotifierProvider(create: (_) => AddressStatProvider()),
@@ -79,7 +93,7 @@ void main() {
           })
     ],
     child: const EkataPoolCompanion(),
-  ));
+  );
 }
 
 class EkataPoolCompanion extends StatelessWidget {
