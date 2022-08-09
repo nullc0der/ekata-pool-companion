@@ -8,6 +8,7 @@ import 'package:ekatapoolcompanion/providers/addressstat.dart';
 import 'package:ekatapoolcompanion/providers/addressstatpayments.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/services/addressstat.dart';
+import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/widgets/payment_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
@@ -72,7 +73,8 @@ class _MyAccountState extends State<MyAccount> {
 
   Future<void> _loadWalletAddress() async {
     final prefs = await SharedPreferences.getInstance();
-    String walletAddress = prefs.getString("WALLET_ADDRESS") ?? "";
+    String walletAddress =
+        prefs.getString(Constants.walletAddressKeySharedPrefs) ?? "";
 
     setState(() {
       _walletAddress = walletAddress;
@@ -96,7 +98,7 @@ class _MyAccountState extends State<MyAccount> {
       setState(() {
         _walletAddress = address;
       });
-      prefs.setString("WALLET_ADDRESS", address);
+      prefs.setString(Constants.walletAddressKeySharedPrefs, address);
       if (address.isNotEmpty) {
         _timer?.cancel();
         _getAddressPayoutLevel(address);

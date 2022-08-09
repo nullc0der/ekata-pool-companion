@@ -56,3 +56,17 @@ int calculateSharesDiffPercent(int difficulty, int shares,
   }
   return (100 - (difficulty / accurateShares * 100).round()) * -1;
 }
+
+String timeStringFromSecond(int valueInSeconds) {
+  int day = valueInSeconds ~/ (24 * 60 * 60);
+  int remainingSeconds = valueInSeconds - (day * 24 * 60 * 60);
+  int hours = remainingSeconds ~/ (60 * 60);
+  int minutes = (remainingSeconds - (hours * 60 * 60)) ~/ 60;
+  int seconds = remainingSeconds - (hours * 60 * 60) - (minutes * 60);
+  String result = "${day}d:${hours}h:${minutes}m:${seconds}s";
+  return result;
+}
+
+String convertByteToGB(int bytes) {
+  return "${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB";
+}

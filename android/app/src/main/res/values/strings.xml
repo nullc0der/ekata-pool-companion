@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mining_notification_title">Ekata Pool Companion</string>
+    <string name="mining_notification_text">Miner Service</string>
+    <string name="mining_notification_ticker">Ekata Pool Companion Miner Service</string>
+    <string name="notification_channel_name">io.ekata.ekatapoolcompanion</string>
+    <string name="notification_channel_description">Notification for Ekata Pool Companion</string>
+</resources>

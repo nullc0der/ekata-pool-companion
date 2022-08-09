@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:ekatapoolcompanion/models/poolstat.dart';
 import 'package:ekatapoolcompanion/pages/dashboard.dart';
-import 'package:ekatapoolcompanion/pages/my_account.dart';
+import 'package:ekatapoolcompanion/pages/my_account/my_account.dart';
 import 'package:ekatapoolcompanion/pages/payments.dart';
 import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
