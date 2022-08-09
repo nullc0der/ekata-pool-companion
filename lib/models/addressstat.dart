@@ -25,6 +25,10 @@ class AddressStat {
         workers: List<dynamic>.from(json["workers"].map((x) => x)),
       );
 
+  // TODO: If the wallet address is new and no stats in pool this throws error
+  // need to handle it, we need to check if no data based on it we need to show
+  // error message in account_stats widget, it affects both new address and change
+  // address mechanism
   Map<String, dynamic> toJson() => {
         "stats": stats.toJson(),
         "payments": List<dynamic>.from(payments.map((x) => x)),
