@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ekatapoolcompanion/providers/MinerStatus.dart';
 import 'package:ekatapoolcompanion/providers/addressstat.dart';
 import 'package:ekatapoolcompanion/providers/addressstatpayments.dart';
 import 'package:ekatapoolcompanion/providers/chart.dart';
@@ -40,6 +41,7 @@ Widget _mainApp() {
       ChangeNotifierProvider(create: (_) => PoolStatProvider()),
       ChangeNotifierProvider(create: (_) => AddressStatProvider()),
       ChangeNotifierProvider(create: (_) => MinerSummaryProvider()),
+      ChangeNotifierProvider(create: (_) => MinerStatusProvider()),
       ChangeNotifierProxyProvider<PoolStatProvider, PoolBlockProvider>(
           create: (_) => PoolBlockProvider(),
           update: (_, poolStatProvider, poolBlockProvider) {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ekatapoolcompanion/models/chartsdata.dart';
 import 'package:ekatapoolcompanion/models/minersummary.dart';
+import 'package:ekatapoolcompanion/providers/MinerStatus.dart';
 import 'package:ekatapoolcompanion/providers/minersummary.dart';
 import 'package:ekatapoolcompanion/services/minersummary.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
@@ -25,6 +26,7 @@ class _MinerState extends State<Miner> {
   List<ChartData> _chartDatas = [];
   static const _methodChannel =
       MethodChannel("io.ekata.ekatapoolcompanion/miner_method_channel");
+  StreamSubscription<dynamic>? _minerStatusStreamSubscription;
   StreamSubscription<dynamic>? _minerLogStreamSubscription;
   final EventChannel _minerLogEventChannel =
       const EventChannel("io.ekata.ekatapoolcompanion/miner_log_channel");
@@ -35,11 +37,13 @@ class _MinerState extends State<Miner> {
     super.initState();
     _loadWalletAddress();
     _startMinerLogStream();
+    _startMinerEventStream();
   }
 
   @override
   void dispose() {
     _minerLogStreamSubscription?.cancel();
+    _minerStatusStreamSubscription?.cancel();
     _minerSummaryFetchTimer?.cancel();
     super.dispose();
   }
@@ -54,13 +58,14 @@ class _MinerState extends State<Miner> {
     });
   }
 
-  Stream<String> _minerEvent() {
+  void _startMinerEventStream() {
     EventChannel _eventChannel =
         const EventChannel("io.ekata.ekatapoolcompanion/miner_event_channel");
-    return _eventChannel
-        .receiveBroadcastStream()
-        .distinct()
-        .map((event) => event.toString());
+    _minerStatusStreamSubscription =
+        _eventChannel.receiveBroadcastStream().distinct().listen((event) {
+      Provider.of<MinerStatusProvider>(context, listen: false).isMining =
+          event.toString() == Constants.minerProcessStarted;
+    });
   }
 
   void _startMinerLogStream() {
@@ -130,11 +135,17 @@ class _MinerState extends State<Miner> {
         isStarted
             ? Text(
                 "Mining Started",
-                style: TextStyle(color: Colors.green.shade800),
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.green.shade800,
+                    fontWeight: FontWeight.bold),
               )
             : Text(
                 "Mining Stopped",
-                style: TextStyle(color: Colors.red.shade800),
+                style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.red.shade800,
+                    fontWeight: FontWeight.bold),
               )
       ],
     );
@@ -232,6 +243,7 @@ class _MinerState extends State<Miner> {
   @override
   Widget build(BuildContext context) {
     var minerSummary = Provider.of<MinerSummaryProvider>(context).minerSummary;
+    var isMining = Provider.of<MinerStatusProvider>(context).isMining;
     return _walletAddress.isNotEmpty
         ? Expanded(
             child: ListView(
@@ -243,20 +255,8 @@ class _MinerState extends State<Miner> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SizedBox(
-                      width: double.infinity,
-                      child: StreamBuilder<String>(
-                        initialData: Constants.minerProcessStopped,
-                        stream: _minerEvent(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return _showStartStopMining(
-                                isStarted: snapshot.data ==
-                                    Constants.minerProcessStarted);
-                          }
-                          return _showStartStopMining();
-                        },
-                      ),
-                    ),
+                        width: double.infinity,
+                        child: _showStartStopMining(isStarted: isMining)),
                     if (minerSummary != null) ...[
                       const SizedBox(
                         height: 8,
@@ -282,24 +282,26 @@ class _MinerState extends State<Miner> {
                         chartData: _chartDatas,
                         chartName: "Hashrate",
                       ),
-                    const SizedBox(
-                      height: 16,
-                    ),
-                    Text(
-                      "Miner log",
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).primaryColor),
-                    ),
-                    SizedBox(
-                      width: 80,
-                      child: Divider(
-                        color: Theme.of(context).primaryColor,
-                        thickness: 2,
+                    if (isMining) ...[
+                      const SizedBox(
+                        height: 16,
                       ),
-                    ),
-                    _minerLogsContainer(),
+                      Text(
+                        "Miner log",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).primaryColor),
+                      ),
+                      SizedBox(
+                        width: 80,
+                        child: Divider(
+                          color: Theme.of(context).primaryColor,
+                          thickness: 2,
+                        ),
+                      ),
+                      _minerLogsContainer()
+                    ],
                   ],
                 ),
               )
