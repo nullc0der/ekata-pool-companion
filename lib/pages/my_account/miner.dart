@@ -10,6 +10,7 @@ import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/widgets/chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -113,10 +114,18 @@ class _MinerState extends State<Miner> {
           onTap: () async {
             if (!isStarted) {
               _fetchMinerSummaryPeriodically();
+              if (MatomoTracker.instance.initialized) {
+                MatomoTracker.instance
+                    .trackEvent(eventCategory: 'Mining', action: 'Started');
+              }
               await _methodChannel.invokeMethod(
                   "startMining", {Constants.walletAddress: _walletAddress});
             } else {
               _minerSummaryFetchTimer?.cancel();
+              if (MatomoTracker.instance.initialized) {
+                MatomoTracker.instance
+                    .trackEvent(eventCategory: 'Mining', action: 'Stopped');
+              }
               await _methodChannel.invokeMethod("stopMining");
             }
           },
