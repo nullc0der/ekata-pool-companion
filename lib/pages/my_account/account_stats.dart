@@ -28,6 +28,7 @@ class _AccountStatsState extends State<AccountStats> {
   String _walletAddress = "";
   Timer? _timer;
   final _minPayoutFieldController = TextEditingController();
+  final _walletAddressFieldController = TextEditingController();
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _AccountStatsState extends State<AccountStats> {
   void dispose() {
     _timer?.cancel();
     _minPayoutFieldController.dispose();
+    _walletAddressFieldController.dispose();
     super.dispose();
   }
 
@@ -51,6 +53,7 @@ class _AccountStatsState extends State<AccountStats> {
       _walletAddress = walletAddress;
     });
     if (walletAddress.isNotEmpty) {
+      _walletAddressFieldController.text = walletAddress.toString();
       _getAddressPayoutLevel(walletAddress);
       _getAddressStats(walletAddress);
       _timer?.cancel();
@@ -195,7 +198,7 @@ class _AccountStatsState extends State<AccountStats> {
                 }
                 return null;
               },
-              initialValue: _walletAddress,
+              controller: _walletAddressFieldController,
               decoration: const InputDecoration(
                   labelText: "Wallet Address",
                   border: OutlineInputBorder(),
