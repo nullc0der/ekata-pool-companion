@@ -75,6 +75,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _switchTab(int tabIndex) {
+    if (tabIndex == 3) {
+      _timer?.cancel();
+    } else {
+      if (_timer == null || !_timer!.isActive) {
+        _fetchPoolStatPeriodically();
+      }
+    }
+    setState(() {
+      _bottomNavbarCurrentIndex = tabIndex;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,7 +99,7 @@ class _HomePageState extends State<HomePage> {
           selectedIndex: _bottomNavbarCurrentIndex,
           onItemSelected: (index) {
             if (index != 4) {
-              setState(() => _bottomNavbarCurrentIndex = index);
+              _switchTab(index);
             } else {
               showModalBottomSheet(
                   context: context,
