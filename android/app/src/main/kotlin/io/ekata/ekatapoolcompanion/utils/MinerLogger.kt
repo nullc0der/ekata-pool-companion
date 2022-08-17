@@ -17,8 +17,8 @@ class MinerLogger(inputStream: InputStream) : Thread() {
 
     override fun run() {
         try {
+            var output: String
             val bufferedReader: BufferedReader = BufferedReader(InputStreamReader(inputStream))
-            var output: String = ""
             while (bufferedReader.readLine().also { output = it } != null) {
                 EventBus.getDefault().post(MinerLogEvent(output))
                 if (currentThread().isInterrupted) return

@@ -239,6 +239,13 @@ class _MinerState extends State<Miner> {
                 title: "Share submitted (Good/Total)",
                 data:
                     "${minerSummary.results.sharesGood}/${minerSummary.results.sharesTotal}",
+                iconData: Icons.percent),
+            _MinerSummaryItem(
+                title: "Hashrate",
+                data: getReadableHashrateString(
+                    minerSummary.hashrate.highest != null
+                        ? minerSummary.hashrate.highest!.toDouble()
+                        : 0),
                 iconData: Icons.percent)
           ].map((e) {
             return Container(

@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
+import android.util.Log
 import io.ekata.ekatapoolcompanion.events.MiningStartEvent
 import io.ekata.ekatapoolcompanion.events.MiningStopEvent
 import io.ekata.ekatapoolcompanion.utils.MinerLogger
@@ -74,7 +75,8 @@ class MinerService : Service() {
                 "--user=$address",
                 "--http-host=127.0.0.1",
                 "--http-port=45580",
-                "--no-color"
+                "--no-color",
+                "--cpu-no-yield"
             ).apply { process = start() }
             ProcessObserver(process).apply {
                 addProcessListener { EventBus.getDefault().post(MiningStopEvent()) }
@@ -92,4 +94,8 @@ class MinerService : Service() {
         process.destroy()
     }
 
+    private fun getThreadCount(): Int {
+        val availableProcessors = Runtime.getRuntime().availableProcessors()
+        return availableProcessors * 2
+    }
 }
