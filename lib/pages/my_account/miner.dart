@@ -39,6 +39,7 @@ class _MinerState extends State<Miner> {
     _loadWalletAddress();
     _startMinerLogStream();
     _startMinerEventStream();
+    _restartMinerSummaryFetcher();
   }
 
   @override
@@ -104,6 +105,15 @@ class _MinerState extends State<Miner> {
         ];
       });
     });
+  }
+
+  // When this widget is disposed the miner summary fetch timer is cancelled,
+  // restart timer if miner is running
+  void _restartMinerSummaryFetcher() {
+    if (Provider.of<MinerStatusProvider>(context, listen: false).isMining &&
+        _minerSummaryFetchTimer == null) {
+      _fetchMinerSummaryPeriodically();
+    }
   }
 
   Widget _showStartStopMining({bool isStarted = false}) {
@@ -243,10 +253,10 @@ class _MinerState extends State<Miner> {
             _MinerSummaryItem(
                 title: "Hashrate",
                 data: getReadableHashrateString(
-                    minerSummary.hashrate.highest != null
-                        ? minerSummary.hashrate.highest!.toDouble()
+                    minerSummary.hashrate.total[0] != null
+                        ? minerSummary.hashrate.total[0]!.toDouble()
                         : 0),
-                iconData: Icons.percent)
+                iconData: Icons.developer_board)
           ].map((e) {
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 6.0),
