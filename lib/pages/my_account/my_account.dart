@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:ekatapoolcompanion/pages/my_account/account_stats.dart';
+import 'package:ekatapoolcompanion/pages/my_account/desktop_miner.dart';
 import 'package:ekatapoolcompanion/pages/my_account/miner.dart';
 import 'package:ekatapoolcompanion/pages/my_account/miner_support.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
@@ -114,7 +115,11 @@ class _MyAccountState extends State<MyAccount> {
       case 0:
         return const AccountStats();
       case 1:
-        return Platform.isAndroid ? const Miner() : const MinerSupport();
+        return Platform.isAndroid
+            ? const Miner()
+            : Platform.isLinux || Platform.isWindows
+                ? const DesktopMiner()
+                : const MinerSupport();
       default:
         return const AccountStats();
     }
@@ -129,7 +134,7 @@ class _MyAccountState extends State<MyAccount> {
               Tabs(
                   tabItems: const [
                     TabItem(tabName: 'Stats', iconData: Icons.analytics),
-                    TabItem(tabName: 'Mine', iconData: Icons.developer_board)
+                    TabItem(tabName: 'Miner', iconData: Icons.developer_board)
                   ],
                   selectedIndex: _selectedTabIndex,
                   onItemSelected: (int index) {
