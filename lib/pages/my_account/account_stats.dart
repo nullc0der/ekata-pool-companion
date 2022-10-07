@@ -89,13 +89,24 @@ class _AccountStatsState extends State<AccountStats> {
     var newAddressStat = AddressStatService().getAddressStat(walletAddress);
     newAddressStat.then((value) {
       addressStatProvider.addressStat = value;
+      addressStatProvider.hasFetchError = false;
+    }).catchError((error) {
+      addressStatProvider.hasFetchError = true;
+      if (addressStatProvider.addressStat != null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("There is some issue fetching new account stats")));
+      }
     });
   }
 
   void _getAddressPayoutLevel(String walletAddress) {
     AddressStatService()
         .getPayoutLevel(walletAddress)
-        .then((value) => _minPayoutFieldController.text = value.toString());
+        .then((value) => _minPayoutFieldController.text = value.toString())
+        .catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("There is some issue fetching address payout level")));
+    });
   }
 
   void _onPressLoadMore() {
@@ -116,6 +127,12 @@ class _AccountStatsState extends State<AccountStats> {
       setState(() {
         _isNewPaymentsLoading = false;
       });
+    }).catchError((error) {
+      setState(() {
+        _isNewPaymentsLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("There is some issue fetching more account payment")));
     });
   }
 
@@ -233,7 +250,12 @@ class _AccountStatsState extends State<AccountStats> {
             onSaved: (level) {
               if (level != null) {
                 AddressStatService()
-                    .setPayoutLevel(_walletAddress, int.parse(level));
+                    .setPayoutLevel(_walletAddress, int.parse(level))
+                    .catchError((error) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content:
+                          Text("There is some issue setting payout level")));
+                });
               }
             },
           ),
@@ -260,6 +282,7 @@ class _AccountStatsState extends State<AccountStats> {
     var addressStat = Provider.of<AddressStatProvider>(context).addressStat;
     var addressStatPayments =
         Provider.of<AddressStatPaymentsProvider>(context).addressStatPayments;
+    var hasFetchError = Provider.of<AddressStatProvider>(context).hasFetchError;
 
     return addressStat != null && poolStat != null
         ? Expanded(
@@ -363,9 +386,14 @@ class _AccountStatsState extends State<AccountStats> {
               )
             ],
           ))
-        : const Expanded(
+        : Expanded(
             child: Center(
-            child: CircularProgressIndicator(),
+            child: hasFetchError
+                ? Text(
+                    "There is some issue fetching account stats, will retry",
+                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  )
+                : const CircularProgressIndicator(),
           ));
   }
 }

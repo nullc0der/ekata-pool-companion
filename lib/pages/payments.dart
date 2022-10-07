@@ -46,6 +46,12 @@ class _PaymentsState extends State<Payments> {
       setState(() {
         _isNewPaymentsLoading = false;
       });
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("There is some issue fetching more pool payments")));
+      setState(() {
+        _isNewPaymentsLoading = false;
+      });
     });
   }
 
@@ -53,6 +59,7 @@ class _PaymentsState extends State<Payments> {
   Widget build(BuildContext context) {
     var poolPayments = Provider.of<PoolPaymentProvider>(context).poolPayments;
     var poolStat = Provider.of<PoolStatProvider>(context).poolStat;
+    var hasFetchError = Provider.of<PoolStatProvider>(context).hasFetchError;
     return poolStat != null
         ? ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -105,7 +112,12 @@ class _PaymentsState extends State<Payments> {
             width: double.infinity,
             height: double.infinity,
             alignment: Alignment.center,
-            child: const CircularProgressIndicator(),
+            child: hasFetchError
+                ? Text(
+                    "There is some issue fetching pool payments, will retry",
+                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  )
+                : const CircularProgressIndicator(),
           );
   }
 }

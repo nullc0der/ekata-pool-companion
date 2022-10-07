@@ -214,7 +214,12 @@ class _DashBoardState extends State<DashBoard> {
             width: double.infinity,
             height: double.infinity,
             alignment: Alignment.center,
-            child: const CircularProgressIndicator(),
+            child: poolStatProvider.hasFetchError
+                ? Text(
+                    "There is some issue fetching pool stat, will retry",
+                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  )
+                : const CircularProgressIndicator(),
           );
   }
 }

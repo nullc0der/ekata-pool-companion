@@ -20,7 +20,7 @@ import 'package:window_size/window_size.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isLinux) {
+  if (Platform.isLinux || Platform.isWindows) {
     setWindowMaxSize(const Size(450, 750));
     setWindowMinSize(const Size(450, 750));
   }

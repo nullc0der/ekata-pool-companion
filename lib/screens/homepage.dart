@@ -32,6 +32,11 @@ class _HomePageState extends State<HomePage> {
     Future<PoolStat> _poolStat = PoolStatService().getPoolStat();
     _poolStat.then((value) {
       Provider.of<PoolStatProvider>(context, listen: false).poolStat = value;
+      Provider.of<PoolStatProvider>(context, listen: false).hasFetchError =
+          false;
+    }).catchError((error) {
+      Provider.of<PoolStatProvider>(context, listen: false).hasFetchError =
+          true;
     });
     _fetchPoolStatPeriodically();
     if (!kDebugMode) {
@@ -47,9 +52,22 @@ class _HomePageState extends State<HomePage> {
 
   void _fetchPoolStatPeriodically() {
     _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
-      PoolStat _poolStat = await PoolStatService().getPoolStat();
-      Provider.of<PoolStatProvider>(context, listen: false).poolStat =
-          _poolStat;
+      try {
+        PoolStat _poolStat = await PoolStatService().getPoolStat();
+        Provider.of<PoolStatProvider>(context, listen: false).poolStat =
+            _poolStat;
+        Provider.of<PoolStatProvider>(context, listen: false).hasFetchError =
+            false;
+      } on Exception {
+        Provider.of<PoolStatProvider>(context, listen: false).hasFetchError =
+            true;
+        if (Provider.of<PoolStatProvider>(context, listen: false).poolStat !=
+            null) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content:
+                  Text("There is some issue updating pool data, will retry")));
+        }
+      }
     });
   }
 

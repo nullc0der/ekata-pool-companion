@@ -57,6 +57,12 @@ class _PoolBlocksState extends State<PoolBlocks> {
       setState(() {
         _isNewBlocksLoading = false;
       });
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("There is some issue fetching more pool blocks")));
+      setState(() {
+        _isNewBlocksLoading = false;
+      });
     });
   }
 
@@ -175,6 +181,7 @@ class _PoolBlocksState extends State<PoolBlocks> {
   Widget build(BuildContext context) {
     var poolBlocks = Provider.of<PoolBlockProvider>(context).poolBlocks;
     var poolStat = Provider.of<PoolStatProvider>(context).poolStat;
+    var hasFetchError = Provider.of<PoolStatProvider>(context).hasFetchError;
     return poolStat != null
         ? ListView(padding: const EdgeInsets.symmetric(vertical: 8), children: [
             getInfoCard(
@@ -218,7 +225,12 @@ class _PoolBlocksState extends State<PoolBlocks> {
             width: double.infinity,
             height: double.infinity,
             alignment: Alignment.center,
-            child: const CircularProgressIndicator(),
+            child: hasFetchError
+                ? Text(
+                    "There is some issue fetching pool blocks, will retry",
+                    style: TextStyle(color: Theme.of(context).primaryColor),
+                  )
+                : const CircularProgressIndicator(),
           );
   }
 }

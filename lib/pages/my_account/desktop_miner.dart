@@ -57,20 +57,33 @@ class _DesktopMinerState extends State<DesktopMiner> {
   void _fetchMinerSummaryPeriodically() {
     _minerSummaryFetchTimer =
         Timer.periodic(const Duration(seconds: 10), (_) async {
-      MinerSummary _minerSummary =
-          await MinerSummaryService().getMinerSummary();
-      Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
-          _minerSummary;
-      setState(() {
-        _chartDatas = [
-          ..._chartDatas,
-          ChartData(
-              time: DateTime.now(),
-              value: _minerSummary.hashrate.total[0] != null
-                  ? _minerSummary.hashrate.total[0]!.toInt()
-                  : 0)
-        ];
-      });
+      try {
+        MinerSummary _minerSummary =
+        await MinerSummaryService().getMinerSummary();
+        Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
+            _minerSummary;
+        setState(() {
+          _chartDatas = [
+            ..._chartDatas,
+            ChartData(
+                time: DateTime.now(),
+                value: _minerSummary.hashrate.total[0] != null
+                    ? _minerSummary.hashrate.total[0]!.toInt()
+                    : 0)
+          ];
+        });
+      } on Exception {
+        bool hasMinerSummary =
+            Provider.of<MinerSummaryProvider>(context, listen: false)
+                .minerSummary !=
+                null;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: hasMinerSummary
+                ? const Text(
+                "There is some issue updating miner summary, will retry")
+                : const Text(
+                "There is some issue fetching miner summary, will retry")));
+      }
     });
   }
 
