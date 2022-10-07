@@ -146,6 +146,10 @@ class _DashBoardState extends State<DashBoard> {
     double otherSharePercent =
         ((networkShare - poolShare) / networkShare) * 100;
     double poolSharePercent = (poolShare / networkShare) * 100;
+    poolSharePercent = poolSharePercent > 100 ? 100 : poolSharePercent;
+    poolSharePercent = poolSharePercent < 0 ? 0 : poolSharePercent;
+    otherSharePercent = otherSharePercent > 100 ? 100 : otherSharePercent;
+    otherSharePercent = otherSharePercent < 0 ? 0 : otherSharePercent;
     return poolStatProvider.poolStat != null
         ? ListView(
             padding: const EdgeInsets.symmetric(vertical: 8),
