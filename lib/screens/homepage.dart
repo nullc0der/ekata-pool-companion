@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:ekatapoolcompanion/models/poolstat.dart';
 import 'package:ekatapoolcompanion/pages/dashboard.dart';
-import 'package:ekatapoolcompanion/pages/my_account/my_account.dart';
+import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/pages/payments.dart';
 import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
@@ -80,7 +80,7 @@ class _HomePageState extends State<HomePage> {
       case 2:
         return const Payments();
       case 3:
-        return const MyAccount();
+        return const Miner();
       default:
         return const DashBoard();
     }
@@ -141,16 +141,16 @@ class _HomePageState extends State<HomePage> {
                 unselectedIcon: Icons.receipt_outlined,
                 title: 'Payments'),
             CustomBottomNavigationItem(
-                selectedIcon: Icons.account_circle,
-                unselectedIcon: Icons.account_circle_outlined,
-                title: 'My Account'),
-            CustomBottomNavigationItem(
-                image: const Image(
-                  image: AssetImage('assets/images/baza.png'),
-                  width: 22,
-                  height: 22,
-                ),
-                title: 'Baza')
+                selectedIcon: Icons.developer_board,
+                unselectedIcon: Icons.developer_board_outlined,
+                title: 'Miner'),
+            // CustomBottomNavigationItem(
+            //     image: const Image(
+            //       image: AssetImage('assets/images/baza.png'),
+            //       width: 22,
+            //       height: 22,
+            //     ),
+            //     title: 'Baza')
           ],
         ));
   }

@@ -20,6 +20,9 @@ import org.greenrobot.eventbus.ThreadMode
 
 
 const val WALLET_ADDRESS = "io.ekata.ekatapoolcompanion.WALLET_ADDRESS"
+const val COIN_ALGO = "io.ekata.ekatapoolcompanion.COIN_ALGO"
+const val POOL_HOST = "io.ekata.ekatapoolcompanion.POOL_HOST"
+const val POOL_PORT = "io.ekata.ekatapoolcompanion.POOL_PORT"
 
 class MainActivity : FlutterActivity() {
     private lateinit var minerServiceIntent: Intent
@@ -50,6 +53,9 @@ class MainActivity : FlutterActivity() {
             if (call.method == "startMining") {
                 minerServiceIntent = Intent(this, MinerService::class.java)
                 minerServiceIntent.putExtra(WALLET_ADDRESS, call.argument<String>(WALLET_ADDRESS))
+                minerServiceIntent.putExtra(COIN_ALGO, call.argument<String>(COIN_ALGO))
+                minerServiceIntent.putExtra(POOL_HOST, call.argument<String>(POOL_HOST))
+                minerServiceIntent.putExtra(POOL_PORT, call.argument<Int>(POOL_PORT))
                 startForegroundService(
                     minerServiceIntent
                 )

@@ -5,7 +5,10 @@ import 'dart:io';
 import 'package:path/path.dart' as path;
 
 class DesktopMinerUtil {
-  late final String _minerAddress;
+  String? _minerAddress;
+  String? _poolHost;
+  int? _poolPort;
+  String? _coinAlgo;
   Process? _minerProcess;
   bool initialized = false;
   static final DesktopMinerUtil instance = DesktopMinerUtil._internal();
@@ -16,15 +19,32 @@ class DesktopMinerUtil {
 
   Stream<String> get logStream => _logStream.stream;
 
-  void initialize({required String minerAddress}) {
+  void initialize(
+      {required String minerAddress,
+      required String poolHost,
+      required int poolPort,
+      required String coinAlgo}) {
     _minerAddress = minerAddress;
+    _poolHost = poolHost;
+    _poolPort = poolPort;
+    _coinAlgo = coinAlgo;
     initialized = true;
   }
 
+  void clean() {
+    _minerAddress = null;
+    _poolHost = null;
+    _poolPort = null;
+    _coinAlgo = null;
+    initialized = false;
+  }
+
   Future<bool> startMining() async {
-    String executablePath = path.join(Directory.current.path,
-        'bin/bazadedicatedminer${Platform.isWindows ? '.exe' : ""}');
+    String executablePath = path.join(
+        Directory.current.path, 'bin/xmrig${Platform.isWindows ? '.exe' : ""}');
     _minerProcess = await Process.start(executablePath, [
+      "--url=$_poolHost:$_poolPort",
+      "--algo=$_coinAlgo",
       "--user=$_minerAddress",
       "--http-host=127.0.0.1",
       "--http-port=45580",

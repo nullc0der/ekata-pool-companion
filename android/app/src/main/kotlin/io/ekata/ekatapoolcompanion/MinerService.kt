@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
-import android.util.Log
 import io.ekata.ekatapoolcompanion.events.MiningStartEvent
 import io.ekata.ekatapoolcompanion.events.MiningStopEvent
 import io.ekata.ekatapoolcompanion.utils.MinerLogger
@@ -24,6 +23,9 @@ class MinerService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val walletAddress = intent?.getStringExtra(WALLET_ADDRESS)
+        val coinAlgo = intent?.getStringExtra(COIN_ALGO)
+        val poolHost = intent?.getStringExtra(POOL_HOST)
+        val poolPort = intent?.getIntExtra(POOL_PORT, 3333)
         val pendingIntent: PendingIntent = Intent(
             this,
             MainActivity::class.java
@@ -42,9 +44,9 @@ class MinerService : Service() {
             .setContentIntent(pendingIntent)
             .setTicker(getText(R.string.mining_notification_ticker))
             .build()
-        if (walletAddress != null) {
+        if (walletAddress != null && coinAlgo !=null && poolHost !=null && poolPort !=null) {
             startForeground(NOTIFICATION_ID, notification)
-            startMiner(walletAddress)
+            startMiner(walletAddress, coinAlgo, poolHost,poolPort)
         }
         return START_NOT_STICKY
     }
@@ -59,7 +61,7 @@ class MinerService : Service() {
     }
 
     @SuppressLint("WakelockTimeout")
-    private fun startMiner(address: String) {
+    private fun startMiner(address: String, coinAlgo: String, poolHost: String, poolPort: Int) {
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
             newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK,
@@ -71,7 +73,9 @@ class MinerService : Service() {
         }
         try {
             ProcessBuilder(
-                ".${applicationInfo.nativeLibraryDir}/libbazadedicatedminer.so",
+                ".${applicationInfo.nativeLibraryDir}/libxmrig.so",
+                "--url=$poolHost:$poolPort",
+                "--algo=$coinAlgo",
                 "--user=$address",
                 "--http-host=127.0.0.1",
                 "--http-port=45580",
