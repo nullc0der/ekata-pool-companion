@@ -120,7 +120,8 @@ class _MinerState extends State<Miner> {
                   hintText: "Enter wallet address"),
               onSaved: (address) {
                 if (address != null && coinData != null) {
-                  _saveWalletAddress(coinData.coinName.toLowerCase(), address);
+                  _saveWalletAddress(
+                      coinData.coinName.toLowerCase(), address.trim());
                 }
               },
             ),
