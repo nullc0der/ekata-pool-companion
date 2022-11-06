@@ -1,7 +1,3 @@
-// To parse this JSON data, do
-//
-//     final minerStat = minerStatFromJson(jsonString);
-
 import 'dart:convert';
 
 MinerSummary minerSummaryFromJson(String str) =>
@@ -58,7 +54,7 @@ class MinerSummary {
         resources: Resources.fromJson(json["resources"]),
         features: List<String>.from(json["features"].map((x) => x)),
         results: Results.fromJson(json["results"]),
-        algo: json["algo"],
+        algo: json["algo"] ?? "",
         connection: Connection.fromJson(json["connection"]),
         version: json["version"],
         kind: json["kind"],
@@ -130,14 +126,14 @@ class Connection {
 
   factory Connection.fromJson(Map<String, dynamic> json) => Connection(
         pool: json["pool"],
-        ip: json["ip"],
+        ip: json["ip"] ?? "",
         uptime: json["uptime"],
         uptimeMs: json["uptime_ms"],
         ping: json["ping"],
         failures: json["failures"],
         tls: json["tls"],
         tlsFingerprint: json["tls-fingerprint"],
-        algo: json["algo"],
+        algo: json["algo"] ?? "",
         diff: json["diff"],
         accepted: json["accepted"],
         rejected: json["rejected"],
