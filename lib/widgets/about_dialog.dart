@@ -14,20 +14,27 @@ Future<void> showAboutAppDialog(BuildContext context) async {
     barrierDismissible: true,
     builder: (BuildContext context) {
       return AlertDialog(
-          title:const Center(child: Text("About"),),
+          title: const Center(
+            child: Text("About"),
+          ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 GestureDetector(
-                  child: const Text("Ekata IO", style: TextStyle(decoration: TextDecoration.underline),),
+                  child: const Text(
+                    "Ekata IO",
+                    style: TextStyle(decoration: TextDecoration.underline),
+                  ),
                   onTap: () async {
-                   if(!await launchUrl(Uri.parse('https://ekata.io'), mode: LaunchMode.externalApplication)) {
-                     throw 'could not launch ekata.io';
-                   }
+                    if (!await launchUrl(Uri.parse("https://ekata.io"),
+                        mode: LaunchMode.externalApplication)) {
+                      throw "could not launch ekata.io";
+                    }
                   },
                 ),
-                const Text('Pool Companion'),
-                Text('Version: $version'),
+                const Text("Pool Companion"),
+                Text("Version: $version"),
+                const Text("Xmrig Engine Version: 6.18.0")
               ],
             ),
           ));
