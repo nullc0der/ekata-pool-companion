@@ -44,9 +44,9 @@ class MinerService : Service() {
             .setContentIntent(pendingIntent)
             .setTicker(getText(R.string.mining_notification_ticker))
             .build()
-        if (walletAddress != null && coinAlgo !=null && poolHost !=null && poolPort !=null) {
+        if (walletAddress != null && coinAlgo != null && poolHost != null && poolPort != null) {
             startForeground(NOTIFICATION_ID, notification)
-            startMiner(walletAddress, coinAlgo, poolHost,poolPort)
+            startMiner(walletAddress, coinAlgo, poolHost, poolPort)
         }
         return START_NOT_STICKY
     }
@@ -56,8 +56,8 @@ class MinerService : Service() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         stopMiner()
+        super.onDestroy()
     }
 
     @SuppressLint("WakelockTimeout")

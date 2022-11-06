@@ -155,7 +155,7 @@ class _MinerState extends State<Miner> {
                             _walletAddressFormKey.currentState!.save();
                             Provider.of<MinerStatusProvider>(context,
                                     listen: false)
-                                .startMiningPressed = true;
+                                .showMinerScreen = true;
                           }
                         },
                         child: const Text("Start Mining")),
@@ -169,7 +169,8 @@ class _MinerState extends State<Miner> {
     );
   }
 
-  Widget _showWalletAddressInput(CoinData? coinData) {
+  Widget _showWalletAddressInput(
+      CoinData? coinData, Map<String, dynamic> currentlyMining) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -190,7 +191,7 @@ class _MinerState extends State<Miner> {
               height: 24,
             ),
             Text(
-              coinData!.coinName,
+              coinData.coinName,
               style: TextStyle(
                   fontSize: 24, color: Theme.of(context).primaryColor),
             )
@@ -199,12 +200,13 @@ class _MinerState extends State<Miner> {
         const SizedBox(
           height: 8,
         ),
-        _buildWalletAddressInputForm(coinData)
+        _buildWalletAddressInputForm(coinData),
+        _showCurrentlyMining(currentlyMining)
       ],
     );
   }
 
-  Widget _showCoinSelectInput() {
+  Widget _showCoinSelectInput(Map<String, dynamic> currentlyMining) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -249,13 +251,46 @@ class _MinerState extends State<Miner> {
               onChanged: (CoinData? coinData) {
                 _loadWalletAddress(coinData!.coinName.toLowerCase());
                 Provider.of<MinerStatusProvider>(context, listen: false)
-                    .startMiningPressed = false;
+                    .showMinerScreen = false;
                 Provider.of<MinerStatusProvider>(context, listen: false)
                     .coinData = coinData;
               }),
-        )
+        ),
+        _showCurrentlyMining(currentlyMining)
       ],
     );
+  }
+
+  Widget _showCurrentlyMining(Map<String, dynamic> currentlyMining) {
+    return currentlyMining["coinData"] != null
+        ? Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text("Currently Mining: ${currentlyMining["coinData"].coinName}"),
+              const SizedBox(
+                width: 8,
+              ),
+              Image(
+                image: AssetImage(currentlyMining["coinData"].coinLogoPath),
+                width: 24,
+                height: 24,
+              ),
+              const SizedBox(
+                width: 16,
+              ),
+              OutlinedButton(
+                  onPressed: () {
+                    Provider.of<MinerStatusProvider>(context, listen: false)
+                        .coinData = currentlyMining["coinData"];
+                    Provider.of<MinerStatusProvider>(context, listen: false)
+                        .walletAddress = currentlyMining["walletAddress"];
+                    Provider.of<MinerStatusProvider>(context, listen: false)
+                        .showMinerScreen = true;
+                  },
+                  child: const Text("Show"))
+            ],
+          )
+        : Container();
   }
 
   Widget _getMiner(CoinData coinData, String walletAddress) {
@@ -277,15 +312,15 @@ class _MinerState extends State<Miner> {
     CoinData? coinData = Provider.of<MinerStatusProvider>(context).coinData;
     String walletAddress =
         Provider.of<MinerStatusProvider>(context).walletAddress;
-    bool isMining = Provider.of<MinerStatusProvider>(context).isMining;
-    bool startMiningPressed =
-        Provider.of<MinerStatusProvider>(context).startMiningPressed;
-    return isMining
-        ? _getMiner(coinData!, walletAddress)
-        : coinData == null
-            ? _showCoinSelectInput()
-            : walletAddress.isNotEmpty && startMiningPressed
-                ? _getMiner(coinData, walletAddress)
-                : _showWalletAddressInput(coinData);
+    bool showMinerScreen =
+        Provider.of<MinerStatusProvider>(context).showMinerScreen;
+    Map<String, dynamic> currentlyMining =
+        Provider.of<MinerStatusProvider>(context).currentlyMining;
+
+    return coinData == null
+        ? _showCoinSelectInput(currentlyMining)
+        : walletAddress.isNotEmpty && showMinerScreen
+            ? _getMiner(coinData, walletAddress)
+            : _showWalletAddressInput(coinData, currentlyMining);
   }
 }

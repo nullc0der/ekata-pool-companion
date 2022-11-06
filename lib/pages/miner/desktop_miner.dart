@@ -34,16 +34,14 @@ class _DesktopMinerState extends State<DesktopMiner> {
   @override
   void initState() {
     super.initState();
-    _startMinerLogSubscription();
     DesktopMinerUtil.instance.initialize(
         minerAddress: widget.walletAddress,
         poolHost: widget.coinData.poolAddress,
         poolPort: widget.coinData.poolPort,
         coinAlgo: widget.coinData.coinAlgo);
+    _startMinerLogSubscription();
     _restartMinerSummaryFetcher();
-    if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
-      _startMining();
-    }
+    _changeMiningCoin();
   }
 
   @override
@@ -52,6 +50,24 @@ class _DesktopMinerState extends State<DesktopMiner> {
     _minerLogStreamSubscription?.cancel();
     DesktopMinerUtil.instance.clean();
     super.dispose();
+  }
+
+  _changeMiningCoin() {
+    var currentlyMining =
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentlyMining;
+    if (currentlyMining["coinData"] != widget.coinData) {
+      if (Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
+        _stopMining();
+        _startMining();
+      } else {
+        _startMining();
+      }
+    } else {
+      if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
+        _startMining();
+      }
+    }
   }
 
   void _startMining() {
@@ -66,6 +82,13 @@ class _DesktopMinerState extends State<DesktopMiner> {
         Provider.of<MinerStatusProvider>(context, listen: false).isMining =
             value;
         _startMinerLogSubscription();
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentlyMining = {
+          "coinData": widget.coinData,
+          "walletAddress": widget.walletAddress
+        };
+        Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
+            null;
       });
     }
   }
@@ -82,11 +105,14 @@ class _DesktopMinerState extends State<DesktopMiner> {
         }
         Provider.of<MinerStatusProvider>(context, listen: false).isMining =
             false;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentlyMining = {"coinData": null, "walletAddress": ""};
       }
     }
   }
 
   void _fetchMinerSummaryPeriodically() {
+    _minerSummaryFetchTimer?.cancel();
     _minerSummaryFetchTimer =
         Timer.periodic(const Duration(seconds: 10), (_) async {
       try {
@@ -283,6 +309,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
   Widget build(BuildContext context) {
     var minerSummary = Provider.of<MinerSummaryProvider>(context).minerSummary;
     var isMining = Provider.of<MinerStatusProvider>(context).isMining;
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
@@ -307,7 +334,6 @@ class _DesktopMinerState extends State<DesktopMiner> {
                     const Spacer(),
                     OutlinedButton(
                         onPressed: () {
-                          _stopMining();
                           Provider.of<MinerStatusProvider>(context,
                                   listen: false)
                               .coinData = null;
@@ -316,7 +342,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
                               .walletAddress = "";
                           Provider.of<MinerStatusProvider>(context,
                                   listen: false)
-                              .startMiningPressed = false;
+                              .showMinerScreen = false;
                         },
                         child: const Text("Mine Another"))
                   ],

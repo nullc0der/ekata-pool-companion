@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import androidx.annotation.NonNull
 import io.ekata.ekatapoolcompanion.events.MinerLogEvent
 import io.ekata.ekatapoolcompanion.events.MiningStartEvent
@@ -49,7 +48,7 @@ class MainActivity : FlutterActivity() {
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
             "io.ekata.ekatapoolcompanion/miner_method_channel"
-        ).setMethodCallHandler { call, _ ->
+        ).setMethodCallHandler { call, result ->
             if (call.method == "startMining") {
                 minerServiceIntent = Intent(this, MinerService::class.java)
                 minerServiceIntent.putExtra(WALLET_ADDRESS, call.argument<String>(WALLET_ADDRESS))
@@ -59,9 +58,11 @@ class MainActivity : FlutterActivity() {
                 startForegroundService(
                     minerServiceIntent
                 )
+                result.success(true)
             }
             if (call.method == "stopMining") {
                 stopService(minerServiceIntent)
+                result.success(true)
             }
         }
 

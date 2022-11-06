@@ -35,6 +35,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
   StreamSubscription<dynamic>? _minerLogStreamSubscription;
   final EventChannel _minerLogEventChannel =
       const EventChannel("io.ekata.ekatapoolcompanion/miner_log_channel");
+  final EventChannel _minerStatusEventChannel =
+      const EventChannel("io.ekata.ekatapoolcompanion/miner_event_channel");
   Timer? _minerSummaryFetchTimer;
 
   @override
@@ -43,9 +45,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
     _startMinerLogStream();
     _startMinerEventStream();
     _restartMinerSummaryFetcher();
-    if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
-      _startMining();
-    }
+    _changeMiningCoin();
   }
 
   @override
@@ -56,36 +56,65 @@ class _AndroidMinerState extends State<AndroidMiner> {
     super.dispose();
   }
 
-  void _startMining() async {
+  _changeMiningCoin() {
+    var currentlyMining =
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentlyMining;
+    if (currentlyMining["coinData"] != widget.coinData) {
+      if (Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
+        _stopMining().then((_) => _startMining());
+      } else {
+        _startMining();
+      }
+    } else {
+      if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
+        _startMining();
+      }
+    }
+  }
+
+  Future<bool> _startMining() async {
     _fetchMinerSummaryPeriodically();
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
           eventCategory: 'Mining',
           action: 'Started - ${widget.coinData.coinName}');
     }
-    await _methodChannel.invokeMethod("startMining", {
+    var result = await _methodChannel.invokeMethod("startMining", {
       Constants.walletAddress: widget.walletAddress,
       Constants.coinAlgo: widget.coinData.coinAlgo,
       Constants.poolHost: widget.coinData.poolAddress,
       Constants.poolPort: widget.coinData.poolPort
     });
+    if (result) {
+      Provider.of<MinerStatusProvider>(context, listen: false).currentlyMining =
+          {"coinData": widget.coinData, "walletAddress": widget.walletAddress};
+      Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
+          null;
+    }
+    return result;
   }
 
-  void _stopMining() async {
+  Future<bool> _stopMining() async {
     _minerSummaryFetchTimer?.cancel();
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
           eventCategory: 'Mining',
           action: 'Stopped - ${widget.coinData.coinName}');
     }
-    await _methodChannel.invokeMethod("stopMining");
+    var result = await _methodChannel.invokeMethod("stopMining");
+    if (result) {
+      Provider.of<MinerStatusProvider>(context, listen: false).currentlyMining =
+          {"coinData": null, "walletAddress": ""};
+    }
+    return result;
   }
 
   void _startMinerEventStream() {
-    EventChannel _eventChannel =
-        const EventChannel("io.ekata.ekatapoolcompanion/miner_event_channel");
-    _minerStatusStreamSubscription =
-        _eventChannel.receiveBroadcastStream().distinct().listen((event) {
+    _minerStatusStreamSubscription = _minerStatusEventChannel
+        .receiveBroadcastStream()
+        .distinct()
+        .listen((event) {
       Provider.of<MinerStatusProvider>(context, listen: false).isMining =
           event.toString() == Constants.minerProcessStarted;
     });
@@ -109,6 +138,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
   }
 
   void _fetchMinerSummaryPeriodically() {
+    _minerSummaryFetchTimer?.cancel();
     _minerSummaryFetchTimer =
         Timer.periodic(const Duration(seconds: 10), (_) async {
       try {
@@ -317,10 +347,6 @@ class _AndroidMinerState extends State<AndroidMiner> {
                     const Spacer(),
                     OutlinedButton(
                         onPressed: () {
-                          _stopMining();
-                          Provider.of<MinerStatusProvider>(context,
-                                  listen: false)
-                              .isMining = false;
                           Provider.of<MinerStatusProvider>(context,
                                   listen: false)
                               .coinData = null;
@@ -329,7 +355,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
                               .walletAddress = "";
                           Provider.of<MinerStatusProvider>(context,
                                   listen: false)
-                              .startMiningPressed = false;
+                              .showMinerScreen = false;
                         },
                         child: const Text("Mine Another"))
                   ],
