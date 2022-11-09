@@ -228,6 +228,7 @@ class _MinerState extends State<Miner> {
         SizedBox(
           width: 300,
           child: DropdownButton<CoinData>(
+              itemHeight: null,
               isExpanded: true,
               hint: const Text("Select coin"),
               style: TextStyle(color: Theme.of(context).primaryColor),
@@ -235,17 +236,54 @@ class _MinerState extends State<Miner> {
                   .map<DropdownMenuItem<CoinData>>(
                       (CoinData coinData) => DropdownMenuItem<CoinData>(
                           value: coinData,
-                          child: Row(
+                          child: Column(
                             children: [
-                              Image(
-                                image: AssetImage(coinData.coinLogoPath),
-                                width: 24,
-                                height: 24,
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Row(
+                                children: [
+                                  Image(
+                                    image: AssetImage(coinData.coinLogoPath),
+                                    width: 24,
+                                    height: 24,
+                                  ),
+                                  const SizedBox(
+                                    width: 8,
+                                  ),
+                                  Text(coinData.coinName)
+                                ],
                               ),
                               const SizedBox(
-                                width: 8,
+                                height: 4,
                               ),
-                              Text(coinData.coinName)
+                              DefaultTextStyle(
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).primaryColor),
+                                  child: Row(
+                                    children: [
+                                      const Text("Host:"),
+                                      Text(
+                                          "${coinData.poolAddress}:${coinData.poolPort}")
+                                    ],
+                                  )),
+                              const SizedBox(
+                                height: 4,
+                              ),
+                              DefaultTextStyle(
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).primaryColor),
+                                  child: Row(
+                                    children: [
+                                      const Text("Algo:"),
+                                      Text(coinData.coinAlgo)
+                                    ],
+                                  )),
+                              const SizedBox(
+                                height: 8,
+                              ),
                             ],
                           )))
                   .toList(),
