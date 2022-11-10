@@ -6,7 +6,7 @@ import 'package:ekatapoolcompanion/pages/miner/android_miner.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
 import 'package:ekatapoolcompanion/pages/miner/desktop_miner.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner_support.dart';
-import 'package:ekatapoolcompanion/providers/MinerStatus.dart';
+import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
@@ -100,7 +100,7 @@ class _MinerState extends State<Miner> {
     }
   }
 
-  Widget _buildWalletAddressInputForm(CoinData? coinData) {
+  Widget _buildWalletAddressAndThreadCountInputForm(CoinData? coinData) {
     return Form(
       key: _walletAddressFormKey,
       child: Padding(
@@ -122,6 +122,34 @@ class _MinerState extends State<Miner> {
                 if (address != null && coinData != null) {
                   _saveWalletAddress(
                       coinData.coinName.toLowerCase(), address.trim());
+                }
+              },
+            ),
+            const SizedBox(
+              height: 8.0,
+            ),
+            TextFormField(
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                  if (int.tryParse(value) == null) {
+                    return "Make sure to enter numeric value";
+                  }
+                  if (int.tryParse(value)! < 0) {
+                    return "Make sure to enter a value greater than 0";
+                  }
+                }
+                return null;
+              },
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Enter Thread Count(Optional)"),
+              onSaved: (value) {
+                if (value != null &&
+                    int.tryParse(value) != null &&
+                    int.tryParse(value)! > 0) {
+                  Provider.of<MinerStatusProvider>(context, listen: false)
+                      .threadCount = int.tryParse(value);
                 }
               },
             ),
@@ -201,7 +229,7 @@ class _MinerState extends State<Miner> {
         const SizedBox(
           height: 8,
         ),
-        _buildWalletAddressInputForm(coinData),
+        _buildWalletAddressAndThreadCountInputForm(coinData),
         _showCurrentlyMining(currentlyMining)
       ],
     );
@@ -332,16 +360,19 @@ class _MinerState extends State<Miner> {
         : Container();
   }
 
-  Widget _getMiner(CoinData coinData, String walletAddress) {
+  Widget _getMiner(CoinData coinData, String walletAddress,
+      {int? threadCount}) {
     return Platform.isAndroid
         ? AndroidMiner(
             coinData: coinData,
             walletAddress: walletAddress,
+            threadCount: threadCount,
           )
         : Platform.isLinux || Platform.isWindows
             ? DesktopMiner(
                 coinData: coinData,
                 walletAddress: walletAddress,
+                threadCount: threadCount,
               )
             : const MinerSupport();
   }
@@ -355,11 +386,13 @@ class _MinerState extends State<Miner> {
         Provider.of<MinerStatusProvider>(context).showMinerScreen;
     Map<String, dynamic> currentlyMining =
         Provider.of<MinerStatusProvider>(context).currentlyMining;
+    int? threadCount =
+        Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
 
     return coinData == null
         ? _showCoinSelectInput(currentlyMining)
         : walletAddress.isNotEmpty && showMinerScreen
-            ? _getMiner(coinData, walletAddress)
+            ? _getMiner(coinData, walletAddress, threadCount: threadCount)
             : _showWalletAddressInput(coinData, currentlyMining);
   }
 }

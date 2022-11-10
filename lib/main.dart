@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:ekatapoolcompanion/providers/MinerStatus.dart';
 import 'package:ekatapoolcompanion/providers/addressstat.dart';
 import 'package:ekatapoolcompanion/providers/addressstatpayments.dart';
 import 'package:ekatapoolcompanion/providers/chart.dart';
+import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/minersummary.dart';
 import 'package:ekatapoolcompanion/providers/poolblock.dart';
 import 'package:ekatapoolcompanion/providers/poolpayment.dart';

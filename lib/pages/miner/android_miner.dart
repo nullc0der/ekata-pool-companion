@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:ekatapoolcompanion/models/chartsdata.dart';
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/models/minersummary.dart';
-import 'package:ekatapoolcompanion/providers/MinerStatus.dart';
+import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/minersummary.dart';
 import 'package:ekatapoolcompanion/services/minersummary.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
@@ -16,11 +16,15 @@ import 'package:provider/provider.dart';
 
 class AndroidMiner extends StatefulWidget {
   const AndroidMiner(
-      {Key? key, required this.coinData, required this.walletAddress})
+      {Key? key,
+      required this.coinData,
+      required this.walletAddress,
+      this.threadCount})
       : super(key: key);
 
   final CoinData coinData;
   final String walletAddress;
+  final int? threadCount;
 
   @override
   State<AndroidMiner> createState() => _AndroidMinerState();
@@ -84,7 +88,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
       Constants.walletAddress: widget.walletAddress,
       Constants.coinAlgo: widget.coinData.coinAlgo,
       Constants.poolHost: widget.coinData.poolAddress,
-      Constants.poolPort: widget.coinData.poolPort
+      Constants.poolPort: widget.coinData.poolPort,
+      Constants.threadCount: widget.threadCount
     });
     if (result) {
       Provider.of<MinerStatusProvider>(context, listen: false).currentlyMining =

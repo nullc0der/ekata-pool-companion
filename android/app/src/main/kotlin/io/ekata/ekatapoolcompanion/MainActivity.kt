@@ -22,6 +22,7 @@ const val WALLET_ADDRESS = "io.ekata.ekatapoolcompanion.WALLET_ADDRESS"
 const val COIN_ALGO = "io.ekata.ekatapoolcompanion.COIN_ALGO"
 const val POOL_HOST = "io.ekata.ekatapoolcompanion.POOL_HOST"
 const val POOL_PORT = "io.ekata.ekatapoolcompanion.POOL_PORT"
+const val THREAD_COUNT = "io.ekata.ekatapoolcompanion.THREAD_COUNT"
 
 class MainActivity : FlutterActivity() {
     private lateinit var minerServiceIntent: Intent
@@ -55,6 +56,7 @@ class MainActivity : FlutterActivity() {
                 minerServiceIntent.putExtra(COIN_ALGO, call.argument<String>(COIN_ALGO))
                 minerServiceIntent.putExtra(POOL_HOST, call.argument<String>(POOL_HOST))
                 minerServiceIntent.putExtra(POOL_PORT, call.argument<Int>(POOL_PORT))
+                minerServiceIntent.putExtra(THREAD_COUNT, call.argument<Int>(THREAD_COUNT))
                 startForegroundService(
                     minerServiceIntent
                 )

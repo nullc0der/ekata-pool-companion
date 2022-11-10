@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:ekatapoolcompanion/models/chartsdata.dart';
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/models/minersummary.dart';
-import 'package:ekatapoolcompanion/providers/MinerStatus.dart';
+import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/minersummary.dart';
 import 'package:ekatapoolcompanion/services/minersummary.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
@@ -15,11 +15,15 @@ import 'package:provider/provider.dart';
 
 class DesktopMiner extends StatefulWidget {
   const DesktopMiner(
-      {Key? key, required this.coinData, required this.walletAddress})
+      {Key? key,
+      required this.coinData,
+      required this.walletAddress,
+      this.threadCount})
       : super(key: key);
 
   final CoinData coinData;
   final String walletAddress;
+  final int? threadCount;
 
   @override
   State<DesktopMiner> createState() => _DesktopMinerState();
@@ -38,7 +42,8 @@ class _DesktopMinerState extends State<DesktopMiner> {
         minerAddress: widget.walletAddress,
         poolHost: widget.coinData.poolAddress,
         poolPort: widget.coinData.poolPort,
-        coinAlgo: widget.coinData.coinAlgo);
+        coinAlgo: widget.coinData.coinAlgo,
+        threadCount: widget.threadCount);
     _startMinerLogSubscription();
     _restartMinerSummaryFetcher();
     _changeMiningCoin();
