@@ -61,7 +61,9 @@ class _DesktopMinerState extends State<DesktopMiner> {
     var currentlyMining =
         Provider.of<MinerStatusProvider>(context, listen: false)
             .currentlyMining;
-    if (currentlyMining["coinData"] != widget.coinData) {
+    if (currentlyMining["coinData"] != widget.coinData ||
+        currentlyMining["walletAddress"] != widget.walletAddress ||
+        currentlyMining["threadCount"] != widget.threadCount) {
       if (Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
         _stopMining();
         _startMining();
@@ -90,7 +92,8 @@ class _DesktopMinerState extends State<DesktopMiner> {
         Provider.of<MinerStatusProvider>(context, listen: false)
             .currentlyMining = {
           "coinData": widget.coinData,
-          "walletAddress": widget.walletAddress
+          "walletAddress": widget.walletAddress,
+          "threadCount": widget.threadCount
         };
         Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
             null;
@@ -111,7 +114,11 @@ class _DesktopMinerState extends State<DesktopMiner> {
         Provider.of<MinerStatusProvider>(context, listen: false).isMining =
             false;
         Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentlyMining = {"coinData": null, "walletAddress": ""};
+            .currentlyMining = {
+          "coinData": null,
+          "walletAddress": "",
+          "threadCount": null
+        };
       }
     }
   }

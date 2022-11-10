@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import android.os.PowerManager
-import android.util.Log
 import io.ekata.ekatapoolcompanion.events.MiningStartEvent
 import io.ekata.ekatapoolcompanion.events.MiningStopEvent
 import io.ekata.ekatapoolcompanion.utils.MinerLogger
@@ -90,11 +89,9 @@ class MinerService : Service() {
                 "--no-color",
                 "--cpu-no-yield",
             )
-            Log.d("MinerService", threadCount.toString())
             if (threadCount != null && threadCount > 0) {
                 args.add("--threads=$threadCount")
             }
-            Log.d("MinerService", args.joinToString(","));
             ProcessBuilder(args).apply { process = start() }
             ProcessObserver(process).apply {
                 addProcessListener { EventBus.getDefault().post(MiningStopEvent()) }

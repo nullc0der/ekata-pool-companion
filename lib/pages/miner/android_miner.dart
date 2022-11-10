@@ -64,7 +64,9 @@ class _AndroidMinerState extends State<AndroidMiner> {
     var currentlyMining =
         Provider.of<MinerStatusProvider>(context, listen: false)
             .currentlyMining;
-    if (currentlyMining["coinData"] != widget.coinData) {
+    if (currentlyMining["coinData"] != widget.coinData ||
+        currentlyMining["walletAddress"] != widget.walletAddress ||
+        currentlyMining["threadCount"] != widget.threadCount) {
       if (Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
         _stopMining().then((_) => _startMining());
       } else {
@@ -93,7 +95,11 @@ class _AndroidMinerState extends State<AndroidMiner> {
     });
     if (result) {
       Provider.of<MinerStatusProvider>(context, listen: false).currentlyMining =
-          {"coinData": widget.coinData, "walletAddress": widget.walletAddress};
+          {
+        "coinData": widget.coinData,
+        "walletAddress": widget.walletAddress,
+        "threadCount": widget.threadCount
+      };
       Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
           null;
     }
@@ -110,7 +116,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
     var result = await _methodChannel.invokeMethod("stopMining");
     if (result) {
       Provider.of<MinerStatusProvider>(context, listen: false).currentlyMining =
-          {"coinData": null, "walletAddress": ""};
+          {"coinData": null, "walletAddress": "", "threadCount": null};
     }
     return result;
   }

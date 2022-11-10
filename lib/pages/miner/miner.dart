@@ -230,6 +230,9 @@ class _MinerState extends State<Miner> {
           height: 8,
         ),
         _buildWalletAddressAndThreadCountInputForm(coinData),
+        const SizedBox(
+          height: 8,
+        ),
         _showCurrentlyMining(currentlyMining)
       ],
     );
@@ -323,6 +326,9 @@ class _MinerState extends State<Miner> {
                     .coinData = coinData;
               }),
         ),
+        const SizedBox(
+          height: 8,
+        ),
         _showCurrentlyMining(currentlyMining)
       ],
     );
@@ -351,6 +357,8 @@ class _MinerState extends State<Miner> {
                         .coinData = currentlyMining["coinData"];
                     Provider.of<MinerStatusProvider>(context, listen: false)
                         .walletAddress = currentlyMining["walletAddress"];
+                    Provider.of<MinerStatusProvider>(context, listen: false)
+                        .threadCount = currentlyMining["threadCount"];
                     Provider.of<MinerStatusProvider>(context, listen: false)
                         .showMinerScreen = true;
                   },

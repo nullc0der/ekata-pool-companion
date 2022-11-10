@@ -9,7 +9,8 @@ class MinerStatusProvider extends ChangeNotifier {
   int? _threadCount;
   Map<String, dynamic> _currentlyMining = {
     "coinData": null,
-    "walletAddress": ""
+    "walletAddress": "",
+    "threadCount": null
   };
 
   bool get isMining => _isMining;
