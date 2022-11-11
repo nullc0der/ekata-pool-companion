@@ -16,6 +16,9 @@ import org.greenrobot.eventbus.EventBus
 
 const val NOTIFICATION_CHANNEL_ID = "io.ekata.ekatapoolcompanion"
 private const val NOTIFICATION_ID = 1
+const val FROM_MINER_SERVICE_NOTIFICATION =
+    "io.ekata.ekatapoolcompanion.FROM_MINER_SERVICE_NOTIFICATION"
+const val STOP_MINING = "io.ekata.ekatapoolcompanion.STOP_MINING"
 
 class MinerService : Service() {
     private lateinit var wakeLock: PowerManager.WakeLock
@@ -27,23 +30,43 @@ class MinerService : Service() {
         val poolHost = intent?.getStringExtra(POOL_HOST)
         val poolPort = intent?.getIntExtra(POOL_PORT, 3333)
         val threadCount = intent?.getIntExtra(THREAD_COUNT, 0)
+        val coinName = intent?.getStringExtra(COIN_NAME)
+
+        val stopMiningPendingIntent =
+            Intent(this, StopMiningReceiver::class.java).let { stopMiningIntent ->
+                stopMiningIntent.action = STOP_MINING
+                PendingIntent.getBroadcast(this, 0, stopMiningIntent, 0)
+            }
+
         val pendingIntent: PendingIntent = Intent(
             this,
             MainActivity::class.java
         ).let { notificationIntent ->
+            notificationIntent.action = FROM_MINER_SERVICE_NOTIFICATION
+            notificationIntent.putExtra(WALLET_ADDRESS, walletAddress)
+            notificationIntent.putExtra(COIN_NAME, coinName)
+            notificationIntent.putExtra(COIN_ALGO, coinAlgo)
+            notificationIntent.putExtra(POOL_HOST, poolHost)
+            notificationIntent.putExtra(POOL_PORT, poolPort)
+            notificationIntent.putExtra(THREAD_COUNT, threadCount)
             PendingIntent.getActivity(
                 this,
                 0,
                 notificationIntent,
-                PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         }
         val notification: Notification = Notification.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle(getText(R.string.mining_notification_title))
-            .setContentText(getText(R.string.mining_notification_text))
+            .setContentText(getString(R.string.mining_notification_text, coinName))
             .setSmallIcon(R.mipmap.launcher_icon)
             .setContentIntent(pendingIntent)
             .setTicker(getText(R.string.mining_notification_ticker))
+            .addAction(
+                R.drawable.ic_baseline_power_settings_new_24,
+                getString(R.string.stop_mining),
+                stopMiningPendingIntent
+            )
             .build()
         if (walletAddress != null && coinAlgo != null && poolHost != null && poolPort != null) {
             startForeground(NOTIFICATION_ID, notification)

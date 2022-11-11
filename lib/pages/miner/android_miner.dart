@@ -91,7 +91,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
       Constants.coinAlgo: widget.coinData.coinAlgo,
       Constants.poolHost: widget.coinData.poolAddress,
       Constants.poolPort: widget.coinData.poolPort,
-      Constants.threadCount: widget.threadCount
+      Constants.threadCount: widget.threadCount,
+      Constants.coinName: widget.coinData.coinName
     });
     if (result) {
       Provider.of<MinerStatusProvider>(context, listen: false).currentlyMining =
@@ -128,6 +129,14 @@ class _AndroidMinerState extends State<AndroidMiner> {
         .listen((event) {
       Provider.of<MinerStatusProvider>(context, listen: false).isMining =
           event.toString() == Constants.minerProcessStarted;
+      if (event.toString() != Constants.minerProcessStarted) {
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentlyMining = {
+          "coinData": null,
+          "walletAddress": "",
+          "threadCount": null
+        };
+      }
     });
   }
 

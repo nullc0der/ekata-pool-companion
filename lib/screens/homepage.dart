@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:ekatapoolcompanion/models/poolstat.dart';
 import 'package:ekatapoolcompanion/pages/dashboard.dart';
+import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/pages/payments.dart';
 import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
+import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/services/poolstat.dart';
 import 'package:ekatapoolcompanion/widgets/custom_app_bar.dart';
@@ -12,6 +15,7 @@ import 'package:ekatapoolcompanion/widgets/custom_bottom_navigation.dart';
 import 'package:ekatapoolcompanion/widgets/pool_select_action_sheet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +29,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _bottomNavbarCurrentIndex = 0;
   Timer? _timer;
+  StreamSubscription<dynamic>? _notificationTapEventSubscription;
+  final EventChannel _notificationTapEventChannel = const EventChannel(
+      "io.ekata.ekatapoolcompanion/notification_tap_event_channel");
 
   @override
   void initState() {
@@ -42,12 +49,48 @@ class _HomePageState extends State<HomePage> {
     if (!kDebugMode) {
       _initializeMatomoTracker();
     }
+    if (Platform.isAndroid) {
+      _handleNotificationTapEventStream();
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _notificationTapEventSubscription?.cancel();
     super.dispose();
+  }
+
+  void _handleNotificationTapEventStream() {
+    _notificationTapEventSubscription = _notificationTapEventChannel
+        .receiveBroadcastStream()
+        .distinct()
+        .listen((event) {
+      _populateMinerStatus(Map<String, String>.from(event));
+    });
+  }
+
+  void _populateMinerStatus(Map<String, String> minerStatusFromAndroid) {
+    var minerStatusProvider =
+        Provider.of<MinerStatusProvider>(context, listen: false);
+    if (minerStatusProvider.coinData?.coinName !=
+        minerStatusFromAndroid["coinName"]) {
+      var coinData = coinDatas.firstWhere(
+          (element) => element.coinName == minerStatusFromAndroid["coinName"]);
+      var walletAddress = minerStatusFromAndroid["walletAddress"]!;
+      var threadCount = int.tryParse(minerStatusFromAndroid["threadCount"]!);
+      minerStatusProvider.coinData = coinData;
+      minerStatusProvider.walletAddress = walletAddress;
+      minerStatusProvider.threadCount = threadCount;
+      minerStatusProvider.isMining = true;
+      minerStatusProvider.showMinerScreen = true;
+      minerStatusProvider.currentlyMining = {
+        "coinData": coinData,
+        "walletAddress": walletAddress,
+        "threadCount": threadCount
+      };
+    }
+    _switchTab(3);
   }
 
   void _fetchPoolStatPeriodically() {

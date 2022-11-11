@@ -4,19 +4,27 @@
 
     <!-- Required to fetch data from the internet. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name="${applicationName}"
-        android:icon="@mipmap/launcher_icon"
-        android:label="Ekata Pool Companion"
         android:extractNativeLibs="true"
-        >
+        android:icon="@mipmap/launcher_icon"
+        android:label="Ekata Pool Companion">
+        <receiver
+            android:name=".StopMiningReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="io.ekata.ekatapoolcompanion.STOP_MINING" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".MinerService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false" />
 
         <activity
             android:name=".MainActivity"
@@ -39,6 +47,7 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                <action android:name="io.ekata.ekatapoolcompanion.FROM_MINER_SERVICE_NOTIFICATION" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
