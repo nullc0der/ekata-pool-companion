@@ -35,7 +35,9 @@ class MinerService : Service() {
         val stopMiningPendingIntent =
             Intent(this, StopMiningReceiver::class.java).let { stopMiningIntent ->
                 stopMiningIntent.action = STOP_MINING
-                PendingIntent.getBroadcast(this, 0, stopMiningIntent, 0)
+                PendingIntent.getBroadcast(
+                    this, 0, stopMiningIntent, PendingIntent.FLAG_IMMUTABLE
+                )
             }
 
         val pendingIntent: PendingIntent = Intent(
