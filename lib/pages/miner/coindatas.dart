@@ -60,7 +60,7 @@ List<CoinData> coinDatas = [
   CoinData(
       coinName: "Arielcoin",
       coinLogoPath: "assets/images/arielcoin.png",
-      poolAddress: "mining4people.com",
+      poolAddress: "us.mining4people.com",
       poolPortCPU: 3345,
       poolPortGPU: 3345,
       coinAlgo: "kawpow",
@@ -68,7 +68,7 @@ List<CoinData> coinDatas = [
   CoinData(
       coinName: "Meowcoin",
       coinLogoPath: "assets/images/meowcoin.png",
-      poolAddress: "mining4people.com",
+      poolAddress: "us.mining4people.com",
       poolPortCPU: 3409,
       poolPortGPU: 3409,
       coinAlgo: "kawpow",
@@ -76,7 +76,7 @@ List<CoinData> coinDatas = [
   CoinData(
       coinName: "Neoxa",
       coinLogoPath: "assets/images/neoxa.png",
-      poolAddress: "mining4people.com",
+      poolAddress: "us.mining4people.com",
       poolPortCPU: 3399,
       poolPortGPU: 3399,
       coinAlgo: "kawpow",
@@ -84,7 +84,7 @@ List<CoinData> coinDatas = [
   CoinData(
       coinName: "Ravencoin",
       coinLogoPath: "assets/images/ravencoin.png",
-      poolAddress: "mining4people.com",
+      poolAddress: "us.mining4people.com",
       poolPortCPU: 3346,
       poolPortGPU: 3346,
       coinAlgo: "kawpow",
@@ -92,9 +92,17 @@ List<CoinData> coinDatas = [
   CoinData(
       coinName: "VirtualEmpire",
       coinLogoPath: "assets/images/virtualempire.png",
-      poolAddress: "mining4people.com",
+      poolAddress: "us.mining4people.com",
       poolPortCPU: 3427,
       poolPortGPU: 3427,
+      coinAlgo: "kawpow",
+      cpuMineable: false),
+  CoinData(
+      coinName: "KawKaw",
+      coinLogoPath: "assets/images/kawkaw.png",
+      poolAddress: "us.mining4people.com",
+      poolPortCPU: 3404,
+      poolPortGPU: 3404,
       coinAlgo: "kawpow",
       cpuMineable: false)
 ];
