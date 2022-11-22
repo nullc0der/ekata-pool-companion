@@ -90,7 +90,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
       Constants.walletAddress: widget.walletAddress,
       Constants.coinAlgo: widget.coinData.coinAlgo,
       Constants.poolHost: widget.coinData.poolAddress,
-      Constants.poolPort: widget.coinData.poolPort,
+      Constants.poolPort: widget.coinData.poolPortCPU,
       Constants.threadCount: widget.threadCount,
       Constants.coinName: widget.coinData.coinName
     });

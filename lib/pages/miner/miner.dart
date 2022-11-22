@@ -238,7 +238,11 @@ class _MinerState extends State<Miner> {
     );
   }
 
-  Widget _showCoinSelectInput(Map<String, dynamic> currentlyMining) {
+  Widget _showCoinSelectInput(
+      Map<String, dynamic> currentlyMining, bool deviceHasGPU) {
+    var _coinDatas = deviceHasGPU
+        ? coinDatas
+        : coinDatas.where((coinData) => coinData.cpuMineable);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -263,7 +267,7 @@ class _MinerState extends State<Miner> {
               isExpanded: true,
               hint: const Text("Select coin"),
               style: TextStyle(color: Theme.of(context).primaryColor),
-              items: coinDatas
+              items: _coinDatas
                   .map<DropdownMenuItem<CoinData>>(
                       (CoinData coinData) => DropdownMenuItem<CoinData>(
                           value: coinData,
@@ -295,8 +299,11 @@ class _MinerState extends State<Miner> {
                                   child: Row(
                                     children: [
                                       const Text("Host:"),
-                                      Text(
-                                          "${coinData.poolAddress}:${coinData.poolPort}")
+                                      deviceHasGPU
+                                          ? Text(
+                                              "${coinData.poolAddress}:${coinData.poolPortGPU}")
+                                          : Text(
+                                              "${coinData.poolAddress}:${coinData.poolPortCPU}")
                                     ],
                                   )),
                               const SizedBox(
@@ -369,7 +376,7 @@ class _MinerState extends State<Miner> {
   }
 
   Widget _getMiner(CoinData coinData, String walletAddress,
-      {int? threadCount}) {
+      {int? threadCount, String? gpuVendor}) {
     return Platform.isAndroid
         ? AndroidMiner(
             coinData: coinData,
@@ -381,6 +388,7 @@ class _MinerState extends State<Miner> {
                 coinData: coinData,
                 walletAddress: walletAddress,
                 threadCount: threadCount,
+                gpuVendor: gpuVendor,
               )
             : const MinerSupport();
   }
@@ -396,11 +404,14 @@ class _MinerState extends State<Miner> {
         Provider.of<MinerStatusProvider>(context).currentlyMining;
     int? threadCount =
         Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
+    String? gpuVendor =
+        Provider.of<MinerStatusProvider>(context, listen: false).gpuVendor;
 
     return coinData == null
-        ? _showCoinSelectInput(currentlyMining)
+        ? _showCoinSelectInput(currentlyMining, gpuVendor != null)
         : walletAddress.isNotEmpty && showMinerScreen
-            ? _getMiner(coinData, walletAddress, threadCount: threadCount)
+            ? _getMiner(coinData, walletAddress,
+                threadCount: threadCount, gpuVendor: gpuVendor)
             : _showWalletAddressInput(coinData, currentlyMining);
   }
 }

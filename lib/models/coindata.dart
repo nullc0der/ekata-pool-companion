@@ -11,27 +11,35 @@ class CoinData {
       {required this.coinName,
       required this.coinLogoPath,
       required this.poolAddress,
-      required this.poolPort,
-      required this.coinAlgo});
+      required this.poolPortCPU,
+      required this.poolPortGPU,
+      required this.coinAlgo,
+      required this.cpuMineable});
 
   final String coinName;
   final String coinLogoPath;
   final String poolAddress;
-  final int poolPort;
+  final int poolPortCPU;
+  final int poolPortGPU;
   final String coinAlgo;
+  final bool cpuMineable;
 
   factory CoinData.fromJson(Map<String, dynamic> json) => CoinData(
       coinName: json["coinName"],
       coinLogoPath: json["coinLogoPath"],
       poolAddress: json["poolAddress"],
-      poolPort: json["poolPort"],
-      coinAlgo: json["coinAlgo"]);
+      poolPortCPU: json["poolPortCPU"],
+      poolPortGPU: json["poolPortGPU"],
+      coinAlgo: json["coinAlgo"],
+      cpuMineable: json["cpuMineable"]);
 
   Map<String, dynamic> toJson() => {
         "coinName": coinName,
         "coinLogoPath": coinLogoPath,
         "poolAddress": poolAddress,
-        "poolPort": poolPort,
-        "coinAlgo": coinAlgo
+        "poolPortCPU": poolPortCPU,
+        "poolPortGPU": poolPortGPU,
+        "coinAlgo": coinAlgo,
+        "cpuMineable": cpuMineable
       };
 }

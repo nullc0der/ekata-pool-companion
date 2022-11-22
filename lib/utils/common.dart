@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path;
 
 MaterialColor createMaterialColor(Color color) {
   List strengths = <double>[.05];
@@ -69,4 +71,40 @@ String timeStringFromSecond(int valueInSeconds) {
 
 String convertByteToGB(int bytes) {
   return "${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB";
+}
+
+Future<String?> getGPUVendor() async {
+  if (Platform.isLinux) {
+    var result = await Process.run("lspci", []);
+    var vgaInfo = result.stdout
+        .split("\n")
+        .firstWhere((r) => r.toString().toLowerCase().contains("vga"));
+    if (vgaInfo.toString().toLowerCase().contains("nvidia")) {
+      return "nvidia";
+    }
+    if (vgaInfo.toString().toLowerCase().contains("amd")) {
+      return "amd";
+    }
+  }
+  if (Platform.isWindows) {
+    var result = await Process.run(
+        "wmic", ["path", "win32_VideoController", "get", "name"]);
+    if (result.stdout
+        .split("\n")
+        .firstWhere((r) => r.toString().toLowerCase().contains("nvidia"))) {
+      return "nvidia";
+    }
+    if (result.stdout
+        .split("\n")
+        .firstWhere((r) => r.toString().toLowerCase().contains("amd"))) {
+      return "amd";
+    }
+  }
+  return null;
+}
+
+Future<bool> ensureCUDALoaderExist() async {
+  var cudaLoaderPath = path.join(Directory.current.path,
+      "bin/${Platform.isLinux ? "libxmrig-cuda.so" : "xmrig-cuda.dll"}");
+  return await File(cudaLoaderPath).exists();
 }

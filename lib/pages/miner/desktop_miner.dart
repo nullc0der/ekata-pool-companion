@@ -18,12 +18,14 @@ class DesktopMiner extends StatefulWidget {
       {Key? key,
       required this.coinData,
       required this.walletAddress,
-      this.threadCount})
+      this.threadCount,
+      this.gpuVendor})
       : super(key: key);
 
   final CoinData coinData;
   final String walletAddress;
   final int? threadCount;
+  final String? gpuVendor;
 
   @override
   State<DesktopMiner> createState() => _DesktopMinerState();
@@ -41,9 +43,12 @@ class _DesktopMinerState extends State<DesktopMiner> {
     DesktopMinerUtil.instance.initialize(
         minerAddress: widget.walletAddress,
         poolHost: widget.coinData.poolAddress,
-        poolPort: widget.coinData.poolPort,
+        poolPort: widget.gpuVendor != null
+            ? widget.coinData.poolPortGPU
+            : widget.coinData.poolPortCPU,
         coinAlgo: widget.coinData.coinAlgo,
-        threadCount: widget.threadCount);
+        threadCount: widget.threadCount,
+        gpuVendor: widget.gpuVendor);
     _startMinerLogSubscription();
     _restartMinerSummaryFetcher();
     _changeMiningCoin();

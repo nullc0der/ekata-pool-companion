@@ -12,6 +12,7 @@ class MinerStatusProvider extends ChangeNotifier {
     "walletAddress": "",
     "threadCount": null
   };
+  String? _gpuVendor;
 
   bool get isMining => _isMining;
   bool get showMinerScreen => _showMinerScreen;
@@ -19,6 +20,7 @@ class MinerStatusProvider extends ChangeNotifier {
   String get walletAddress => _walletAddress;
   int? get threadCount => _threadCount;
   Map<String, dynamic> get currentlyMining => _currentlyMining;
+  String? get gpuVendor => _gpuVendor;
 
   set isMining(bool isMiningStatus) {
     _isMining = isMiningStatus;
@@ -47,6 +49,11 @@ class MinerStatusProvider extends ChangeNotifier {
 
   set currentlyMining(Map<String, dynamic> newCurrentlyMining) {
     _currentlyMining = newCurrentlyMining;
+    notifyListeners();
+  }
+
+  set gpuVendor(String? gpuVendor) {
+    _gpuVendor = gpuVendor;
     notifyListeners();
   }
 }

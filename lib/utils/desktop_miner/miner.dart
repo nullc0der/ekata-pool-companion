@@ -11,6 +11,7 @@ class DesktopMinerUtil {
   String? _coinAlgo;
   int? _threadCount;
   Process? _minerProcess;
+  String? _gpuVendor;
   bool initialized = false;
   static final DesktopMinerUtil instance = DesktopMinerUtil._internal();
   final StreamController<String> _logStream =
@@ -25,12 +26,14 @@ class DesktopMinerUtil {
       required String poolHost,
       required int poolPort,
       required String coinAlgo,
-      int? threadCount}) {
+      int? threadCount,
+      String? gpuVendor}) {
     _minerAddress = minerAddress;
     _poolHost = poolHost;
     _poolPort = poolPort;
     _coinAlgo = coinAlgo;
     _threadCount = threadCount;
+    _gpuVendor = gpuVendor;
     initialized = true;
   }
 
@@ -40,6 +43,7 @@ class DesktopMinerUtil {
     _poolPort = null;
     _coinAlgo = null;
     _threadCount = null;
+    _gpuVendor = null;
     initialized = false;
   }
 
@@ -57,6 +61,14 @@ class DesktopMinerUtil {
     ];
     if (_threadCount != null) {
       minerProcessArgs.add("--threads=${_threadCount.toString()}");
+    }
+    if (_gpuVendor != null) {
+      if (_gpuVendor == 'nvidia') {
+        minerProcessArgs.add("--cuda");
+      }
+      if (_gpuVendor == 'amd') {
+        minerProcessArgs.add("--opencl");
+      }
     }
     _minerProcess = await Process.start(executablePath, minerProcessArgs);
     if (_minerProcess != null) {

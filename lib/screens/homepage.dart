@@ -10,6 +10,7 @@ import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/services/poolstat.dart';
+import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:ekatapoolcompanion/widgets/custom_app_bar.dart';
 import 'package:ekatapoolcompanion/widgets/custom_bottom_navigation.dart';
 import 'package:ekatapoolcompanion/widgets/pool_select_action_sheet.dart';
@@ -52,6 +53,7 @@ class _HomePageState extends State<HomePage> {
     if (Platform.isAndroid) {
       _handleNotificationTapEventStream();
     }
+    _getGPUVendor();
   }
 
   @override
@@ -59,6 +61,30 @@ class _HomePageState extends State<HomePage> {
     _timer?.cancel();
     _notificationTapEventSubscription?.cancel();
     super.dispose();
+  }
+
+  void _getGPUVendor() async {
+    var gpuVendor = await common.getGPUVendor();
+    if (gpuVendor != null) {
+      Provider.of<MinerStatusProvider>(context, listen: false).gpuVendor =
+          gpuVendor;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("${gpuVendor.toUpperCase()} GPU found"
+              ", will be enabled for mining appropriate coin/pool")));
+    }
+    if (gpuVendor == "nvidia") {
+      _ensureCUDALoaderExist();
+    }
+  }
+
+  void _ensureCUDALoaderExist() async {
+    var cudaLoaderExist = await common.ensureCUDALoaderExist();
+    if (!cudaLoaderExist) {
+      Provider.of<MinerStatusProvider>(context, listen: false).gpuVendor = null;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content:
+              Text("CUDA loader file couldn't be found, GPU mining disabled")));
+    }
   }
 
   void _handleNotificationTapEventStream() {
