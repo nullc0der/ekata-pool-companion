@@ -76,13 +76,13 @@ String convertByteToGB(int bytes) {
 Future<String?> getGPUVendor() async {
   if (Platform.isLinux) {
     var result = await Process.run("lspci", []);
-    var vgaInfo = result.stdout
+    var vgaInfos = result.stdout
         .split("\n")
-        .firstWhere((r) => r.toString().toLowerCase().contains("vga"));
-    if (vgaInfo.toString().toLowerCase().contains("nvidia")) {
+        .where((r) => r.toString().toLowerCase().contains("vga"));
+    if (vgaInfos.join().toLowerCase().contains("nvidia")) {
       return "nvidia";
     }
-    if (vgaInfo.toString().toLowerCase().contains("amd")) {
+    if (vgaInfos.join().toLowerCase().contains("amd")) {
       return "amd";
     }
   }
