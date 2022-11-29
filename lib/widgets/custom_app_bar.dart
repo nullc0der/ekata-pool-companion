@@ -29,11 +29,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
           statusBarIconBrightness: Brightness.dark),
       elevation: 0,
       actions: [
-        GestureDetector(
-          onTap: () {},
-          child: const Padding(
-              padding: EdgeInsets.only(right: 2.0), child: Icon(Icons.search)),
-        ),
+        // GestureDetector(
+        //   onTap: () {},
+        //   child: const Padding(
+        //       padding: EdgeInsets.only(right: 2.0), child: Icon(Icons.search)),
+        // ),
         PopupMenuButton(
             offset: const Offset(0.0, 40.0),
             itemBuilder: (context) {
