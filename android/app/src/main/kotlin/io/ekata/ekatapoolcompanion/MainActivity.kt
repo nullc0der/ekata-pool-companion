@@ -18,14 +18,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 
-
-const val WALLET_ADDRESS = "io.ekata.ekatapoolcompanion.WALLET_ADDRESS"
-const val COIN_ALGO = "io.ekata.ekatapoolcompanion.COIN_ALGO"
-const val POOL_HOST = "io.ekata.ekatapoolcompanion.POOL_HOST"
-const val POOL_PORT = "io.ekata.ekatapoolcompanion.POOL_PORT"
-const val THREAD_COUNT = "io.ekata.ekatapoolcompanion.THREAD_COUNT"
-const val COIN_NAME = "io.ekata.ekatapoolcompanion.COIN_NAME"
-
 class MainActivity : FlutterActivity() {
     private lateinit var minerServiceIntent: Intent
 
@@ -37,7 +29,7 @@ class MainActivity : FlutterActivity() {
 
     private fun createNotificationChannel() {
         val channel = NotificationChannel(
-            NOTIFICATION_CHANNEL_ID,
+            Constants.NOTIFICATION_CHANNEL_ID,
             getString(R.string.notification_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply { description = getString(R.string.notification_channel_description) }
@@ -49,25 +41,17 @@ class MainActivity : FlutterActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         val intentExtras = intent.extras
-        if (intentExtras != null && intent.action == FROM_MINER_SERVICE_NOTIFICATION
+        if (intentExtras != null && intent.action == Constants.FROM_MINER_SERVICE_NOTIFICATION
         ) {
-            val walletAddress = intentExtras.getString(WALLET_ADDRESS)
-            val coinAlgo = intentExtras.getString(COIN_ALGO)
-            val poolHost = intentExtras.getString(POOL_HOST)
-            val poolPort = intentExtras.getInt(POOL_PORT, 3333)
-            val threadCount = intentExtras.getInt(THREAD_COUNT, 0)
-            val coinName = intentExtras.getString(COIN_NAME)
+            val minerConfigPath = intentExtras.getString(Constants.MINER_CONFIG_PATH)
+            val threadCount = intentExtras.getInt(Constants.THREAD_COUNT, 0)
             minerServiceIntent = Intent(this, MinerService::class.java)
             EventBus.getDefault()
                 .postSticky(
                     NotificationTapEvent(
                         mapOf(
-                            "walletAddress" to walletAddress.toString(),
-                            "coinAlgo" to coinAlgo.toString(),
-                            "poolHost" to poolHost.toString(),
-                            "poolPort" to poolPort.toString(),
+                            "minerConfigPath" to minerConfigPath.toString(),
                             "threadCount" to threadCount.toString(),
-                            "coinName" to coinName.toString()
                         )
                     )
                 )
@@ -83,12 +67,15 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             if (call.method == "startMining") {
                 minerServiceIntent = Intent(this, MinerService::class.java)
-                minerServiceIntent.putExtra(WALLET_ADDRESS, call.argument<String>(WALLET_ADDRESS))
-                minerServiceIntent.putExtra(COIN_ALGO, call.argument<String>(COIN_ALGO))
-                minerServiceIntent.putExtra(POOL_HOST, call.argument<String>(POOL_HOST))
-                minerServiceIntent.putExtra(POOL_PORT, call.argument<Int>(POOL_PORT))
-                minerServiceIntent.putExtra(THREAD_COUNT, call.argument<Int>(THREAD_COUNT))
-                minerServiceIntent.putExtra(COIN_NAME, call.argument<String>(COIN_NAME))
+                minerServiceIntent.putExtra(
+                    Constants.MINER_CONFIG_PATH, call.argument<String>(
+                        Constants.MINER_CONFIG_PATH
+                    )
+                )
+                minerServiceIntent.putExtra(
+                    Constants.THREAD_COUNT,
+                    call.argument<Int>(Constants.THREAD_COUNT)
+                )
                 startForegroundService(
                     minerServiceIntent
                 )

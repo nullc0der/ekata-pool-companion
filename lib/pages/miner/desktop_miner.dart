@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:ekatapoolcompanion/models/chartsdata.dart';
-import 'package:ekatapoolcompanion/models/coindata.dart';
+import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/models/minersummary.dart';
+import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/minersummary.dart';
 import 'package:ekatapoolcompanion/services/minersummary.dart';
@@ -16,16 +18,14 @@ import 'package:provider/provider.dart';
 class DesktopMiner extends StatefulWidget {
   const DesktopMiner(
       {Key? key,
-      required this.coinData,
-      required this.walletAddress,
       this.threadCount,
-      this.gpuVendor})
+      required this.minerConfigPath,
+      required this.setCurrentWizardStep})
       : super(key: key);
 
-  final CoinData coinData;
-  final String walletAddress;
   final int? threadCount;
-  final String? gpuVendor;
+  final String minerConfigPath;
+  final ValueChanged<WizardStep> setCurrentWizardStep;
 
   @override
   State<DesktopMiner> createState() => _DesktopMinerState();
@@ -41,14 +41,9 @@ class _DesktopMinerState extends State<DesktopMiner> {
   void initState() {
     super.initState();
     DesktopMinerUtil.instance.initialize(
-        minerAddress: widget.walletAddress,
-        poolHost: widget.coinData.poolAddress,
-        poolPort: widget.gpuVendor != null
-            ? widget.coinData.poolPortGPU
-            : widget.coinData.poolPortCPU,
-        coinAlgo: widget.coinData.coinAlgo,
-        threadCount: widget.threadCount,
-        gpuVendor: widget.gpuVendor);
+      minerConfigPath: widget.minerConfigPath,
+      threadCount: widget.threadCount,
+    );
     _startMinerLogSubscription();
     _restartMinerSummaryFetcher();
     _changeMiningCoin();
@@ -63,12 +58,18 @@ class _DesktopMinerState extends State<DesktopMiner> {
   }
 
   _changeMiningCoin() {
-    var currentlyMining =
+    final currentlyMiningMinerConfig =
         Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentlyMining;
-    if (currentlyMining["coinData"] != widget.coinData ||
-        currentlyMining["walletAddress"] != widget.walletAddress ||
-        currentlyMining["threadCount"] != widget.threadCount) {
+            .currentlyMiningMinerConfig;
+    final minerConfig =
+        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
+    final threadCount =
+        Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
+    final currentThreadCount =
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentThreadCount;
+    if (currentlyMiningMinerConfig != minerConfig ||
+        threadCount != currentThreadCount) {
       if (Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
         _stopMining();
         _startMining();
@@ -83,23 +84,31 @@ class _DesktopMinerState extends State<DesktopMiner> {
   }
 
   void _startMining() {
+    final minerConfig =
+        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
+    final threadCount =
+        Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
+    final coinData = getCoinDataFromMinerConfig(minerConfig);
     if (DesktopMinerUtil.instance.initialized) {
       DesktopMinerUtil.instance.startMining().then((value) {
         _fetchMinerSummaryPeriodically();
         if (MatomoTracker.instance.initialized) {
           MatomoTracker.instance.trackEvent(
               eventCategory: 'Mining',
-              action: 'Started - ${widget.coinData.coinName}');
+              action:
+                  'Started - ${coinData != null ? coinData.coinName : minerConfig?.pools.first.algo}');
         }
         Provider.of<MinerStatusProvider>(context, listen: false).isMining =
             value;
         _startMinerLogSubscription();
+        File(widget.minerConfigPath).readAsString().then((value) {
+          try {
+            Provider.of<MinerStatusProvider>(context, listen: false)
+                .currentlyMiningMinerConfig = minerConfigFromJson(value);
+          } on FormatException catch (_) {}
+        });
         Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentlyMining = {
-          "coinData": widget.coinData,
-          "walletAddress": widget.walletAddress,
-          "threadCount": widget.threadCount
-        };
+            .currentThreadCount = threadCount;
         Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
             null;
       });
@@ -110,20 +119,23 @@ class _DesktopMinerState extends State<DesktopMiner> {
     if (DesktopMinerUtil.instance.initialized) {
       bool stopped = DesktopMinerUtil.instance.stopMining();
       if (stopped) {
+        final minerConfig =
+            Provider.of<MinerStatusProvider>(context, listen: false)
+                .minerConfig;
+        final coinData = getCoinDataFromMinerConfig(minerConfig);
         _minerSummaryFetchTimer?.cancel();
         if (MatomoTracker.instance.initialized) {
           MatomoTracker.instance.trackEvent(
               eventCategory: 'Mining',
-              action: 'Stopped - ${widget.coinData.coinName}');
+              action:
+                  'Stopped - ${coinData != null ? coinData.coinName : minerConfig?.pools.first.algo}');
         }
         Provider.of<MinerStatusProvider>(context, listen: false).isMining =
             false;
         Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentlyMining = {
-          "coinData": null,
-          "walletAddress": "",
-          "threadCount": null
-        };
+            .currentlyMiningMinerConfig = null;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentThreadCount = null;
       }
     }
   }
@@ -327,6 +339,9 @@ class _DesktopMinerState extends State<DesktopMiner> {
     var minerSummary = Provider.of<MinerSummaryProvider>(context).minerSummary;
     var isMining = Provider.of<MinerStatusProvider>(context).isMining;
 
+    final minerConfig = Provider.of<MinerStatusProvider>(context).minerConfig;
+    final coinData = getCoinDataFromMinerConfig(minerConfig);
+
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
       children: [
@@ -335,36 +350,37 @@ class _DesktopMinerState extends State<DesktopMiner> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  children: [
-                    Text("Currently Mining: ${widget.coinData.coinName}"),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Image(
-                      image: AssetImage(widget.coinData.coinLogoPath),
-                      width: 24,
-                      height: 24,
-                    ),
-                    const Spacer(),
-                    OutlinedButton(
-                        onPressed: () {
-                          Provider.of<MinerStatusProvider>(context,
-                                  listen: false)
-                              .coinData = null;
-                          Provider.of<MinerStatusProvider>(context,
-                                  listen: false)
-                              .walletAddress = "";
-                          Provider.of<MinerStatusProvider>(context,
-                                  listen: false)
-                              .showMinerScreen = false;
-                        },
-                        child: const Text("Mine Another"))
-                  ],
+              if (minerConfig != null)
+                SizedBox(
+                  width: double.infinity,
+                  child: Row(
+                    children: [
+                      if (coinData != null) ...[
+                        Text("Currently Mining: ${coinData.coinName}"),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Image(
+                          image: AssetImage(coinData.coinLogoPath),
+                          width: 24,
+                          height: 24,
+                        ),
+                      ] else
+                        Text(
+                            "Currently Mining: ${minerConfig.pools.first.algo}"),
+                      const Spacer(),
+                      OutlinedButton(
+                          onPressed: () {
+                            Provider.of<MinerStatusProvider>(context,
+                                    listen: false)
+                                .minerConfig = null;
+                            widget.setCurrentWizardStep(
+                                WizardStep.coinNameSelect);
+                          },
+                          child: const Text("Mine Another"))
+                    ],
+                  ),
                 ),
-              ),
               const SizedBox(
                 height: 16,
               ),

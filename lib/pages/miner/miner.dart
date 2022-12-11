@@ -2,16 +2,21 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:ekatapoolcompanion/models/coindata.dart';
+import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/android_miner.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
 import 'package:ekatapoolcompanion/pages/miner/desktop_miner.dart';
+import 'package:ekatapoolcompanion/pages/miner/final_miner_config.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner_support.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
+import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+enum WizardStep { coinNameSelect, walletAddressInput, minerConfig, miner }
 
 class Miner extends StatefulWidget {
   const Miner({Key? key}) : super(key: key);
@@ -23,6 +28,7 @@ class Miner extends StatefulWidget {
 class _MinerState extends State<Miner> {
   final _walletAddressFormKey = GlobalKey<FormState>();
   final _walletAddressFieldController = TextEditingController();
+  WizardStep _currentWizardStep = WizardStep.coinNameSelect;
 
   @override
   void initState() {
@@ -31,8 +37,9 @@ class _MinerState extends State<Miner> {
       MatomoTracker.instance
           .trackEvent(eventCategory: 'Page Change', action: 'Miner');
     }
-    CoinData? coinData =
-        Provider.of<MinerStatusProvider>(context, listen: false).coinData;
+    MinerConfig? minerConfig =
+        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
+    var coinData = getCoinDataFromMinerConfig(minerConfig);
     if (coinData != null) {
       _loadWalletAddress(coinData.coinName.toLowerCase());
     }
@@ -52,14 +59,18 @@ class _MinerState extends State<Miner> {
       var addressesJson = jsonDecode(walletAddresses);
       var addresses = addressesJson.where((address) =>
           address["coinName"].toLowerCase() == coinName.toLowerCase());
+      final minerConfig =
+          Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
       if (addresses.isNotEmpty) {
-        var address = addresses.first;
-        Provider.of<MinerStatusProvider>(context, listen: false).walletAddress =
-            address['address'];
+        final address = addresses.first;
+        minerConfig?.pools.first.user = address["address"];
+        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
+            minerConfig;
         _walletAddressFieldController.text = address["address"];
       } else {
-        Provider.of<MinerStatusProvider>(context, listen: false).walletAddress =
-            "";
+        minerConfig?.pools.first.user = "";
+        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
+            minerConfig;
         _walletAddressFieldController.text = "";
       }
     }
@@ -95,8 +106,13 @@ class _MinerState extends State<Miner> {
         prefs.setString(
             Constants.walletAddressesKeySharedPrefs, jsonEncode(addressesJson));
       }
-      Provider.of<MinerStatusProvider>(context, listen: false).walletAddress =
-          walletAddress;
+      final minerConfig =
+          Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
+      if (minerConfig != null && minerConfig.pools.isNotEmpty) {
+        minerConfig.pools.first.user = walletAddress;
+        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
+            minerConfig;
+      }
     }
   }
 
@@ -165,10 +181,10 @@ class _MinerState extends State<Miner> {
                           onPressed: () {
                             Provider.of<MinerStatusProvider>(context,
                                     listen: false)
-                                .coinData = null;
-                            Provider.of<MinerStatusProvider>(context,
-                                    listen: false)
-                                .walletAddress = "";
+                                .minerConfig = null;
+                            setState(() {
+                              _currentWizardStep = WizardStep.coinNameSelect;
+                            });
                           },
                           child: const Text("Select Coin"))),
                   const SizedBox(
@@ -182,12 +198,12 @@ class _MinerState extends State<Miner> {
                         onPressed: () {
                           if (_walletAddressFormKey.currentState!.validate()) {
                             _walletAddressFormKey.currentState!.save();
-                            Provider.of<MinerStatusProvider>(context,
-                                    listen: false)
-                                .showMinerScreen = true;
+                            setState(() {
+                              _currentWizardStep = WizardStep.minerConfig;
+                            });
                           }
                         },
-                        child: const Text("Start Mining")),
+                        child: const Text("Show final config")),
                   )
                 ],
               ),
@@ -199,7 +215,7 @@ class _MinerState extends State<Miner> {
   }
 
   Widget _showWalletAddressInput(
-      CoinData? coinData, Map<String, dynamic> currentlyMining) {
+      CoinData? coinData, MinerConfig? currentlyMining) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -238,8 +254,8 @@ class _MinerState extends State<Miner> {
     );
   }
 
-  Widget _showCoinSelectInput(
-      Map<String, dynamic> currentlyMining, bool deviceHasGPU) {
+  Widget _showCoinSelectInput(MinerConfig? currentlyMining, String? gpuVendor) {
+    var deviceHasGPU = gpuVendor != null;
     var _coinDatas = deviceHasGPU
         ? coinDatas
         : coinDatas.where((coinData) => coinData.cpuMineable);
@@ -327,12 +343,40 @@ class _MinerState extends State<Miner> {
                   .toList(),
               onChanged: (CoinData? coinData) {
                 _loadWalletAddress(coinData!.coinName.toLowerCase());
+                MinerConfig minerConfig = MinerConfig(pools: [
+                  Pool(
+                      algo: coinData.coinAlgo,
+                      url:
+                          "${coinData.poolAddress}:${deviceHasGPU ? coinData.poolPortGPU : coinData.poolPortCPU}",
+                      user: "")
+                ]);
+                if (deviceHasGPU) {
+                  if (gpuVendor.toLowerCase() == "nvidia") {
+                    minerConfig.cuda = Gpu(enabled: true);
+                  }
+                  if (gpuVendor.toLowerCase() == "amd") {
+                    minerConfig.opencl = Gpu(enabled: true);
+                  }
+                } else {
+                  minerConfig.cpu = Cpu(enabled: true);
+                }
                 Provider.of<MinerStatusProvider>(context, listen: false)
-                    .showMinerScreen = false;
-                Provider.of<MinerStatusProvider>(context, listen: false)
-                    .coinData = coinData;
+                    .minerConfig = minerConfig;
+                setState(() {
+                  _currentWizardStep = WizardStep.walletAddressInput;
+                });
               }),
         ),
+        const SizedBox(
+          height: 8,
+        ),
+        OutlinedButton(
+            onPressed: () {
+              setState(() {
+                _currentWizardStep = WizardStep.minerConfig;
+              });
+            },
+            child: const Text("Use custom config")),
         const SizedBox(
           height: 8,
         ),
@@ -341,33 +385,35 @@ class _MinerState extends State<Miner> {
     );
   }
 
-  Widget _showCurrentlyMining(Map<String, dynamic> currentlyMining) {
-    return currentlyMining["coinData"] != null
+  Widget _showCurrentlyMining(MinerConfig? currentlyMiningMinerConfig) {
+    var coinData = getCoinDataFromMinerConfig(currentlyMiningMinerConfig);
+    return currentlyMiningMinerConfig != null
         ? Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Currently Mining: ${currentlyMining["coinData"].coinName}"),
-              const SizedBox(
-                width: 8,
-              ),
-              Image(
-                image: AssetImage(currentlyMining["coinData"].coinLogoPath),
-                width: 24,
-                height: 24,
-              ),
+              if (coinData != null) ...[
+                Text("Currently Mining: ${coinData.coinName}"),
+                const SizedBox(
+                  width: 8,
+                ),
+                Image(
+                  image: AssetImage(coinData.coinLogoPath),
+                  width: 24,
+                  height: 24,
+                ),
+              ] else
+                Text(
+                    "Currently Mining: ${currentlyMiningMinerConfig.pools.first.algo}"),
               const SizedBox(
                 width: 16,
               ),
               OutlinedButton(
                   onPressed: () {
                     Provider.of<MinerStatusProvider>(context, listen: false)
-                        .coinData = currentlyMining["coinData"];
-                    Provider.of<MinerStatusProvider>(context, listen: false)
-                        .walletAddress = currentlyMining["walletAddress"];
-                    Provider.of<MinerStatusProvider>(context, listen: false)
-                        .threadCount = currentlyMining["threadCount"];
-                    Provider.of<MinerStatusProvider>(context, listen: false)
-                        .showMinerScreen = true;
+                        .minerConfig = currentlyMiningMinerConfig;
+                    setState(() {
+                      _currentWizardStep = WizardStep.miner;
+                    });
                   },
                   child: const Text("Show"))
             ],
@@ -375,43 +421,76 @@ class _MinerState extends State<Miner> {
         : Container();
   }
 
-  Widget _getMiner(CoinData coinData, String walletAddress,
-      {int? threadCount, String? gpuVendor}) {
+  Widget _getMiner(
+      String? minerConfigPath, ValueChanged<WizardStep> setCurrentWizardStep,
+      [int? threadCount]) {
     return Platform.isAndroid
         ? AndroidMiner(
-            coinData: coinData,
-            walletAddress: walletAddress,
+            minerConfigPath: minerConfigPath!,
+            setCurrentWizardStep: setCurrentWizardStep,
             threadCount: threadCount,
           )
         : Platform.isLinux || Platform.isWindows
             ? DesktopMiner(
-                coinData: coinData,
-                walletAddress: walletAddress,
+                minerConfigPath: minerConfigPath!,
+                setCurrentWizardStep: setCurrentWizardStep,
                 threadCount: threadCount,
-                gpuVendor: gpuVendor,
               )
             : const MinerSupport();
   }
 
+  Widget _getCurrentWizard(
+      WizardStep wizardStep,
+      MinerConfig? currentlyMining,
+      String? gpuVendor,
+      CoinData? coinData,
+      int? threadCount,
+      String? minerConfigPath) {
+    switch (wizardStep) {
+      case WizardStep.coinNameSelect:
+        return _showCoinSelectInput(currentlyMining, gpuVendor);
+      case WizardStep.walletAddressInput:
+        return _showWalletAddressInput(coinData, currentlyMining);
+      case WizardStep.minerConfig:
+        return FinalMinerConfig(
+          setCurrentWizardStep: (WizardStep wizardStep) => setState(() {
+            _currentWizardStep = wizardStep;
+          }),
+        );
+      case WizardStep.miner:
+        return _getMiner(
+            minerConfigPath,
+            (WizardStep wizardStep) => setState(() {
+                  _currentWizardStep = wizardStep;
+                }),
+            threadCount);
+      default:
+        return _showCoinSelectInput(currentlyMining, gpuVendor);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    CoinData? coinData = Provider.of<MinerStatusProvider>(context).coinData;
-    String walletAddress =
-        Provider.of<MinerStatusProvider>(context).walletAddress;
-    bool showMinerScreen =
-        Provider.of<MinerStatusProvider>(context).showMinerScreen;
-    Map<String, dynamic> currentlyMining =
-        Provider.of<MinerStatusProvider>(context).currentlyMining;
+    MinerConfig? minerConfig =
+        Provider.of<MinerStatusProvider>(context).minerConfig;
+    MinerConfig? currentlyMiningMinerConfig =
+        Provider.of<MinerStatusProvider>(context).currentlyMiningMinerConfig;
     int? threadCount =
         Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
     String? gpuVendor =
         Provider.of<MinerStatusProvider>(context, listen: false).gpuVendor;
+    String? minerConfigPath =
+        Provider.of<MinerStatusProvider>(context).minerConfigPath;
 
-    return coinData == null
-        ? _showCoinSelectInput(currentlyMining, gpuVendor != null)
-        : walletAddress.isNotEmpty && showMinerScreen
-            ? _getMiner(coinData, walletAddress,
-                threadCount: threadCount, gpuVendor: gpuVendor)
-            : _showWalletAddressInput(coinData, currentlyMining);
+    final coinData = getCoinDataFromMinerConfig(minerConfig);
+
+    // return coinData == null
+    //     ? _showCoinSelectInput(currentlyMiningMinerConfig, gpuVendor)
+    //     : minerConfig != null && showMinerScreen
+    //         ? _getMiner(coinData, minerConfig.pools.first.user,
+    //             threadCount: threadCount, gpuVendor: gpuVendor)
+    //         : _showWalletAddressInput(coinData, currentlyMiningMinerConfig);
+    return _getCurrentWizard(_currentWizardStep, currentlyMiningMinerConfig,
+        gpuVendor, coinData, threadCount, minerConfigPath);
   }
 }

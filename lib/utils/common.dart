@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:ekatapoolcompanion/models/coindata.dart';
+import 'package:ekatapoolcompanion/models/minerconfig.dart';
+import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 
@@ -107,4 +110,16 @@ Future<bool> ensureCUDALoaderExist() async {
   var cudaLoaderPath = path.join(Directory.current.path,
       "bin/${Platform.isLinux ? "libxmrig-cuda.so" : "xmrig-cuda.dll"}");
   return await File(cudaLoaderPath).exists();
+}
+
+CoinData? getCoinDataFromMinerConfig(MinerConfig? minerConfig) {
+  if (minerConfig != null && minerConfig.pools.isNotEmpty) {
+    final poolHost = minerConfig.pools[0].url.split(":")[0];
+    final coinDataList =
+        coinDatas.where((element) => element.poolAddress == poolHost);
+    if (coinDataList.isNotEmpty) {
+      return coinDataList.first;
+    }
+  }
+  return null;
 }

@@ -1,34 +1,28 @@
 import 'package:ekatapoolcompanion/models/coindata.dart';
+import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:flutter/foundation.dart';
 
 class MinerStatusProvider extends ChangeNotifier {
   CoinData? _coinData;
   bool _isMining = false;
-  bool _showMinerScreen = false;
-  String _walletAddress = "";
   int? _threadCount;
-  Map<String, dynamic> _currentlyMining = {
-    "coinData": null,
-    "walletAddress": "",
-    "threadCount": null
-  };
+  int? _currentThreadCount;
+  MinerConfig? _minerConfig;
+  MinerConfig? _currentlyMiningMinerConfig;
   String? _gpuVendor;
+  String? _minerConfigPath;
 
   bool get isMining => _isMining;
-  bool get showMinerScreen => _showMinerScreen;
   CoinData? get coinData => _coinData;
-  String get walletAddress => _walletAddress;
   int? get threadCount => _threadCount;
-  Map<String, dynamic> get currentlyMining => _currentlyMining;
+  int? get currentThreadCount => _currentThreadCount;
   String? get gpuVendor => _gpuVendor;
+  MinerConfig? get minerConfig => _minerConfig;
+  MinerConfig? get currentlyMiningMinerConfig => _currentlyMiningMinerConfig;
+  String? get minerConfigPath => _minerConfigPath;
 
   set isMining(bool isMiningStatus) {
     _isMining = isMiningStatus;
-    notifyListeners();
-  }
-
-  set showMinerScreen(bool newShowMinerScreenStatus) {
-    _showMinerScreen = newShowMinerScreenStatus;
     notifyListeners();
   }
 
@@ -37,23 +31,33 @@ class MinerStatusProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  set walletAddress(String newWalletAddress) {
-    _walletAddress = newWalletAddress;
-    notifyListeners();
-  }
-
   set threadCount(int? newThreadCount) {
     _threadCount = newThreadCount;
     notifyListeners();
   }
 
-  set currentlyMining(Map<String, dynamic> newCurrentlyMining) {
-    _currentlyMining = newCurrentlyMining;
+  set currentThreadCount(int? threadCount) {
+    _currentThreadCount = threadCount;
     notifyListeners();
   }
 
   set gpuVendor(String? gpuVendor) {
     _gpuVendor = gpuVendor;
+    notifyListeners();
+  }
+
+  set minerConfig(MinerConfig? minerConfig) {
+    _minerConfig = minerConfig;
+    notifyListeners();
+  }
+
+  set currentlyMiningMinerConfig(MinerConfig? minerConfig) {
+    _currentlyMiningMinerConfig = minerConfig;
+    notifyListeners();
+  }
+
+  set minerConfigPath(String? minerConfigPath) {
+    _minerConfigPath = minerConfigPath;
     notifyListeners();
   }
 }

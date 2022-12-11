@@ -6,7 +6,7 @@ import android.content.Intent
 
 class StopMiningReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == STOP_MINING) {
+        if (intent.action == Constants.STOP_MINING) {
             val minerServiceIntent = Intent(context, MinerService::class.java)
             context.stopService(minerServiceIntent)
         }

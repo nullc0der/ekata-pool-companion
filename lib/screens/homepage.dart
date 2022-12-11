@@ -3,7 +3,7 @@ import 'dart:io';
 
 // import 'package:ekatapoolcompanion/models/poolstat.dart';
 // import 'package:ekatapoolcompanion/pages/dashboard.dart';
-import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
+import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 // import 'package:ekatapoolcompanion/pages/payments.dart';
 // import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
@@ -98,25 +98,23 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _populateMinerStatus(Map<String, String> minerStatusFromAndroid) {
+  Future<void> _populateMinerStatus(
+      Map<String, String> minerStatusFromAndroid) async {
     var minerStatusProvider =
         Provider.of<MinerStatusProvider>(context, listen: false);
-    if (minerStatusProvider.coinData?.coinName !=
-        minerStatusFromAndroid["coinName"]) {
-      var coinData = coinDatas.firstWhere(
-          (element) => element.coinName == minerStatusFromAndroid["coinName"]);
-      var walletAddress = minerStatusFromAndroid["walletAddress"]!;
-      var threadCount = int.tryParse(minerStatusFromAndroid["threadCount"]!);
-      minerStatusProvider.coinData = coinData;
-      minerStatusProvider.walletAddress = walletAddress;
+    if (minerStatusProvider.currentlyMiningMinerConfig == null &&
+        minerStatusFromAndroid.containsKey("minerConfigPath") &&
+        minerStatusFromAndroid["minerConfigPath"] != null) {
+      final jsonString =
+          await File(minerStatusFromAndroid["minerConfigPath"]!).readAsString();
+      final minerConfig = minerConfigFromJson(jsonString);
+      final threadCount = int.tryParse(minerStatusFromAndroid["threadCount"]!);
+      minerStatusProvider.minerConfigPath =
+          minerStatusFromAndroid["minerConfigPath"];
+      minerStatusProvider.currentlyMiningMinerConfig = minerConfig;
+      minerStatusProvider.minerConfig = minerConfig;
       minerStatusProvider.threadCount = threadCount;
       minerStatusProvider.isMining = true;
-      minerStatusProvider.showMinerScreen = true;
-      minerStatusProvider.currentlyMining = {
-        "coinData": coinData,
-        "walletAddress": walletAddress,
-        "threadCount": threadCount
-      };
     }
     // _switchTab(3);
   }
