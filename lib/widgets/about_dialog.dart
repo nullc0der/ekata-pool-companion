@@ -28,13 +28,27 @@ Future<void> showAboutAppDialog(BuildContext context) async {
                   onTap: () async {
                     if (!await launchUrl(Uri.parse("https://ekata.io"),
                         mode: LaunchMode.externalApplication)) {
-                      throw "could not launch ekata.io";
+                      throw "could not launch ekata.io url";
                     }
                   },
                 ),
                 const Text("Pool Companion"),
                 Text("Version: $version"),
-                const Text("Xmrig Engine Version: 6.18.0")
+                const Text("Xmrig Engine Version: 6.18.0"),
+                GestureDetector(
+                  child: const Text(
+                    "Changelog",
+                    style: TextStyle(decoration: TextDecoration.underline),
+                  ),
+                  onTap: () async {
+                    if (!await launchUrl(
+                        Uri.parse(
+                            "https://gitlab.ekata.io/ekata-io-projects/ekata-pool-companion/-/blob/main/changelog.md"),
+                        mode: LaunchMode.externalApplication)) {
+                      throw "could not launch changelog url";
+                    }
+                  },
+                )
               ],
             ),
           ));
