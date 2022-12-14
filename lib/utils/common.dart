@@ -94,12 +94,14 @@ Future<String?> getGPUVendor() async {
         "wmic", ["path", "win32_VideoController", "get", "name"]);
     if (result.stdout
         .split("\n")
-        .firstWhere((r) => r.toString().toLowerCase().contains("nvidia"))) {
+        .where((r) => r.toString().toLowerCase().contains("nvidia"))
+        .isNotEmpty) {
       return "nvidia";
     }
     if (result.stdout
         .split("\n")
-        .firstWhere((r) => r.toString().toLowerCase().contains("amd"))) {
+        .where((r) => r.toString().toLowerCase().contains("amd"))
+        .isNotEmpty) {
       return "amd";
     }
   }
