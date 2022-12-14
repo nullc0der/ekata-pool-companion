@@ -1,11 +1,16 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
+import 'package:ekatapoolcompanion/services/minerconfig.dart';
+import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FinalMinerConfig extends StatefulWidget {
   const FinalMinerConfig({Key? key, required this.setCurrentWizardStep})
@@ -18,6 +23,7 @@ class FinalMinerConfig extends StatefulWidget {
 }
 
 class _FinalMinerConfigState extends State<FinalMinerConfig> {
+  bool _isMinerConfigSaving = false;
   final _minerConfigFormKey = GlobalKey<FormState>();
   final _minerConfigFieldController = TextEditingController();
 
@@ -37,6 +43,26 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
     final file = await File("${directory.path}/epc_xmrig_config.json")
         .writeAsString(config);
     return file.path;
+  }
+
+  Future<void> _saveMinerConfigInBackend(String config) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString(Constants.userIdSharedPrefs);
+    if (userId != null) {
+      final minerConfig = jsonDecode(config);
+      if (minerConfig["pools"].isNotEmpty) {
+        final newPools = minerConfig["pools"].map((pool) {
+          pool["user"] = null;
+          pool["pass"] = null;
+          return pool;
+        }).toList();
+        minerConfig["pools"] = newPools;
+      }
+      try {
+        await MinerConfigService.createMinerConfig(
+            userId: userId, minerConfig: jsonEncode(minerConfig).trim());
+      } on Exception catch (_) {}
+    }
   }
 
   @override
@@ -102,8 +128,14 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                               final String value =
                                   _minerConfigFieldController.text;
                               if (value.isNotEmpty) {
+                                setState(() {
+                                  _isMinerConfigSaving = true;
+                                });
                                 final filePath =
                                     await _saveMinerConfigToFile(value);
+                                if (!kDebugMode) {
+                                  await _saveMinerConfigInBackend(value);
+                                }
                                 Provider.of<MinerStatusProvider>(context,
                                         listen: false)
                                     .minerConfig = minerConfigFromJson(value);
@@ -114,7 +146,24 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                               }
                             }
                           },
-                          child: const Text("Start Mining")),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text("Start Mining"),
+                              if (_isMinerConfigSaving) ...[
+                                const SizedBox(
+                                  width: 4,
+                                ),
+                                const SizedBox(
+                                  width: 10,
+                                  height: 10,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                )
+                              ]
+                            ],
+                          )),
                     )
                   ],
                 ),

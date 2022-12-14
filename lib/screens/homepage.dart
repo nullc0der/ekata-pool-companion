@@ -8,9 +8,11 @@ import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 // import 'package:ekatapoolcompanion/pages/payments.dart';
 // import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
+import 'package:ekatapoolcompanion/services/userid.dart';
 // import 'package:ekatapoolcompanion/providers/poolstat.dart';
 // import 'package:ekatapoolcompanion/services/poolstat.dart';
 import 'package:ekatapoolcompanion/utils/common.dart' as common;
+import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/widgets/custom_app_bar.dart';
 // import 'package:ekatapoolcompanion/widgets/custom_bottom_navigation.dart';
 // import 'package:ekatapoolcompanion/widgets/pool_select_action_sheet.dart';
@@ -19,6 +21,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -49,6 +52,7 @@ class _HomePageState extends State<HomePage> {
     // _fetchPoolStatPeriodically();
     if (!kDebugMode) {
       _initializeMatomoTracker();
+      _createAndSaveUserId();
     }
     if (Platform.isAndroid) {
       _handleNotificationTapEventStream();
@@ -117,6 +121,18 @@ class _HomePageState extends State<HomePage> {
       minerStatusProvider.isMining = true;
     }
     // _switchTab(3);
+  }
+
+  Future<void> _createAndSaveUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString(Constants.userIdSharedPrefs) == null) {
+      try {
+        final userId = await UserIdService.createUserId();
+        if (userId.isNotEmpty) {
+          prefs.setString(Constants.userIdSharedPrefs, userId);
+        }
+      } on Exception catch (_) {}
+    }
   }
 
   // void _fetchPoolStatPeriodically() {

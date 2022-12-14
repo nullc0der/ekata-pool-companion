@@ -6,6 +6,7 @@ class Constants {
   static const minerProcessStopped = "MINER_PROCESS_STOPPED";
   static const walletAddressKeySharedPrefs = "WALLET_ADDRESS";
   static const walletAddressesKeySharedPrefs = "WALLET_ADDRESSES";
+  static const userIdSharedPrefs = "USER_ID";
   static const supportedAlgo = [
     "gr",
     "ghostrider",
