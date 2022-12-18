@@ -199,25 +199,24 @@ class _DesktopMinerState extends State<DesktopMiner> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        GestureDetector(
-          onTap: () async {
-            if (!isMining) {
-              _startMining();
-            } else {
-              _stopMining();
-            }
-          },
-          child: isMining
-              ? Icon(
-                  Icons.power_settings_new,
-                  size: 96,
-                  color: Colors.green.shade800,
-                )
-              : Icon(
-                  Icons.power_settings_new,
-                  size: 96,
-                  color: Colors.red.shade800,
-                ),
+        const SizedBox(
+          height: 16,
+        ),
+        Transform.scale(
+          scale: 2,
+          child: Switch(
+            activeColor: Colors.green,
+            activeTrackColor: Colors.green.withOpacity(0.4),
+            inactiveThumbColor: Colors.red,
+            inactiveTrackColor: Colors.red.withOpacity(0.4),
+            activeThumbImage: const AssetImage("assets/images/power.png"),
+            inactiveThumbImage: const AssetImage("assets/images/power.png"),
+            value: isMining,
+            onChanged: (_) => {!isMining ? _startMining() : _stopMining()},
+          ),
+        ),
+        const SizedBox(
+          height: 16,
         ),
         isMining
             ? Text(
