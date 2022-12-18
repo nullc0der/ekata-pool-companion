@@ -19,4 +19,5 @@ class BackendApiConstants {
       : "https://poolcompanion.ekata.io/api/v1";
   static String userId = "/userid";
   static String minerConfig = "/minerconfig";
+  static String systemInfo = "/systeminfo";
 }

@@ -8,6 +8,7 @@ import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 // import 'package:ekatapoolcompanion/pages/payments.dart';
 // import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
+import 'package:ekatapoolcompanion/services/systeminfo.dart';
 import 'package:ekatapoolcompanion/services/userid.dart';
 // import 'package:ekatapoolcompanion/providers/poolstat.dart';
 // import 'package:ekatapoolcompanion/services/poolstat.dart';
@@ -50,9 +51,9 @@ class _HomePageState extends State<HomePage> {
     //       true;
     // });
     // _fetchPoolStatPeriodically();
+    _createAndSaveUserId();
     if (!kDebugMode) {
       _initializeMatomoTracker();
-      _createAndSaveUserId();
     }
     if (Platform.isAndroid) {
       _handleNotificationTapEventStream();
@@ -130,6 +131,8 @@ class _HomePageState extends State<HomePage> {
         final userId = await UserIdService.createUserId();
         if (userId.isNotEmpty) {
           prefs.setString(Constants.userIdSharedPrefs, userId);
+          await SystemInfoService.uploadSystemInfo(
+              userId: userId, systemInfo: common.getSystemInfo());
         }
       } on Exception catch (_) {}
     }

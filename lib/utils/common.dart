@@ -6,6 +6,7 @@ import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
+import 'package:system_info2/system_info2.dart';
 
 MaterialColor createMaterialColor(Color color) {
   List strengths = <double>[.05];
@@ -129,4 +130,28 @@ CoinData? getCoinDataFromMinerConfig(MinerConfig? minerConfig) {
     }
   }
   return null;
+}
+
+Map<String, dynamic> getSystemInfo() {
+  final systemInfo = {
+    "platform": Platform.operatingSystem,
+    "osInfo": {
+      "name": SysInfo.operatingSystemName,
+      "version": SysInfo.operatingSystemVersion,
+      "kernelVersion": SysInfo.kernelVersion
+    },
+    "totalPhysicalMemory":
+        "${(SysInfo.getTotalPhysicalMemory() / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB",
+  };
+  final cpuInfos = [];
+  for (final core in SysInfo.cores) {
+    cpuInfos.add({
+      "vendor": core.vendor,
+      "name": core.name,
+      "socket": core.socket.toString(),
+      "architecture": core.architecture.name
+    });
+  }
+  if (cpuInfos.isNotEmpty) systemInfo["cpuInfos"] = cpuInfos;
+  return systemInfo;
 }
