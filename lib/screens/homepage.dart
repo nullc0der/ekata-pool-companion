@@ -1,22 +1,23 @@
 import 'dart:async';
 import 'dart:io';
 
-// import 'package:ekatapoolcompanion/models/poolstat.dart';
-// import 'package:ekatapoolcompanion/pages/dashboard.dart';
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
+import 'package:ekatapoolcompanion/models/poolstat.dart';
+import 'package:ekatapoolcompanion/pages/dashboard.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
-// import 'package:ekatapoolcompanion/pages/payments.dart';
-// import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
+import 'package:ekatapoolcompanion/pages/payments.dart';
+import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
+import 'package:ekatapoolcompanion/providers/poolstat.dart';
+import 'package:ekatapoolcompanion/providers/uistate.dart';
+import 'package:ekatapoolcompanion/services/poolstat.dart';
 import 'package:ekatapoolcompanion/services/systeminfo.dart';
 import 'package:ekatapoolcompanion/services/userid.dart';
-// import 'package:ekatapoolcompanion/providers/poolstat.dart';
-// import 'package:ekatapoolcompanion/services/poolstat.dart';
 import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/widgets/custom_app_bar.dart';
-// import 'package:ekatapoolcompanion/widgets/custom_bottom_navigation.dart';
-// import 'package:ekatapoolcompanion/widgets/pool_select_action_sheet.dart';
+import 'package:ekatapoolcompanion/widgets/custom_bottom_navigation.dart';
+import 'package:ekatapoolcompanion/widgets/pool_select_action_sheet.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,8 +33,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // int _bottomNavbarCurrentIndex = 0;
-  // Timer? _timer;
+  Timer? _timer;
   StreamSubscription<dynamic>? _notificationTapEventSubscription;
   final EventChannel _notificationTapEventChannel = const EventChannel(
       "io.ekata.ekatapoolcompanion/notification_tap_event_channel");
@@ -51,8 +51,8 @@ class _HomePageState extends State<HomePage> {
     //       true;
     // });
     // _fetchPoolStatPeriodically();
-    _createAndSaveUserId();
     if (!kDebugMode) {
+      _createAndSaveUserId();
       _initializeMatomoTracker();
     }
     if (Platform.isAndroid) {
@@ -65,7 +65,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    // _timer?.cancel();
+    _timer?.cancel();
     _notificationTapEventSubscription?.cancel();
     super.dispose();
   }
@@ -120,8 +120,12 @@ class _HomePageState extends State<HomePage> {
       minerStatusProvider.minerConfig = minerConfig;
       minerStatusProvider.threadCount = threadCount;
       minerStatusProvider.isMining = true;
+      Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
+          minerConfig.pools.first.url == "70.35.206.105:3333" ||
+              minerConfig.pools.first.url == "70.35.206.105:5555";
+      Provider.of<UiStateProvider>(context, listen: false)
+          .bottomNavigationIndex = 3;
     }
-    // _switchTab(3);
   }
 
   Future<void> _createAndSaveUserId() async {
@@ -138,41 +142,41 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // void _fetchPoolStatPeriodically() {
-  //   _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
-  //     try {
-  //       PoolStat _poolStat = await PoolStatService().getPoolStat();
-  //       Provider.of<PoolStatProvider>(context, listen: false).poolStat =
-  //           _poolStat;
-  //       Provider.of<PoolStatProvider>(context, listen: false).hasFetchError =
-  //           false;
-  //     } on Exception {
-  //       Provider.of<PoolStatProvider>(context, listen: false).hasFetchError =
-  //           true;
-  //       if (Provider.of<PoolStatProvider>(context, listen: false).poolStat !=
-  //           null) {
-  //         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-  //             content:
-  //                 Text("There is some issue updating pool data, will retry")));
-  //       }
-  //     }
-  //   });
-  // }
+  void _fetchPoolStatPeriodically() {
+    _timer = Timer.periodic(const Duration(seconds: 10), (_) async {
+      try {
+        PoolStat _poolStat = await PoolStatService().getPoolStat();
+        Provider.of<PoolStatProvider>(context, listen: false).poolStat =
+            _poolStat;
+        Provider.of<PoolStatProvider>(context, listen: false).hasFetchError =
+            false;
+      } on Exception {
+        Provider.of<PoolStatProvider>(context, listen: false).hasFetchError =
+            true;
+        if (Provider.of<PoolStatProvider>(context, listen: false).poolStat !=
+            null) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content:
+                  Text("There is some issue updating pool data, will retry")));
+        }
+      }
+    });
+  }
 
-  // Widget _getBody(int index) {
-  //   switch (index) {
-  //     case 0:
-  //       return const DashBoard();
-  //     case 1:
-  //       return const PoolBlocks();
-  //     case 2:
-  //       return const Payments();
-  //     case 3:
-  //       return const Miner();
-  //     default:
-  //       return const DashBoard();
-  //   }
-  // }
+  Widget _getBody(int index) {
+    switch (index) {
+      case 0:
+        return const DashBoard();
+      case 1:
+        return const PoolBlocks();
+      case 2:
+        return const Payments();
+      case 3:
+        return const Miner();
+      default:
+        return const DashBoard();
+    }
+  }
 
   Future<void> _initializeMatomoTracker() async {
     await MatomoTracker.instance.initialize(
@@ -181,67 +185,73 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // void _switchTab(int tabIndex) {
-  //   if (tabIndex == 3) {
-  //     _timer?.cancel();
-  //   } else {
-  //     if (_timer == null || !_timer!.isActive) {
-  //       _fetchPoolStatPeriodically();
-  //     }
-  //   }
-  //   setState(() {
-  //     _bottomNavbarCurrentIndex = tabIndex;
-  //   });
-  // }
+  void _switchTab(int tabIndex) {
+    if (tabIndex == 3) {
+      _timer?.cancel();
+    } else {
+      if (_timer == null || !_timer!.isActive) {
+        _fetchPoolStatPeriodically();
+      }
+    }
+    Provider.of<UiStateProvider>(context, listen: false).bottomNavigationIndex =
+        tabIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      appBar: CustomAppBar(
-        title: 'Ekata Pool Companion',
-      ),
-      body: Miner(),
-      // body: _getBody(_bottomNavbarCurrentIndex),
-      // bottomNavigationBar: CustomBottomNavigation(
-      //   selectedIndex: _bottomNavbarCurrentIndex,
-      //   onItemSelected: (index) {
-      //     if (index != 4) {
-      //       _switchTab(index);
-      //     } else {
-      //       showModalBottomSheet(
-      //           context: context,
-      //           backgroundColor: Colors.transparent,
-      //           builder: (BuildContext context) {
-      //             return const PoolSelectActionSheet();
-      //           });
-      //     }
-      //   },
-      //   items: [
-      //     CustomBottomNavigationItem(
-      //         selectedIcon: Icons.dashboard,
-      //         unselectedIcon: Icons.dashboard_outlined,
-      //         title: 'Dashboard'),
-      //     CustomBottomNavigationItem(
-      //         selectedIcon: Icons.widgets,
-      //         unselectedIcon: Icons.widgets_outlined,
-      //         title: 'Pool Blocks'),
-      //     CustomBottomNavigationItem(
-      //         selectedIcon: Icons.receipt,
-      //         unselectedIcon: Icons.receipt_outlined,
-      //         title: 'Payments'),
-      //     CustomBottomNavigationItem(
-      //         selectedIcon: Icons.developer_board,
-      //         unselectedIcon: Icons.developer_board_outlined,
-      //         title: 'Miner'),
-      //     // CustomBottomNavigationItem(
-      //     //     image: const Image(
-      //     //       image: AssetImage('assets/images/baza.png'),
-      //     //       width: 22,
-      //     //       height: 22,
-      //     //     ),
-      //     //     title: 'Baza')
-      //   ],
-      // )
-    );
+    final showBottomNavbar =
+        Provider.of<UiStateProvider>(context).showBottomNavbar;
+    final bottomNavbarCurrentIndex =
+        Provider.of<UiStateProvider>(context).bottomNavigationIndex;
+
+    return Scaffold(
+        appBar: const CustomAppBar(
+          title: 'Ekata Pool Companion',
+        ),
+        body: showBottomNavbar
+            ? _getBody(bottomNavbarCurrentIndex)
+            : const Miner(),
+        bottomNavigationBar: showBottomNavbar
+            ? CustomBottomNavigation(
+                selectedIndex: bottomNavbarCurrentIndex,
+                onItemSelected: (index) {
+                  if (index != 4) {
+                    _switchTab(index);
+                  } else {
+                    showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        builder: (BuildContext context) {
+                          return const PoolSelectActionSheet();
+                        });
+                  }
+                },
+                items: [
+                  CustomBottomNavigationItem(
+                      selectedIcon: Icons.dashboard,
+                      unselectedIcon: Icons.dashboard_outlined,
+                      title: 'Dashboard'),
+                  CustomBottomNavigationItem(
+                      selectedIcon: Icons.widgets,
+                      unselectedIcon: Icons.widgets_outlined,
+                      title: 'Pool Blocks'),
+                  CustomBottomNavigationItem(
+                      selectedIcon: Icons.receipt,
+                      unselectedIcon: Icons.receipt_outlined,
+                      title: 'Payments'),
+                  CustomBottomNavigationItem(
+                      selectedIcon: Icons.developer_board,
+                      unselectedIcon: Icons.developer_board_outlined,
+                      title: 'Miner'),
+                  // CustomBottomNavigationItem(
+                  //     image: const Image(
+                  //       image: AssetImage('assets/images/baza.png'),
+                  //       width: 22,
+                  //       height: 22,
+                  //     ),
+                  //     title: 'Baza')
+                ],
+              )
+            : null);
   }
 }

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
+import 'package:ekatapoolcompanion/providers/uistate.dart';
 import 'package:ekatapoolcompanion/services/minerconfig.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/foundation.dart';
@@ -136,12 +137,23 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                                 if (!kDebugMode) {
                                   await _saveMinerConfigInBackend(value);
                                 }
+                                final minerConfig = minerConfigFromJson(value);
                                 Provider.of<MinerStatusProvider>(context,
                                         listen: false)
-                                    .minerConfig = minerConfigFromJson(value);
+                                    .minerConfig = minerConfig;
                                 Provider.of<MinerStatusProvider>(context,
                                         listen: false)
                                     .minerConfigPath = filePath;
+                                Provider.of<UiStateProvider>(context,
+                                            listen: false)
+                                        .showBottomNavbar =
+                                    minerConfig.pools.first.url ==
+                                            "70.35.206.105:3333" ||
+                                        minerConfig.pools.first.url ==
+                                            "70.35.206.105:5555";
+                                Provider.of<UiStateProvider>(context,
+                                        listen: false)
+                                    .bottomNavigationIndex = 3;
                                 widget.setCurrentWizardStep(WizardStep.miner);
                               }
                             }
