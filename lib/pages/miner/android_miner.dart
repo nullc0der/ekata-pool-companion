@@ -159,12 +159,12 @@ class _AndroidMinerState extends State<AndroidMiner> {
         .receiveBroadcastStream()
         .distinct()
         .listen((event) {
-      List<String> minerLogs = [..._minerLogs];
+      List<String> minerLogs = List<String>.from(_minerLogs);
       if (minerLogs.length >= 10) {
-        minerLogs[minerLogs.length - 1] = event.toString();
-      } else {
-        minerLogs.add(event.toString());
+        minerLogs = List<String>.from(minerLogs.skip(minerLogs.length - 10));
       }
+      minerLogs.addAll(
+          event.toString().split("\n").where((element) => element.isNotEmpty));
       setState(() {
         _minerLogs = minerLogs;
       });
@@ -218,25 +218,24 @@ class _AndroidMinerState extends State<AndroidMiner> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        GestureDetector(
-          onTap: () {
-            if (!isStarted) {
-              _startMining();
-            } else {
-              _stopMining();
-            }
-          },
-          child: isStarted
-              ? Icon(
-                  Icons.power_settings_new,
-                  size: 96,
-                  color: Colors.green.shade800,
-                )
-              : Icon(
-                  Icons.power_settings_new,
-                  size: 96,
-                  color: Colors.red.shade800,
-                ),
+        const SizedBox(
+          height: 16,
+        ),
+        Transform.scale(
+          scale: 2,
+          child: Switch(
+            activeColor: Colors.green,
+            activeTrackColor: Colors.green.withOpacity(0.4),
+            inactiveThumbColor: Colors.red,
+            inactiveTrackColor: Colors.red.withOpacity(0.4),
+            activeThumbImage: const AssetImage("assets/images/power.png"),
+            inactiveThumbImage: const AssetImage("assets/images/power.png"),
+            value: isStarted,
+            onChanged: (_) => {!isStarted ? _startMining() : _stopMining()},
+          ),
+        ),
+        const SizedBox(
+          height: 16,
         ),
         isStarted
             ? Text(

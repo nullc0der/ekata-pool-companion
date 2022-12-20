@@ -32,7 +32,7 @@ class DesktopMiner extends StatefulWidget {
 }
 
 class _DesktopMinerState extends State<DesktopMiner> {
-  String _currentMinerLog = "";
+  List<String> _currentMinerLog = [];
   List<ChartData> _chartDatas = [];
   Timer? _minerSummaryFetchTimer;
   StreamSubscription<dynamic>? _minerLogStreamSubscription;
@@ -188,8 +188,17 @@ class _DesktopMinerState extends State<DesktopMiner> {
     if (DesktopMinerUtil.instance.initialized) {
       _minerLogStreamSubscription =
           DesktopMinerUtil.instance.logStream.distinct().listen((event) {
+        List<String> currentMinerLog = List<String>.from(_currentMinerLog);
+        if (currentMinerLog.length >= 10) {
+          currentMinerLog = List<String>.from(
+              currentMinerLog.skip(currentMinerLog.length - 10));
+        }
+        currentMinerLog.addAll(event
+            .toString()
+            .split("\n")
+            .where((element) => element.isNotEmpty));
         setState(() {
-          _currentMinerLog = event.toString();
+          _currentMinerLog = currentMinerLog;
         });
       });
     }
@@ -246,12 +255,12 @@ class _DesktopMinerState extends State<DesktopMiner> {
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: _currentMinerLog.isNotEmpty
-              ? [
-                  Text(
-                    _currentMinerLog,
-                    style: TextStyle(color: Theme.of(context).primaryColor),
-                  )
-                ]
+              ? _currentMinerLog
+                  .map((e) => Text(
+                        e,
+                        style: TextStyle(color: Theme.of(context).primaryColor),
+                      ))
+                  .toList()
               : [
                   Text("Log will appear here once mining starts",
                       style: TextStyle(color: Theme.of(context).primaryColor))
