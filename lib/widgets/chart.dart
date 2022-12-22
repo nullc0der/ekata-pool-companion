@@ -35,47 +35,61 @@ class Chart extends StatelessWidget {
           ),
           AspectRatio(
             aspectRatio: 2.5,
-            child: LineChart(LineChartData(
-                lineBarsData: [
-                  LineChartBarData(
-                      spots: chartData
-                          .asMap()
-                          .entries
-                          .map((e) => FlSpot(
-                              e.key.toDouble(), e.value.value.toDouble()))
-                          .toList(),
-                      isCurved: false,
-                      dotData: FlDotData(show: false),
-                      color: Theme.of(context).primaryColor,
-                      barWidth: 3,
-                      belowBarData: BarAreaData(
-                          show: true,
-                          gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [Color(0xFF233349), Color(0xFF526174)]))),
-                ],
-                borderData: FlBorderData(show: false),
-                gridData: FlGridData(show: false),
-                titlesData: FlTitlesData(show: false),
-                lineTouchData: LineTouchData(
-                    touchTooltipData: LineTouchTooltipData(
-                        tooltipRoundedRadius: 20.0,
-                        getTooltipItems: (touchedSpots) {
-                          return touchedSpots.map(
-                            (LineBarSpot touchedSpot) {
-                              const textStyle = TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              );
-                              return LineTooltipItem(
-                                '${DateFormat.yMd().add_jm().format(chartData[touchedSpot.spotIndex].time)}: ${chartData[touchedSpot.spotIndex].value.toString()}',
-                                textStyle,
-                              );
-                            },
-                          ).toList();
-                        })))),
+            child: LineChart(
+              LineChartData(
+                  lineBarsData: [
+                    LineChartBarData(
+                        spots: chartData
+                            .asMap()
+                            .entries
+                            .map((e) => FlSpot(
+                                e.key.toDouble(), e.value.value.toDouble()))
+                            .toList(),
+                        isCurved: false,
+                        dotData: FlDotData(show: false),
+                        color: Theme.of(context).primaryColor,
+                        barWidth: 1,
+                        belowBarData: BarAreaData(
+                            show: true,
+                            gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                stops: const [
+                                  0.5,
+                                  1.0
+                                ],
+                                colors: [
+                                  Theme.of(context)
+                                      .primaryColor
+                                      .withOpacity(0.8),
+                                  Theme.of(context)
+                                      .primaryColor
+                                      .withOpacity(0.5)
+                                ]))),
+                  ],
+                  borderData: FlBorderData(show: false),
+                  gridData: FlGridData(show: false),
+                  titlesData: FlTitlesData(show: false),
+                  lineTouchData: LineTouchData(
+                      touchTooltipData: LineTouchTooltipData(
+                          tooltipRoundedRadius: 20.0,
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map(
+                              (LineBarSpot touchedSpot) {
+                                const textStyle = TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                );
+                                return LineTooltipItem(
+                                  '${DateFormat.yMd().add_jm().format(chartData[touchedSpot.spotIndex].time)}: ${chartData[touchedSpot.spotIndex].value.toString()}',
+                                  textStyle,
+                                );
+                              },
+                            ).toList();
+                          }))),
+              swapAnimationDuration: Duration.zero,
+            ),
           )
         ],
       ),

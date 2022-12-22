@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import '../models/chartsdata.dart';
 
 class ChartDataProvider extends ChangeNotifier {
-  final List<ChartData> _hashrates = [];
-  final List<ChartData> _workers = [];
-  final List<ChartData> _difficulty = [];
+  List<ChartData> _hashrates = [];
+  List<ChartData> _workers = [];
+  List<ChartData> _difficulty = [];
 
   UnmodifiableListView<ChartData> get hashrates =>
       UnmodifiableListView(_hashrates);
@@ -25,7 +25,12 @@ class ChartDataProvider extends ChangeNotifier {
                 .where(
                     (element) => element.time.isAtSameMomentAs(chartData.time))
                 .isNotEmpty;
-            if (!isAlreadyExist) _hashrates.add(chartData);
+            if (!isAlreadyExist) {
+              if (_hashrates.length >= 20) {
+                _hashrates = List.from(_hashrates.skip(_hashrates.length - 20));
+              }
+              _hashrates.add(chartData);
+            }
           }
           notifyListeners();
           break;
@@ -36,7 +41,12 @@ class ChartDataProvider extends ChangeNotifier {
                 .where(
                     (element) => element.time.isAtSameMomentAs(chartData.time))
                 .isNotEmpty;
-            if (!isAlreadyExist) _workers.add(chartData);
+            if (!isAlreadyExist) {
+              if (_workers.length >= 20) {
+                _workers = List.from(_workers.skip(_workers.length - 20));
+              }
+              _workers.add(chartData);
+            }
           }
           notifyListeners();
           break;
@@ -47,7 +57,13 @@ class ChartDataProvider extends ChangeNotifier {
                 .where(
                     (element) => element.time.isAtSameMomentAs(chartData.time))
                 .isNotEmpty;
-            if (!isAlreadyExist) _difficulty.add(chartData);
+            if (!isAlreadyExist) {
+              if (_difficulty.length >= 20) {
+                _difficulty =
+                    List.from(_difficulty.skip(_difficulty.length - 20));
+              }
+              _difficulty.add(chartData);
+            }
           }
           notifyListeners();
           break;

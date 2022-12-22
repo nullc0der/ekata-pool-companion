@@ -149,15 +149,18 @@ class _DesktopMinerState extends State<DesktopMiner> {
             await MinerSummaryService().getMinerSummary();
         Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
             _minerSummary;
+        var chartDatas = List<ChartData>.from(_chartDatas);
+        if (chartDatas.length >= 20) {
+          chartDatas =
+              List<ChartData>.from(chartDatas.skip(chartDatas.length - 20));
+        }
+        chartDatas.add(ChartData(
+            time: DateTime.now(),
+            value: _minerSummary.hashrate.total[0] != null
+                ? _minerSummary.hashrate.total[0]!.toInt()
+                : 0));
         setState(() {
-          _chartDatas = [
-            ..._chartDatas,
-            ChartData(
-                time: DateTime.now(),
-                value: _minerSummary.hashrate.total[0] != null
-                    ? _minerSummary.hashrate.total[0]!.toInt()
-                    : 0)
-          ];
+          _chartDatas = chartDatas;
         });
       } on Exception {
         bool hasMinerSummary =
