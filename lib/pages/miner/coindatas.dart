@@ -15,7 +15,7 @@ List<CoinData> coinDatas = [
       poolAddress: "gb.mining4people.com",
       poolPortCPU: 3425,
       poolPortGPU: 3425,
-      coinAlgo: "gr",
+      coinAlgo: "ghostrider",
       cpuMineable: true),
   CoinData(
       coinName: "BabaCoin",
@@ -23,7 +23,7 @@ List<CoinData> coinDatas = [
       poolAddress: "gb.mining4people.com",
       poolPortCPU: 3419,
       poolPortGPU: 3419,
-      coinAlgo: "gr",
+      coinAlgo: "ghostrider",
       cpuMineable: true),
   CoinData(
       coinName: "ButKoin",
@@ -31,7 +31,7 @@ List<CoinData> coinDatas = [
       poolAddress: "gb.mining4people.com",
       poolPortCPU: 3350,
       poolPortGPU: 3350,
-      coinAlgo: "gr",
+      coinAlgo: "ghostrider",
       cpuMineable: true),
   CoinData(
       coinName: "Jagoan",
@@ -39,7 +39,7 @@ List<CoinData> coinDatas = [
       poolAddress: "gb.mining4people.com",
       poolPortCPU: 3414,
       poolPortGPU: 3414,
-      coinAlgo: "gr",
+      coinAlgo: "ghostrider",
       cpuMineable: true),
   CoinData(
       coinName: "Raptoreum",
@@ -47,7 +47,7 @@ List<CoinData> coinDatas = [
       poolAddress: "gb.mining4people.com",
       poolPortCPU: 3101,
       poolPortGPU: 3101,
-      coinAlgo: "gr",
+      coinAlgo: "ghostrider",
       cpuMineable: true),
   CoinData(
       coinName: "Yerbas",
@@ -55,7 +55,7 @@ List<CoinData> coinDatas = [
       poolAddress: "gb.mining4people.com",
       poolPortCPU: 3380,
       poolPortGPU: 3380,
-      coinAlgo: "gr",
+      coinAlgo: "ghostrider",
       cpuMineable: true),
   CoinData(
       coinName: "Arielcoin",
