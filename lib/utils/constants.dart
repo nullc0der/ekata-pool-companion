@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class Constants {
   static const threadCount = "io.ekata.ekatapoolcompanion.THREAD_COUNT";
   static const minerConfigPath =
@@ -41,4 +43,40 @@ class Constants {
     "cn-lite/0",
     "cn/0"
   ];
+  static const ansiColorMapping = {
+    "0;90m": {"color": Colors.grey, "isBg": false, "isBold": false},
+    "0;30m": {
+      "color": Colors.white,
+      "isBg": false,
+      "isBold": false
+    }, // Actually black, because of widget color inverted
+    "1;30m": {
+      "color": Colors.white,
+      "isBg": false,
+      "isBold": true
+    }, // Actually black, because of widget color inverted
+    "0;31m": {"color": Colors.red, "isBg": false, "isBold": false},
+    "1;31m": {"color": Colors.red, "isBg": false, "isBold": true},
+    "0;32m": {"color": Colors.green, "isBg": false, "isBold": false},
+    "1;32m": {"color": Colors.green, "isBg": false, "isBold": true},
+    "0;33m": {"color": Colors.yellow, "isBg": false, "isBold": false},
+    "1;33m": {"color": Colors.yellow, "isBg": false, "isBold": true},
+    "0;34m": {"color": Colors.blue, "isBg": false, "isBold": false},
+    "1;34m": {"color": Colors.blue, "isBg": false, "isBold": true},
+    "0;35m": {"color": Color(0xFFFF00FF), "isBg": false, "isBold": false},
+    "1;35m": {"color": Color(0xFFFF00FF), "isBg": false, "isBold": true},
+    "0;36m": {"color": Colors.cyan, "isBg": false, "isBold": false},
+    "1;36m": {"color": Colors.cyan, "isBg": false, "isBold": true},
+    "0;37m": {"color": Colors.white, "isBg": false, "isBold": false},
+    "1;37m": {"color": Colors.white, "isBg": false, "isBold": true},
+    "41;1m": {"color": Colors.red, "isBg": true, "isBold": true},
+    "42;1m": {"color": Colors.green, "isBg": true, "isBold": true},
+    "43;1m": {"color": Colors.yellow, "isBg": true, "isBold": true},
+    "44m": {"color": Colors.blue, "isBg": true, "isBold": false},
+    "44;1m": {"color": Colors.blue, "isBg": true, "isBold": true},
+    "45m": {"color": Color(0xFFFF00FF), "isBg": true, "isBold": false},
+    "45;1m": {"color": Color(0xFFFF00FF), "isBg": true, "isBold": true},
+    "46m": {"color": Colors.cyan, "isBg": true, "isBold": false},
+    "46;1m": {"color": Colors.cyan, "isBg": true, "isBold": true},
+  };
 }

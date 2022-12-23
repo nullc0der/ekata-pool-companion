@@ -9,7 +9,9 @@ import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/minersummary.dart';
 import 'package:ekatapoolcompanion/services/minersummary.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
+import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/widgets/FormattedLog.dart';
 import 'package:ekatapoolcompanion/widgets/chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -264,15 +266,12 @@ class _AndroidMinerState extends State<AndroidMiner> {
       padding: const EdgeInsets.all(8),
       width: double.infinity,
       decoration: BoxDecoration(
-          color: Colors.black12, borderRadius: BorderRadius.circular(6)),
+          color: Colors.black, borderRadius: BorderRadius.circular(6)),
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: _minerLogs.isNotEmpty
               ? _minerLogs
-                  .map((e) => Text(
-                        e,
-                        style: TextStyle(color: Theme.of(context).primaryColor),
-                      ))
+                  .map((e) => FormattedLog(logTexts: common.formatLogs(e)))
                   .toList()
               : [
                   Text("Log will appear here once mining starts",

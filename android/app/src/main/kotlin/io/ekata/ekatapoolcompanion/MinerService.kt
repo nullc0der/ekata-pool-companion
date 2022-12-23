@@ -95,7 +95,6 @@ class MinerService : Service() {
                 "--config=$minerConfigPath",
                 "--http-host=127.0.0.1",
                 "--http-port=45580",
-                "--no-color",
                 "--cpu-no-yield",
             )
             if (threadCount != null && threadCount > 0) {

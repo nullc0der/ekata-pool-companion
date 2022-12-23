@@ -36,7 +36,6 @@ class DesktopMinerUtil {
       "--config=$_minerConfigPath",
       "--http-host=127.0.0.1",
       "--http-port=45580",
-      "--no-color",
       "--cpu-no-yield"
     ];
     if (_threadCount != null) {

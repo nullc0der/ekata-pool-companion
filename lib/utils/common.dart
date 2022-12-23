@@ -2,8 +2,10 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:ekatapoolcompanion/models/coindata.dart';
+import 'package:ekatapoolcompanion/models/logtext.dart';
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
+import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as path;
 import 'package:system_info2/system_info2.dart';
@@ -154,4 +156,69 @@ Map<String, dynamic> getSystemInfo() {
   }
   if (cpuInfos.isNotEmpty) systemInfo["cpuInfos"] = cpuInfos;
   return systemInfo;
+}
+
+//NOTE: Not happy with this, need to refactor
+List<List<LogText>> formatLogs(String rawString) {
+  final List<List<LogText>> logTexts = [];
+  final logChunks = rawString.split("\u001b[0m");
+  for (final logChunk in logChunks) {
+    final List<LogText> logText = [];
+    RegExp re = RegExp(r"(\u001b\[\d+[;\d]*m)(.*)");
+    if (re.hasMatch(logChunk)) {
+      var text = "";
+      var fgColor = Colors.white;
+      var bgColor = Colors.transparent;
+      var isBold = false;
+      final decorationStrings = [];
+      final matches = re.allMatches(logChunk);
+      decorationStrings.add(matches.first.group(1));
+      if (matches.first.group(2) != null &&
+          matches.first.group(2)!.startsWith("\u001b")) {
+        final newMatches = re.allMatches(matches.first.group(2)!);
+        decorationStrings.add(newMatches.first.group(1));
+        text = newMatches.first.group(2) ?? "";
+      } else {
+        text = matches.first.group(2) ?? "";
+      }
+      for (final decorationString in decorationStrings) {
+        final mapping =
+            Constants.ansiColorMapping[decorationString.split("\u001b[")[1]];
+        if (mapping != null) {
+          if (mapping["isBg"] as bool) {
+            bgColor = mapping["color"] as Color;
+          } else {
+            fgColor = mapping["color"] as Color;
+            isBold = mapping["isBold"] as bool;
+          }
+        }
+      }
+      logChunk.split(RegExp(r"(\u001b\[\d+[;\d]*m)")).forEach((element) {
+        if (element.isNotEmpty) {
+          if (element.trim() == text.trim()) {
+            logText.add(LogText(
+                text: text.trim(),
+                logFormatDecoration: LogTextDecoration(
+                    fgColor: fgColor, bgColor: bgColor, isBold: isBold)));
+          } else {
+            logText.add(LogText(
+                text: element.trim(),
+                logFormatDecoration: LogTextDecoration(
+                    fgColor: Colors.white,
+                    bgColor: Colors.transparent,
+                    isBold: false)));
+          }
+        }
+      });
+    } else {
+      logText.add(LogText(
+          text: logChunk.trim(),
+          logFormatDecoration: LogTextDecoration(
+              fgColor: Colors.white,
+              bgColor: Colors.transparent,
+              isBold: false)));
+    }
+    logTexts.add(logText);
+  }
+  return logTexts;
 }
