@@ -10,6 +10,7 @@ import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/providers/uistate.dart';
+import 'package:ekatapoolcompanion/services/appversion.dart';
 import 'package:ekatapoolcompanion/services/poolstat.dart';
 import 'package:ekatapoolcompanion/services/systeminfo.dart';
 import 'package:ekatapoolcompanion/services/userid.dart';
@@ -52,8 +53,10 @@ class _HomePageState extends State<HomePage> {
     // });
     // _fetchPoolStatPeriodically();
     if (!kDebugMode) {
-      _createAndSaveUserId();
-      _initializeMatomoTracker();
+      _createAndSaveUserId().then((_) {
+        _initializeMatomoTracker();
+        _addAppVersion();
+      });
     }
     if (Platform.isAndroid) {
       _handleNotificationTapEventStream();
@@ -130,7 +133,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _createAndSaveUserId() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getString(Constants.userIdSharedPrefs) == null) {
+    final userId = prefs.getString(Constants.userIdSharedPrefs);
+    if (userId == null) {
       try {
         final userId = await UserIdService.createUserId();
         if (userId.isNotEmpty) {
@@ -139,7 +143,26 @@ class _HomePageState extends State<HomePage> {
               userId: userId, systemInfo: common.getSystemInfo());
         }
       } on Exception catch (_) {}
+    } else {
+      if (userId.length > 16) {
+        await _reCreateUserId();
+      }
     }
+  }
+
+  // After we decided to match userId with matomo visitorId, we had to
+  // trim userId size to 16 char long, so if the userId is previous 24 char long,
+  // we need to recreate
+  Future<void> _reCreateUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      final userId = await UserIdService.createUserId();
+      if (userId.isNotEmpty) {
+        prefs.setString(Constants.userIdSharedPrefs, userId);
+        await SystemInfoService.uploadSystemInfo(
+            userId: userId, systemInfo: common.getSystemInfo());
+      }
+    } on Exception catch (_) {}
   }
 
   void _fetchPoolStatPeriodically() {
@@ -179,10 +202,30 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _initializeMatomoTracker() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString(Constants.userIdSharedPrefs);
     await MatomoTracker.instance.initialize(
-      siteId: 16,
-      url: 'https://matomo.ekata.io/matomo.php',
-    );
+        siteId: 16,
+        url: 'https://matomo.ekata.io/matomo.php',
+        visitorId: userId);
+  }
+
+  Future<void> _addAppVersion() async {
+    final appVersion = await common.getPackageVersion();
+    final prefs = await SharedPreferences.getInstance();
+    final appVersionInPrefs =
+        prefs.getString(Constants.currentAppVersionSharedPrefs);
+    final userId = prefs.getString(Constants.userIdSharedPrefs);
+    if (appVersion != appVersionInPrefs && userId != null) {
+      try {
+        final success = await AppVersionService.addAppVersion(
+            userId: userId, appVersion: appVersion);
+        if (success) {
+          await prefs.setString(
+              Constants.currentAppVersionSharedPrefs, appVersion);
+        }
+      } on Exception catch (_) {}
+    }
   }
 
   void _switchTab(int tabIndex) {

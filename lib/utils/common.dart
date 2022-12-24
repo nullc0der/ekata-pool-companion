@@ -7,6 +7,7 @@ import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
 import 'package:system_info2/system_info2.dart';
 
@@ -221,4 +222,9 @@ List<List<LogText>> formatLogs(String rawString) {
     logTexts.add(logText);
   }
   return logTexts;
+}
+
+Future<String> getPackageVersion() async {
+  PackageInfo packageInfo = await PackageInfo.fromPlatform();
+  return packageInfo.version;
 }

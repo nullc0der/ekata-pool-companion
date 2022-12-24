@@ -1,14 +1,9 @@
+import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-Future<String> _getPackageInfo() async {
-  PackageInfo packageInfo = await PackageInfo.fromPlatform();
-  return packageInfo.version;
-}
-
 Future<void> showAboutAppDialog(BuildContext context) async {
-  String version = await _getPackageInfo();
+  String version = await common.getPackageVersion();
   return showDialog<void>(
     context: context,
     barrierDismissible: true,

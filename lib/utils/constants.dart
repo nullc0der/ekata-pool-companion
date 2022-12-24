@@ -9,6 +9,7 @@ class Constants {
   static const walletAddressKeySharedPrefs = "WALLET_ADDRESS";
   static const walletAddressesKeySharedPrefs = "WALLET_ADDRESSES";
   static const userIdSharedPrefs = "USER_ID";
+  static const currentAppVersionSharedPrefs = "CURRENT_APP_VERSION";
   static const supportedAlgo = [
     "gr",
     "ghostrider",
