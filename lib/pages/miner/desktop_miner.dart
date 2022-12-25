@@ -10,6 +10,7 @@ import 'package:ekatapoolcompanion/providers/minersummary.dart';
 import 'package:ekatapoolcompanion/services/minersummary.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/common.dart' as common;
+import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/chart.dart';
 import 'package:ekatapoolcompanion/widgets/formattedlog.dart';
@@ -81,6 +82,10 @@ class _DesktopMinerState extends State<DesktopMiner> {
     } else {
       if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
         _startMining();
+      } else {
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
+        _sendHeartBeat();
       }
     }
   }
@@ -113,6 +118,9 @@ class _DesktopMinerState extends State<DesktopMiner> {
             .currentThreadCount = threadCount;
         Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
             null;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
+        _sendHeartBeat();
       });
     }
   }
@@ -205,6 +213,34 @@ class _DesktopMinerState extends State<DesktopMiner> {
         setState(() {
           _currentMinerLog = currentMinerLog;
         });
+      });
+    }
+  }
+
+  Future<void> _sendHeartBeat() async {
+    if (MatomoTracker.instance.initialized) {
+      final minerStatusProvider =
+          Provider.of<MinerStatusProvider>(context, listen: false);
+      final minerSummary =
+          Provider.of<MinerSummaryProvider>(context, listen: false)
+              .minerSummary;
+      final hashRate = minerSummary != null &&
+              minerSummary.hashrate.total.first != null
+          ? "@${getReadableHashrateString(minerSummary.hashrate.total.first!.toDouble())}"
+          : "";
+      Future.delayed(
+          Duration(seconds: minerStatusProvider.sendNextHeartBeatInSeconds),
+          () {
+        if (minerStatusProvider.isMining) {
+          MatomoTracker.instance.trackEvent(
+              eventCategory: "Mining",
+              action: "Heartbeat"
+                  " - ${minerStatusProvider.currentlyMiningMinerConfig?.pools.first.url}"
+                  "(${minerStatusProvider.currentlyMiningMinerConfig?.pools.first.algo})"
+                  "$hashRate");
+          minerStatusProvider.sendNextHeartBeatInSeconds *= 2;
+          _sendHeartBeat();
+        }
       });
     }
   }

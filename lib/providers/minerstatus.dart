@@ -1,5 +1,6 @@
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
+import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/foundation.dart';
 
 class MinerStatusProvider extends ChangeNotifier {
@@ -11,6 +12,7 @@ class MinerStatusProvider extends ChangeNotifier {
   MinerConfig? _currentlyMiningMinerConfig;
   String? _gpuVendor;
   String? _minerConfigPath;
+  int _sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
 
   bool get isMining => _isMining;
   CoinData? get coinData => _coinData;
@@ -20,6 +22,7 @@ class MinerStatusProvider extends ChangeNotifier {
   MinerConfig? get minerConfig => _minerConfig;
   MinerConfig? get currentlyMiningMinerConfig => _currentlyMiningMinerConfig;
   String? get minerConfigPath => _minerConfigPath;
+  int get sendNextHeartBeatInSeconds => _sendNextHeartBeatInSeconds;
 
   set isMining(bool isMiningStatus) {
     _isMining = isMiningStatus;
@@ -58,6 +61,11 @@ class MinerStatusProvider extends ChangeNotifier {
 
   set minerConfigPath(String? minerConfigPath) {
     _minerConfigPath = minerConfigPath;
+    notifyListeners();
+  }
+
+  set sendNextHeartBeatInSeconds(int nextHeartBeatInSeconds) {
+    _sendNextHeartBeatInSeconds = nextHeartBeatInSeconds;
     notifyListeners();
   }
 }
