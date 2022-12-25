@@ -85,6 +85,10 @@ class _AndroidMinerState extends State<AndroidMiner> {
     } else {
       if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
         _startMining();
+      } else {
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
+        _sendHeartBeat();
       }
     }
   }
@@ -117,6 +121,9 @@ class _AndroidMinerState extends State<AndroidMiner> {
           .currentThreadCount = threadCount;
       Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
           null;
+      Provider.of<MinerStatusProvider>(context, listen: false)
+          .sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
+      _sendHeartBeat();
     }
     return result;
   }
@@ -216,6 +223,34 @@ class _AndroidMinerState extends State<AndroidMiner> {
     if (Provider.of<MinerStatusProvider>(context, listen: false).isMining &&
         _minerSummaryFetchTimer == null) {
       _fetchMinerSummaryPeriodically();
+    }
+  }
+
+  Future<void> _sendHeartBeat() async {
+    if (MatomoTracker.instance.initialized) {
+      final minerStatusProvider =
+          Provider.of<MinerStatusProvider>(context, listen: false);
+      final minerSummary =
+          Provider.of<MinerSummaryProvider>(context, listen: false)
+              .minerSummary;
+      final hashRate = minerSummary != null &&
+              minerSummary.hashrate.total.first != null
+          ? "@${getReadableHashrateString(minerSummary.hashrate.total.first!.toDouble())}"
+          : "";
+      Future.delayed(
+          Duration(seconds: minerStatusProvider.sendNextHeartBeatInSeconds),
+          () {
+        if (minerStatusProvider.isMining) {
+          MatomoTracker.instance.trackEvent(
+              eventCategory: "Mining",
+              action: "Heartbeat"
+                  " - ${minerStatusProvider.currentlyMiningMinerConfig?.pools.first.url}"
+                  "(${minerStatusProvider.currentlyMiningMinerConfig?.pools.first.algo})"
+                  "$hashRate");
+          minerStatusProvider.sendNextHeartBeatInSeconds *= 2;
+          _sendHeartBeat();
+        }
+      });
     }
   }
 
