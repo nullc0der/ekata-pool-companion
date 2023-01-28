@@ -8,6 +8,7 @@ import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
 import 'package:ekatapoolcompanion/pages/miner/desktop_miner.dart';
 import 'package:ekatapoolcompanion/pages/miner/final_miner_config.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner_support.dart';
+import 'package:ekatapoolcompanion/pages/miner/user_miner_config.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
@@ -16,7 +17,13 @@ import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum WizardStep { coinNameSelect, walletAddressInput, minerConfig, miner }
+enum WizardStep {
+  coinNameSelect,
+  walletAddressInput,
+  minerConfig,
+  usersMinerConfigs,
+  miner
+}
 
 class Miner extends StatefulWidget {
   const Miner({Key? key}) : super(key: key);
@@ -116,6 +123,12 @@ class _MinerState extends State<Miner> {
     }
   }
 
+  void _setCurrentWizardStep(WizardStep wizardStep) {
+    setState(() {
+      _currentWizardStep = wizardStep;
+    });
+  }
+
   Widget _buildWalletAddressAndThreadCountInputForm(CoinData? coinData) {
     return Form(
       key: _walletAddressFormKey,
@@ -182,9 +195,7 @@ class _MinerState extends State<Miner> {
                             Provider.of<MinerStatusProvider>(context,
                                     listen: false)
                                 .minerConfig = null;
-                            setState(() {
-                              _currentWizardStep = WizardStep.coinNameSelect;
-                            });
+                            _setCurrentWizardStep(WizardStep.coinNameSelect);
                           },
                           child: const Text("Select Coin"))),
                   const SizedBox(
@@ -198,9 +209,7 @@ class _MinerState extends State<Miner> {
                         onPressed: () {
                           if (_walletAddressFormKey.currentState!.validate()) {
                             _walletAddressFormKey.currentState!.save();
-                            setState(() {
-                              _currentWizardStep = WizardStep.minerConfig;
-                            });
+                            _setCurrentWizardStep(WizardStep.minerConfig);
                           }
                         },
                         child: const Text("Show final config")),
@@ -362,21 +371,30 @@ class _MinerState extends State<Miner> {
                 }
                 Provider.of<MinerStatusProvider>(context, listen: false)
                     .minerConfig = minerConfig;
-                setState(() {
-                  _currentWizardStep = WizardStep.walletAddressInput;
-                });
+                _setCurrentWizardStep(WizardStep.walletAddressInput);
               }),
         ),
         const SizedBox(
           height: 8,
         ),
-        OutlinedButton(
-            onPressed: () {
-              setState(() {
-                _currentWizardStep = WizardStep.minerConfig;
-              });
-            },
-            child: const Text("Use custom config")),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            OutlinedButton(
+                onPressed: () {
+                  _setCurrentWizardStep(WizardStep.minerConfig);
+                },
+                child: const Text("Use custom config")),
+            const SizedBox(
+              width: 8,
+            ),
+            OutlinedButton(
+                onPressed: () {
+                  _setCurrentWizardStep(WizardStep.usersMinerConfigs);
+                },
+                child: const Text("Saved configs"))
+          ],
+        ),
         const SizedBox(
           height: 8,
         ),
@@ -411,9 +429,7 @@ class _MinerState extends State<Miner> {
                   onPressed: () {
                     Provider.of<MinerStatusProvider>(context, listen: false)
                         .minerConfig = currentlyMiningMinerConfig;
-                    setState(() {
-                      _currentWizardStep = WizardStep.miner;
-                    });
+                    _setCurrentWizardStep(WizardStep.miner);
                   },
                   child: const Text("Show"))
             ],
@@ -453,17 +469,14 @@ class _MinerState extends State<Miner> {
         return _showWalletAddressInput(coinData, currentlyMining);
       case WizardStep.minerConfig:
         return FinalMinerConfig(
-          setCurrentWizardStep: (WizardStep wizardStep) => setState(() {
-            _currentWizardStep = wizardStep;
-          }),
+          setCurrentWizardStep: _setCurrentWizardStep,
+        );
+      case WizardStep.usersMinerConfigs:
+        return UserMinerConfig(
+          setCurrentWizardStep: _setCurrentWizardStep,
         );
       case WizardStep.miner:
-        return _getMiner(
-            minerConfigPath,
-            (WizardStep wizardStep) => setState(() {
-                  _currentWizardStep = wizardStep;
-                }),
-            threadCount);
+        return _getMiner(minerConfigPath, _setCurrentWizardStep, threadCount);
       default:
         return _showCoinSelectInput(currentlyMining, gpuVendor);
     }

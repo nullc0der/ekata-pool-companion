@@ -21,6 +21,15 @@ String minerConfigToJson(MinerConfig data, {bool prettyPrint = false}) {
   return json.encode(data.toJson());
 }
 
+List<UsersMinerConfig> usersMinerConfigsFromJson(String str) {
+  return List.from(json.decode(str))
+      .map((e) => UsersMinerConfig.fromJson(e))
+      .toList();
+}
+
+String usersMinerConfigsToJson(List<UsersMinerConfig> usersMinerConfigs) =>
+    json.encode(usersMinerConfigs);
+
 class MinerConfig {
   MinerConfig({
     this.cpu,
@@ -154,5 +163,28 @@ class Pool {
         "user": user,
         "pass": pass,
         "rig-id": rigId,
+      };
+}
+
+class UsersMinerConfig {
+  UsersMinerConfig(
+      {required this.minerConfig,
+      required this.timeStamp,
+      required this.minerConfigMd5});
+
+  Map<String, dynamic> minerConfig;
+  int timeStamp;
+  String minerConfigMd5;
+
+  factory UsersMinerConfig.fromJson(Map<String, dynamic> json) =>
+      UsersMinerConfig(
+          minerConfig: json["minerConfig"],
+          timeStamp: json["timeStamp"],
+          minerConfigMd5: json["minerConfigMd5"]);
+
+  Map<String, dynamic> toJson() => {
+        "minerConfig": minerConfig,
+        "timeStamp": timeStamp,
+        "minerConfigMd5": minerConfigMd5
       };
 }

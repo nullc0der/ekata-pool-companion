@@ -9,6 +9,7 @@ import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 import 'package:system_info2/system_info2.dart';
 
 MaterialColor createMaterialColor(Color color) {
@@ -227,4 +228,11 @@ List<List<LogText>> formatLogs(String rawString) {
 Future<String> getPackageVersion() async {
   PackageInfo packageInfo = await PackageInfo.fromPlatform();
   return packageInfo.version;
+}
+
+Future<String> saveMinerConfigToFile(String config) async {
+  final directory = await getApplicationDocumentsDirectory();
+  final file = await File("${directory.path}/epc_xmrig_config.json")
+      .writeAsString(config);
+  return file.path;
 }

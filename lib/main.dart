@@ -107,7 +107,11 @@ class EkataPoolCompanion extends StatelessWidget {
     return MaterialApp(
         title: 'Ekata Pool Companion',
         theme: ThemeData(
-            primarySwatch: createMaterialColor(const Color(0xFF273951))),
+          primarySwatch: createMaterialColor(const Color(0xFF273951)),
+          textTheme: Theme.of(context).textTheme.apply(
+              bodyColor: const Color(0xFF273951),
+              displayColor: const Color(0xFF273951)),
+        ),
         home: const HomePage());
   }
 }

@@ -13,6 +13,7 @@ class MinerStatusProvider extends ChangeNotifier {
   String? _gpuVendor;
   String? _minerConfigPath;
   int _sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
+  UsersMinerConfig? _usersMinerConfig;
 
   bool get isMining => _isMining;
   CoinData? get coinData => _coinData;
@@ -23,6 +24,7 @@ class MinerStatusProvider extends ChangeNotifier {
   MinerConfig? get currentlyMiningMinerConfig => _currentlyMiningMinerConfig;
   String? get minerConfigPath => _minerConfigPath;
   int get sendNextHeartBeatInSeconds => _sendNextHeartBeatInSeconds;
+  UsersMinerConfig? get usersMinerConfig => _usersMinerConfig;
 
   set isMining(bool isMiningStatus) {
     _isMining = isMiningStatus;
@@ -66,6 +68,11 @@ class MinerStatusProvider extends ChangeNotifier {
 
   set sendNextHeartBeatInSeconds(int nextHeartBeatInSeconds) {
     _sendNextHeartBeatInSeconds = nextHeartBeatInSeconds;
+    notifyListeners();
+  }
+
+  set usersMinerConfig(UsersMinerConfig? usersMinerConfig) {
+    _usersMinerConfig = usersMinerConfig;
     notifyListeners();
   }
 }
