@@ -43,10 +43,15 @@ class _DesktopMinerState extends State<DesktopMiner> {
   @override
   void initState() {
     super.initState();
+    final minerStatusProvider =
+        Provider.of<MinerStatusProvider>(context, listen: false);
     DesktopMinerUtil.instance.initialize(
-      minerConfigPath: widget.minerConfigPath,
-      threadCount: widget.threadCount,
-    );
+        minerConfigPath: widget.minerConfigPath,
+        threadCount: widget.threadCount,
+        currentMinerBinary: minerStatusProvider.selectedMinerBinary,
+        xmrigCCServerToken: minerStatusProvider.xmrigCCServerToken,
+        xmrigCCServerUrl: minerStatusProvider.xmrigCCServerUrl,
+        xmrigCCWorkerId: minerStatusProvider.xmrigCCWorkerId);
     _startMinerLogSubscription();
     _restartMinerSummaryFetcher();
     _changeMiningCoin();
@@ -386,6 +391,8 @@ class _DesktopMinerState extends State<DesktopMiner> {
     var isMining = Provider.of<MinerStatusProvider>(context).isMining;
 
     final minerConfig = Provider.of<MinerStatusProvider>(context).minerConfig;
+    final selectedMinerBinary =
+        Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
     final coinData = getCoinDataFromMinerConfig(minerConfig);
 
     return ListView(
@@ -430,9 +437,17 @@ class _DesktopMinerState extends State<DesktopMiner> {
               const SizedBox(
                 height: 16,
               ),
-              SizedBox(
-                  width: double.infinity,
-                  child: _showStartStopMining(isMining: isMining)),
+              if (selectedMinerBinary == MinerBinary.xmrig)
+                SizedBox(
+                    width: double.infinity,
+                    child: _showStartStopMining(isMining: isMining)),
+              if (selectedMinerBinary == MinerBinary.xmrigCC)
+                Wrap(
+                  children: const [
+                    Text(
+                        "EPC running in worker mode, control daemon from xmrigCCServer")
+                  ],
+                ),
               if (minerSummary != null) ...[
                 const SizedBox(
                   height: 8,

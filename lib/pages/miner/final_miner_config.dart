@@ -7,6 +7,7 @@ import 'package:ekatapoolcompanion/providers/uistate.dart';
 import 'package:ekatapoolcompanion/services/minerconfig.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/minerconfig_edit_confirm_dialog.dart';
 import 'package:ekatapoolcompanion/widgets/minerconfig_upload_confirm_dialog.dart';
 import 'package:flutter/foundation.dart';
@@ -126,6 +127,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
 
   Future<void> _onPressStartMining() async {
     if (_minerConfigFormKey.currentState!.validate()) {
+      _minerConfigFormKey.currentState!.save();
       final String value = _minerConfigFieldController.text;
       if (value.isNotEmpty) {
         bool? userConfirmedUpload;
@@ -189,8 +191,90 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
     }
   }
 
+  Widget _getMinerBackendDropdown(MinerBinary selectedMinerBinary) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Select miner backend"),
+        DropdownButton<MinerBinary>(
+            isExpanded: true,
+            hint: const Text("Select miner backend"),
+            value: selectedMinerBinary,
+            items: MinerBinary.values
+                .map<DropdownMenuItem<MinerBinary>>(
+                    (MinerBinary minerBinary) => DropdownMenuItem<MinerBinary>(
+                          child: Text(minerBinary.name),
+                          value: minerBinary,
+                        ))
+                .toList(),
+            onChanged: (MinerBinary? minerBinary) {
+              if (minerBinary != null) {
+                Provider.of<MinerStatusProvider>(context, listen: false)
+                    .selectedMinerBinary = minerBinary;
+              }
+            })
+      ],
+    );
+  }
+
+  Widget _getXmrigCCOptions() {
+    return Column(
+      children: [
+        TextFormField(
+          decoration: const InputDecoration(
+              border: OutlineInputBorder(), hintText: "xmrigCC Server url"),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "URL can't be empty";
+            }
+            return null;
+          },
+          onSaved: (value) {
+            Provider.of<MinerStatusProvider>(context, listen: false)
+                .xmrigCCServerUrl = value;
+          },
+        ),
+        const SizedBox(
+          height: 8.0,
+        ),
+        TextFormField(
+          obscureText: true,
+          enableSuggestions: false,
+          autocorrect: false,
+          //TODO: IMPORTANT: Review everything done till now
+          decoration: const InputDecoration(
+              border: OutlineInputBorder(), hintText: "xmrigCC Server token"),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Token can't be empty";
+            }
+            return null;
+          },
+          onSaved: (value) {
+            Provider.of<MinerStatusProvider>(context, listen: false)
+                .xmrigCCServerToken = value;
+          },
+        ),
+        const SizedBox(
+          height: 8.0,
+        ),
+        TextFormField(
+          decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              hintText: "xmrigCC Worker ID (Optional)"),
+          onSaved: (value) {
+            Provider.of<MinerStatusProvider>(context, listen: false)
+                .xmrigCCWorkerId = value;
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final selectedMinerBinary =
+        Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
     return ListView(
       padding: const EdgeInsets.all(8),
       children: [
@@ -222,6 +306,15 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                     }
                     return null;
                   }),
+              const SizedBox(
+                height: 8.0,
+              ),
+              _getMinerBackendDropdown(selectedMinerBinary),
+              const SizedBox(
+                height: 8.0,
+              ),
+              if (selectedMinerBinary == MinerBinary.xmrigCC)
+                _getXmrigCCOptions(),
               const SizedBox(
                 height: 8.0,
               ),

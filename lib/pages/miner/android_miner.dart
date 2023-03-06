@@ -11,6 +11,7 @@ import 'package:ekatapoolcompanion/services/minersummary.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/chart.dart';
 import 'package:ekatapoolcompanion/widgets/formattedlog.dart';
 import 'package:flutter/material.dart';
@@ -65,50 +66,47 @@ class _AndroidMinerState extends State<AndroidMiner> {
   }
 
   _changeMiningCoin() {
-    final currentlyMiningMinerConfig =
-        Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentlyMiningMinerConfig;
-    final minerConfig =
-        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
-    final threadCount =
-        Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
-    final currentThreadCount =
-        Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentThreadCount;
-    if (currentlyMiningMinerConfig != minerConfig ||
-        threadCount != currentThreadCount) {
-      if (Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
+    final minerStatusProvider =
+        Provider.of<MinerStatusProvider>(context, listen: false);
+    if (minerStatusProvider.currentlyMiningMinerConfig !=
+            minerStatusProvider.minerConfig ||
+        minerStatusProvider.threadCount !=
+            minerStatusProvider.currentThreadCount) {
+      if (minerStatusProvider.isMining) {
         _stopMining().then((_) => _startMining());
       } else {
         _startMining();
       }
     } else {
-      if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
+      if (!minerStatusProvider.isMining) {
         _startMining();
       } else {
-        Provider.of<MinerStatusProvider>(context, listen: false)
-            .sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
+        minerStatusProvider.sendNextHeartBeatInSeconds =
+            Constants.initialHeartBeatInSeconds;
         _sendHeartBeat();
       }
     }
   }
 
   Future<bool> _startMining() async {
-    final minerConfig =
-        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
-    final coinData = getCoinDataFromMinerConfig(minerConfig);
-    final threadCount =
-        Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
+    final minerStatusProvider =
+        Provider.of<MinerStatusProvider>(context, listen: false);
+    final coinData =
+        getCoinDataFromMinerConfig(minerStatusProvider.minerConfig);
     _fetchMinerSummaryPeriodically();
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
           eventCategory: 'Mining',
           action:
-              'Started - ${coinData != null ? coinData.coinName : minerConfig?.pools.first.algo}');
+              'Started - ${coinData != null ? coinData.coinName : minerStatusProvider.minerConfig?.pools.first.algo}');
     }
     var result = await _methodChannel.invokeMethod("startMining", {
       Constants.minerConfigPath: widget.minerConfigPath,
       Constants.threadCount: widget.threadCount,
+      Constants.minerBinary: minerStatusProvider.selectedMinerBinary.name,
+      Constants.xmrigCCServerUrl: minerStatusProvider.xmrigCCServerUrl,
+      Constants.xmrigCCServerToken: minerStatusProvider.xmrigCCServerToken,
+      Constants.xmrigCCWorkerId: minerStatusProvider.xmrigCCWorkerId
     });
     if (result) {
       File(widget.minerConfigPath).readAsString().then((value) {
@@ -118,7 +116,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
         } on FormatException catch (_) {}
       });
       Provider.of<MinerStatusProvider>(context, listen: false)
-          .currentThreadCount = threadCount;
+          .currentThreadCount = minerStatusProvider.threadCount;
       Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
           null;
       Provider.of<MinerStatusProvider>(context, listen: false)
@@ -393,6 +391,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
   Widget build(BuildContext context) {
     var minerSummary = Provider.of<MinerSummaryProvider>(context).minerSummary;
     var isMining = Provider.of<MinerStatusProvider>(context).isMining;
+    final selectedMinerBinary =
+        Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
 
     final minerConfig = Provider.of<MinerStatusProvider>(context).minerConfig;
     final coinData = getCoinDataFromMinerConfig(minerConfig);
@@ -439,9 +439,17 @@ class _AndroidMinerState extends State<AndroidMiner> {
               const SizedBox(
                 height: 16,
               ),
-              SizedBox(
-                  width: double.infinity,
-                  child: _showStartStopMining(isStarted: isMining)),
+              if (selectedMinerBinary == MinerBinary.xmrig)
+                SizedBox(
+                    width: double.infinity,
+                    child: _showStartStopMining(isStarted: isMining)),
+              if (selectedMinerBinary == MinerBinary.xmrigCC)
+                Wrap(
+                  children: const [
+                    Text(
+                        "EPC running in worker mode, control daemon from xmrigCCServer")
+                  ],
+                ),
               if (minerSummary != null) ...[
                 const SizedBox(
                   height: 8,

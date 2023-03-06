@@ -76,6 +76,22 @@ class MainActivity : FlutterActivity() {
                     Constants.THREAD_COUNT,
                     call.argument<Int>(Constants.THREAD_COUNT)
                 )
+                minerServiceIntent.putExtra(
+                    Constants.MINER_BINARY,
+                    call.argument<String>(Constants.MINER_BINARY)
+                )
+                minerServiceIntent.putExtra(
+                    Constants.XMRIGCC_SERVER_URL,
+                    call.argument<String>(Constants.XMRIGCC_SERVER_URL)
+                )
+                minerServiceIntent.putExtra(
+                    Constants.XMRIGCC_SERVER_TOKEN,
+                    call.argument<String>(Constants.XMRIGCC_SERVER_TOKEN)
+                )
+                minerServiceIntent.putExtra(
+                    Constants.XMRIGCC_WORKER_ID,
+                    call.argument<String>(Constants.XMRIGCC_WORKER_ID)
+                )
                 startForegroundService(
                     minerServiceIntent
                 )

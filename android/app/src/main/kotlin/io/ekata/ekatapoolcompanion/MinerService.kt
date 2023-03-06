@@ -23,6 +23,10 @@ class MinerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val minerConfigPath = intent?.getStringExtra(Constants.MINER_CONFIG_PATH)
         val threadCount = intent?.getIntExtra(Constants.THREAD_COUNT, 0)
+        val minerBinary = intent?.getStringExtra(Constants.MINER_BINARY)
+        val xmrigCCServerUrl = intent?.getStringExtra(Constants.XMRIGCC_SERVER_URL)
+        val xmrigCCServerToken = intent?.getStringExtra(Constants.XMRIGCC_SERVER_TOKEN)
+        val xmrigCCWorkerId = intent?.getStringExtra(Constants.XMRIGCC_WORKER_ID)
 
         val stopMiningPendingIntent =
             Intent(this, StopMiningReceiver::class.java).let { stopMiningIntent ->
@@ -61,7 +65,14 @@ class MinerService : Service() {
                 .build()
         if (minerConfigPath != null) {
             startForeground(NOTIFICATION_ID, notification)
-            startMiner(minerConfigPath, threadCount)
+            startMiner(
+                minerConfigPath,
+                threadCount,
+                minerBinary,
+                xmrigCCServerUrl,
+                xmrigCCServerToken,
+                xmrigCCWorkerId
+            )
         }
         return START_NOT_STICKY
     }
@@ -78,7 +89,11 @@ class MinerService : Service() {
     @SuppressLint("WakelockTimeout")
     private fun startMiner(
         minerConfigPath: String,
-        threadCount: Int?
+        threadCount: Int?,
+        minerBinary: String?,
+        xmrigCCServerUrl: String?,
+        xmrigCCServerToken: String?,
+        xmrigCCWorkerId: String?
     ) {
         wakeLock = (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
             newWakeLock(
@@ -91,7 +106,7 @@ class MinerService : Service() {
         }
         try {
             val args = mutableListOf(
-                ".${applicationInfo.nativeLibraryDir}/libxmrig.so",
+                ".${applicationInfo.nativeLibraryDir}/lib${if (minerBinary != null && minerBinary == "xmrigCC") "xmrigDaemon" else "xmrig"}.so",
                 "--config=$minerConfigPath",
                 "--http-host=127.0.0.1",
                 "--http-port=45580",
@@ -99,6 +114,13 @@ class MinerService : Service() {
             )
             if (threadCount != null && threadCount > 0) {
                 args.add("--threads=$threadCount")
+            }
+            if (minerBinary != null && minerBinary == "xmrigCC") {
+                args.add("--cc-url=$xmrigCCServerUrl")
+                args.add("--cc-access-token=$xmrigCCServerToken")
+                if (xmrigCCWorkerId != null && xmrigCCWorkerId.isNotEmpty()) {
+                    args.add("--cc-worker-id=$xmrigCCWorkerId")
+                }
             }
             ProcessBuilder(args).apply { process = start() }
             ProcessObserver(process).apply {

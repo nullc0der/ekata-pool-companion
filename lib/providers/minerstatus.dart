@@ -1,6 +1,7 @@
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:flutter/foundation.dart';
 
 class MinerStatusProvider extends ChangeNotifier {
@@ -14,6 +15,10 @@ class MinerStatusProvider extends ChangeNotifier {
   String? _minerConfigPath;
   int _sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
   UsersMinerConfig? _usersMinerConfig;
+  MinerBinary _selectedMinerBinary = MinerBinary.xmrig;
+  String? _xmrigCCServerUrl;
+  String? _xmrigCCServerToken;
+  String? _xmrigCCWorkerId;
 
   bool get isMining => _isMining;
   CoinData? get coinData => _coinData;
@@ -25,6 +30,10 @@ class MinerStatusProvider extends ChangeNotifier {
   String? get minerConfigPath => _minerConfigPath;
   int get sendNextHeartBeatInSeconds => _sendNextHeartBeatInSeconds;
   UsersMinerConfig? get usersMinerConfig => _usersMinerConfig;
+  MinerBinary get selectedMinerBinary => _selectedMinerBinary;
+  String? get xmrigCCServerUrl => _xmrigCCServerUrl;
+  String? get xmrigCCServerToken => _xmrigCCServerToken;
+  String? get xmrigCCWorkerId => _xmrigCCWorkerId;
 
   set isMining(bool isMiningStatus) {
     _isMining = isMiningStatus;
@@ -73,6 +82,26 @@ class MinerStatusProvider extends ChangeNotifier {
 
   set usersMinerConfig(UsersMinerConfig? usersMinerConfig) {
     _usersMinerConfig = usersMinerConfig;
+    notifyListeners();
+  }
+
+  set selectedMinerBinary(MinerBinary selectedMinerBinary) {
+    _selectedMinerBinary = selectedMinerBinary;
+    notifyListeners();
+  }
+
+  set xmrigCCServerUrl(String? xmrigCCServerUrl) {
+    _xmrigCCServerUrl = xmrigCCServerUrl;
+    notifyListeners();
+  }
+
+  set xmrigCCServerToken(String? xmrigCCServerToken) {
+    _xmrigCCServerToken = xmrigCCServerToken;
+    notifyListeners();
+  }
+
+  set xmrigCCWorkerId(String? xmrigCCWorkerId) {
+    _xmrigCCWorkerId = xmrigCCWorkerId;
     notifyListeners();
   }
 }

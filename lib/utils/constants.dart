@@ -4,6 +4,13 @@ class Constants {
   static const threadCount = "io.ekata.ekatapoolcompanion.THREAD_COUNT";
   static const minerConfigPath =
       "io.ekata.ekatapoolcompanion.MINER_CONFIG_PATH";
+  static const minerBinary = "io.ekata.ekatapoolcompanion.MINER_BINARY";
+  static const xmrigCCServerUrl =
+      "io.ekata.ekatapoolcompanion.XMRIGCC_SERVER_URL";
+  static const xmrigCCServerToken =
+      "io.ekata.ekatapoolcompanion.XMRIGCC_SERVER_TOKEN";
+  static const xmrigCCWorkerId =
+      "io.ekata.ekatapoolcompanion.XMRIGCC_WORKER_ID";
   static const minerProcessStarted = "MINER_PROCESS_STARTED";
   static const minerProcessStopped = "MINER_PROCESS_STOPPED";
   static const walletAddressKeySharedPrefs = "WALLET_ADDRESS";

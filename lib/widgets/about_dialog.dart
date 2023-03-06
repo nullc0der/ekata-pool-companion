@@ -39,7 +39,8 @@ Future<void> showAboutAppDialog(BuildContext context) async {
               children: <Widget>[
                 const Text("Ekata Pool Companion"),
                 Text("Version: $version"),
-                const Text("Xmrig Engine Version: 6.18.0"),
+                const Text("Xmrig Engine Version: 6.19.0"),
+                const Text("XmrigCC Engine Version: 3.3.2"),
                 ...textLinks
                     .map((e) => GestureDetector(
                           child: Text(

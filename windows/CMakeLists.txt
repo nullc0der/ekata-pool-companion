@@ -106,3 +106,9 @@ install(FILES "${PROJECT_BUILD_DIR}/../bin/xmrig.exe" DESTINATION "${INSTALL_BUN
 
 install(FILES "${PROJECT_BUILD_DIR}/../bin/xmrig-cuda.dll" DESTINATION "${INSTALL_BUNDLE_BIN_DIR}"
         COMPONENT Runtime)
+
+install(FILES "${PROJECT_BUILD_DIR}/../bin/xmrigDaemon.exe" DESTINATION "${INSTALL_BUNDLE_BIN_DIR}"
+        COMPONENT Runtime)
+
+install(FILES "${PROJECT_BUILD_DIR}/../bin/xmrigMiner.exe" DESTINATION "${INSTALL_BUNDLE_BIN_DIR}"
+        COMPONENT Runtime)
