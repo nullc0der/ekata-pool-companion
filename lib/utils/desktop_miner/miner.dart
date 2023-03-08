@@ -60,7 +60,7 @@ class DesktopMinerUtil {
     String executablePath = "";
     if (Platform.isLinux) {
       executablePath = path.join(Directory.current.path,
-          'bin/${_currentMinerBinary == MinerBinary.xmrig ? "xmrig" : "xmrigDaemon"}}');
+          'bin/${_currentMinerBinary == MinerBinary.xmrig ? "xmrig" : "xmrigDaemon"}');
     }
     if (Platform.isWindows) {
       executablePath = path.join(Directory.current.path,
