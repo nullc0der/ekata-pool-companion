@@ -36,6 +36,7 @@ class _MinerState extends State<Miner> {
   final _walletAddressFormKey = GlobalKey<FormState>();
   final _walletAddressFieldController = TextEditingController();
   WizardStep _currentWizardStep = WizardStep.coinNameSelect;
+  int? _selectedCoinIndex;
 
   @override
   void initState() {
@@ -58,22 +59,22 @@ class _MinerState extends State<Miner> {
     super.dispose();
   }
 
-  Future<void> _loadWalletAddress(String coinName) async {
+  Future<void> _loadWalletAddress(String poolAddress) async {
     final prefs = await SharedPreferences.getInstance();
     String walletAddresses =
         prefs.getString(Constants.walletAddressesKeySharedPrefs) ?? "";
     if (walletAddresses.isNotEmpty) {
       var addressesJson = jsonDecode(walletAddresses);
-      var addresses = addressesJson.where((address) =>
-          address["coinName"].toLowerCase() == coinName.toLowerCase());
+      var addresses = addressesJson
+          .where((address) => address["poolAddress"] == poolAddress);
       final minerConfig =
           Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
       if (addresses.isNotEmpty) {
         final address = addresses.first;
-        minerConfig?.pools.first.user = address["address"];
+        minerConfig?.pools.first.user = address["walletAddress"];
         Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
             minerConfig;
-        _walletAddressFieldController.text = address["address"];
+        _walletAddressFieldController.text = address["walletAddress"];
       } else {
         minerConfig?.pools.first.user = "";
         Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
@@ -83,24 +84,25 @@ class _MinerState extends State<Miner> {
     }
   }
 
-  Future<void> _saveWalletAddress(String coinName, String walletAddress) async {
+  Future<void> _saveWalletAddress(
+      String poolAddress, String walletAddress) async {
     final prefs = await SharedPreferences.getInstance();
     if (walletAddress.isNotEmpty) {
       String walletAddresses =
           prefs.getString(Constants.walletAddressesKeySharedPrefs) ?? "";
       if (walletAddresses.isNotEmpty) {
         var addressesJson = jsonDecode(walletAddresses);
-        var addresses = addressesJson.where((address) =>
-            address["coinName"].toLowerCase() == coinName.toLowerCase());
+        var addresses = addressesJson
+            .where((address) => address["poolAddress"] == poolAddress);
         if (addresses.isNotEmpty) {
           var address = addresses.first;
           var index = addressesJson.indexOf(address);
-          address["address"] = walletAddress;
+          address["walletAddress"] = walletAddress;
           addressesJson[index] = address;
         } else {
           var address = {
-            "coinName": coinName.toLowerCase(),
-            "address": walletAddress
+            "poolAddress": poolAddress,
+            "walletAddress": walletAddress
           };
           addressesJson.add(address);
         }
@@ -108,7 +110,10 @@ class _MinerState extends State<Miner> {
             Constants.walletAddressesKeySharedPrefs, jsonEncode(addressesJson));
       } else {
         var addressesJson = [
-          {"coinName": coinName.toLowerCase(), "address": walletAddress}
+          {
+            "poolAddress": poolAddress.toLowerCase(),
+            "walletAddress": walletAddress
+          }
         ];
         prefs.setString(
             Constants.walletAddressesKeySharedPrefs, jsonEncode(addressesJson));
@@ -263,117 +268,17 @@ class _MinerState extends State<Miner> {
     );
   }
 
-  Widget _showCoinSelectInput(MinerConfig? currentlyMining, String? gpuVendor) {
-    var deviceHasGPU = gpuVendor != null;
-    var _coinDatas = deviceHasGPU
-        ? coinDatas
-        : coinDatas.where((coinData) => coinData.cpuMineable);
+  Widget _showCoinSelect(MinerConfig? currentlyMining, String? gpuVendor) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        SizedBox(
-          width: double.infinity,
-          child: Text(
-            "Select the coin you want to mine",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 24,
-              color: Theme.of(context).primaryColor,
-            ),
+        _showCoinSelectInput(gpuVendor),
+        if (_selectedCoinIndex != null) ...[
+          const SizedBox(
+            height: 8,
           ),
-        ),
-        const SizedBox(
-          height: 8,
-        ),
-        SizedBox(
-          width: 300,
-          child: DropdownButton<CoinData>(
-              itemHeight: null,
-              isExpanded: true,
-              hint: const Text("Select coin"),
-              style: TextStyle(color: Theme.of(context).primaryColor),
-              items: _coinDatas
-                  .map<DropdownMenuItem<CoinData>>(
-                      (CoinData coinData) => DropdownMenuItem<CoinData>(
-                          value: coinData,
-                          child: Column(
-                            children: [
-                              const SizedBox(
-                                height: 8,
-                              ),
-                              Row(
-                                children: [
-                                  Image(
-                                    image: AssetImage(coinData.coinLogoPath),
-                                    width: 24,
-                                    height: 24,
-                                  ),
-                                  const SizedBox(
-                                    width: 8,
-                                  ),
-                                  Text(coinData.coinName)
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 4,
-                              ),
-                              DefaultTextStyle(
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).primaryColor),
-                                  child: Row(
-                                    children: [
-                                      const Text("Host:"),
-                                      deviceHasGPU
-                                          ? Text(
-                                              "${coinData.poolAddress}:${coinData.poolPortGPU}")
-                                          : Text(
-                                              "${coinData.poolAddress}:${coinData.poolPortCPU}")
-                                    ],
-                                  )),
-                              const SizedBox(
-                                height: 4,
-                              ),
-                              DefaultTextStyle(
-                                  style: TextStyle(
-                                      fontSize: 12,
-                                      color: Theme.of(context).primaryColor),
-                                  child: Row(
-                                    children: [
-                                      const Text("Algo:"),
-                                      Text(coinData.coinAlgo)
-                                    ],
-                                  )),
-                              const SizedBox(
-                                height: 8,
-                              ),
-                            ],
-                          )))
-                  .toList(),
-              onChanged: (CoinData? coinData) {
-                _loadWalletAddress(coinData!.coinName.toLowerCase());
-                MinerConfig minerConfig = MinerConfig(pools: [
-                  Pool(
-                      algo: coinData.coinAlgo,
-                      url:
-                          "${coinData.poolAddress}:${deviceHasGPU ? coinData.poolPortGPU : coinData.poolPortCPU}",
-                      user: "")
-                ]);
-                if (deviceHasGPU) {
-                  if (gpuVendor.toLowerCase() == "nvidia") {
-                    minerConfig.cuda = Gpu(enabled: true);
-                  }
-                  if (gpuVendor.toLowerCase() == "amd") {
-                    minerConfig.opencl = Gpu(enabled: true);
-                  }
-                } else {
-                  minerConfig.cpu = Cpu(enabled: true);
-                }
-                Provider.of<MinerStatusProvider>(context, listen: false)
-                    .minerConfig = minerConfig;
-                _setCurrentWizardStep(WizardStep.walletAddressInput);
-              }),
-        ),
+          _showPoolSelectInput(gpuVendor)
+        ],
         const SizedBox(
           height: 8,
         ),
@@ -401,6 +306,162 @@ class _MinerState extends State<Miner> {
         _showCurrentlyMining(currentlyMining)
       ],
     );
+  }
+
+  Widget _showCoinSelectInput(String? gpuVendor) {
+    var deviceHasGPU = gpuVendor != null;
+    var _coinDatas = deviceHasGPU
+        ? coinDatas
+        : coinDatas.where((coinData) => coinData.cpuMineable);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Select the coin you want to mine",
+          style: TextStyle(
+            fontSize: 14,
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        SizedBox(
+          width: 300,
+          child: DropdownButton<CoinData>(
+              itemHeight: null,
+              isExpanded: true,
+              hint: const Text("Select coin"),
+              style: TextStyle(color: Theme.of(context).primaryColor),
+              value: _selectedCoinIndex != null
+                  ? coinDatas[_selectedCoinIndex!]
+                  : null,
+              items: _coinDatas
+                  .map<DropdownMenuItem<CoinData>>(
+                      (CoinData coinData) => DropdownMenuItem<CoinData>(
+                          value: coinData,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Row(
+                                children: [
+                                  Image(
+                                    image: AssetImage(coinData.coinLogoPath),
+                                    width: 24,
+                                    height: 24,
+                                  ),
+                                  const SizedBox(
+                                    width: 8,
+                                  ),
+                                  Text(coinData.coinName),
+                                  const SizedBox(
+                                    width: 4,
+                                  ),
+                                  Text(
+                                    "(${coinData.coinAlgo})",
+                                    style: TextStyle(
+                                        fontSize: 12,
+                                        color: Theme.of(context).primaryColor),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                            ],
+                          )))
+                  .toList(),
+              onChanged: (CoinData? coinData) {
+                if (coinData != null) {
+                  setState(() {
+                    _selectedCoinIndex = coinDatas.indexOf(coinData);
+                  });
+                }
+              }),
+        )
+      ],
+    );
+  }
+
+  Widget _showPoolSelectInput(String? gpuVendor) {
+    var deviceHasGPU = gpuVendor != null;
+    List<CoinPool>? _coinPools;
+    CoinData? _coinData;
+    if (_selectedCoinIndex != null) {
+      _coinData = coinDatas[_selectedCoinIndex!];
+      _coinPools = _coinData.coinPools;
+    }
+
+    return _coinData != null
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Select the pool where you want to mine ${_coinData.coinName}",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
+              const SizedBox(
+                height: 8,
+              ),
+              SizedBox(
+                width: 300,
+                child: DropdownButton<CoinPool>(
+                  isExpanded: true,
+                  hint: const Text("Select Pool"),
+                  style: TextStyle(color: Theme.of(context).primaryColor),
+                  items: _coinPools!
+                      .map<DropdownMenuItem<CoinPool>>((CoinPool coinPool) =>
+                          DropdownMenuItem<CoinPool>(
+                              value: coinPool,
+                              child: DefaultTextStyle(
+                                  style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).primaryColor),
+                                  child: Row(
+                                    children: [
+                                      deviceHasGPU
+                                          ? Text(
+                                              "${coinPool.poolAddress}:${coinPool.poolPortGPU}")
+                                          : Text(
+                                              "${coinPool.poolAddress}:${coinPool.poolPortCPU}")
+                                    ],
+                                  ))))
+                      .toList(),
+                  onChanged: (CoinPool? coinPool) {
+                    if (coinPool != null) {
+                      _loadWalletAddress(
+                          "${coinPool.poolAddress}:${deviceHasGPU ? coinPool.poolPortGPU : coinPool.poolPortCPU}");
+                      MinerConfig minerConfig = MinerConfig(pools: [
+                        Pool(
+                            algo: _coinData!.coinAlgo,
+                            url:
+                                "${coinPool.poolAddress}:${deviceHasGPU ? coinPool.poolPortGPU : coinPool.poolPortCPU}",
+                            user: "")
+                      ]);
+                      if (deviceHasGPU) {
+                        if (gpuVendor.toLowerCase() == "nvidia") {
+                          minerConfig.cuda = Gpu(enabled: true);
+                        }
+                        if (gpuVendor.toLowerCase() == "amd") {
+                          minerConfig.opencl = Gpu(enabled: true);
+                        }
+                      } else {
+                        minerConfig.cpu = Cpu(enabled: true);
+                      }
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                          .minerConfig = minerConfig;
+                      _setCurrentWizardStep(WizardStep.walletAddressInput);
+                    }
+                  },
+                ),
+              )
+            ],
+          )
+        : Column();
   }
 
   Widget _showCurrentlyMining(MinerConfig? currentlyMiningMinerConfig) {
@@ -464,7 +525,7 @@ class _MinerState extends State<Miner> {
       String? minerConfigPath) {
     switch (wizardStep) {
       case WizardStep.coinNameSelect:
-        return _showCoinSelectInput(currentlyMining, gpuVendor);
+        return _showCoinSelect(currentlyMining, gpuVendor);
       case WizardStep.walletAddressInput:
         return _showWalletAddressInput(coinData, currentlyMining);
       case WizardStep.minerConfig:
@@ -478,7 +539,7 @@ class _MinerState extends State<Miner> {
       case WizardStep.miner:
         return _getMiner(minerConfigPath, _setCurrentWizardStep, threadCount);
       default:
-        return _showCoinSelectInput(currentlyMining, gpuVendor);
+        return _showCoinSelect(currentlyMining, gpuVendor);
     }
   }
 

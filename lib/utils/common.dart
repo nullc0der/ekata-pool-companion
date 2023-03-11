@@ -122,9 +122,11 @@ Future<bool> ensureCUDALoaderExist() async {
 CoinData? getCoinDataFromMinerConfig(MinerConfig? minerConfig) {
   if (minerConfig != null && minerConfig.pools.isNotEmpty) {
     final poolHost = minerConfig.pools.first.url;
-    final coinDataList = coinDatas.where((element) {
-      if (("${element.poolAddress}:${element.poolPortCPU}" == poolHost) ||
-          ("${element.poolAddress}:${element.poolPortGPU}" == poolHost)) {
+    final coinDataList = coinDatas.where((coinData) {
+      final coinPools = coinData.coinPools.where((coinPool) =>
+          ("${coinPool.poolAddress}:${coinPool.poolPortCPU}" == poolHost) ||
+          ("${coinPool.poolAddress}:${coinPool.poolPortGPU}" == poolHost));
+      if (coinPools.isNotEmpty) {
         return true;
       }
       return false;
