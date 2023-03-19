@@ -52,6 +52,8 @@ dependencies:
   path: ^1.8.1
   path_provider: ^2.0.11
   system_info2: ^2.0.4
+  emoji_flag_converter: ^1.1.0
+  fluttericon: ^2.0.0
 
 dev_dependencies:
   flutter_test:

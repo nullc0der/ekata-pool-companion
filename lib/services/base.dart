@@ -21,4 +21,5 @@ class BackendApiConstants {
   static String minerConfig = "/minerconfig";
   static String systemInfo = "/systeminfo";
   static String appVersion = "/appversion";
+  static String coinData = "/coinData";
 }

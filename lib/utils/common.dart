@@ -1,10 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/models/logtext.dart';
-import 'package:ekatapoolcompanion/models/minerconfig.dart';
-import 'package:ekatapoolcompanion/pages/miner/coindatas.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -119,24 +116,24 @@ Future<bool> ensureCUDALoaderExist() async {
   return await File(cudaLoaderPath).exists();
 }
 
-CoinData? getCoinDataFromMinerConfig(MinerConfig? minerConfig) {
-  if (minerConfig != null && minerConfig.pools.isNotEmpty) {
-    final poolHost = minerConfig.pools.first.url;
-    final coinDataList = coinDatas.where((coinData) {
-      final coinPools = coinData.coinPools.where((coinPool) =>
-          ("${coinPool.poolAddress}:${coinPool.poolPortCPU}" == poolHost) ||
-          ("${coinPool.poolAddress}:${coinPool.poolPortGPU}" == poolHost));
-      if (coinPools.isNotEmpty) {
-        return true;
-      }
-      return false;
-    });
-    if (coinDataList.isNotEmpty) {
-      return coinDataList.first;
-    }
-  }
-  return null;
-}
+// CoinData? getCoinDataFromMinerConfig(MinerConfig? minerConfig) {
+//   if (minerConfig != null && minerConfig.pools.isNotEmpty) {
+//     final poolHost = minerConfig.pools.first.url;
+//     final coinDataList = coinDatas.where((coinData) {
+//       final coinPools = coinData.coinPools.where((coinPool) =>
+//           ("${coinPool.poolAddress}:${coinPool.poolPortCPU}" == poolHost) ||
+//           ("${coinPool.poolAddress}:${coinPool.poolPortGPU}" == poolHost));
+//       if (coinPools.isNotEmpty) {
+//         return true;
+//       }
+//       return false;
+//     });
+//     if (coinDataList.isNotEmpty) {
+//       return coinDataList.first;
+//     }
+//   }
+//   return null;
+// }
 
 Map<String, dynamic> getSystemInfo() {
   final systemInfo = {

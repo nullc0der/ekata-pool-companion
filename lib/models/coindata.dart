@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-List<CoinData> coinDatasFromJson(String string) =>
-    List<CoinData>.from(jsonDecode(string).map((x) => CoinData.fromJson(x)));
+List<CoinData> coinDatasFromJson(String string) => List<CoinData>.from(
+    jsonDecode(string)["results"].map((x) => CoinData.fromJson(x)));
 
 String coinDatasToJson(List<CoinData> coinDatas) =>
     jsonEncode(coinDatas.map((x) => x.toJson()));
@@ -9,51 +9,56 @@ String coinDatasToJson(List<CoinData> coinDatas) =>
 class CoinData {
   CoinData(
       {required this.coinName,
-      required this.coinLogoPath,
-      required this.coinPools,
+      required this.coinLogoUrl,
+      required this.pools,
       required this.coinAlgo,
-      required this.cpuMineable});
+      required this.cpuMineable,
+      required this.supportedMiningEngines});
 
   final String coinName;
-  final String coinLogoPath;
-  final List<CoinPool> coinPools;
+  final String coinLogoUrl;
+  final List<Pool> pools;
   final String coinAlgo;
   final bool cpuMineable;
+  final List<String> supportedMiningEngines;
 
   factory CoinData.fromJson(Map<String, dynamic> json) => CoinData(
       coinName: json["coinName"],
-      coinLogoPath: json["coinLogoPath"],
-      coinPools: json["coinPools"],
+      coinLogoUrl: json["coinLogoUrl"],
+      pools: List<Pool>.from(json["pools"].map((e) => Pool.fromJson(e))),
       coinAlgo: json["coinAlgo"],
-      cpuMineable: json["cpuMineable"]);
+      cpuMineable: json["cpuMineable"],
+      supportedMiningEngines:
+          List<String>.from(json["supportedMiningEngines"].map((e) => e)));
 
   Map<String, dynamic> toJson() => {
         "coinName": coinName,
-        "coinLogoPath": coinLogoPath,
-        "coinPools": coinPools,
+        "coinLogoUrl": coinLogoUrl,
+        "pools": pools,
         "coinAlgo": coinAlgo,
-        "cpuMineable": cpuMineable
+        "cpuMineable": cpuMineable,
+        "supportedMiningEngines": supportedMiningEngines
       };
 }
 
-class CoinPool {
-  CoinPool(
-      {required this.poolAddress,
-      required this.poolPortCPU,
-      required this.poolPortGPU});
+class Pool {
+  Pool(
+      {required this.poolName,
+      required this.region,
+      required this.urls,
+      required this.ports});
 
-  final String poolAddress;
-  final int poolPortCPU;
-  final int poolPortGPU;
+  final String poolName;
+  final String region;
+  final List<String> urls;
+  final List<int> ports;
 
-  factory CoinPool.fromJson(Map<String, dynamic> json) => CoinPool(
-      poolAddress: json["poolAddress"],
-      poolPortCPU: json["poolPortCPU"],
-      poolPortGPU: json["poolPortGPU"]);
+  factory Pool.fromJson(Map<String, dynamic> json) => Pool(
+      poolName: json["poolName"],
+      region: json["region"],
+      urls: List<String>.from(json["urls"].map((e) => e)),
+      ports: List<int>.from(json["ports"].map((e) => int.tryParse(e) ?? 0)));
 
-  Map<String, dynamic> toJson() => {
-        "poolAddress": poolAddress,
-        "poolPortCPU": poolPortCPU,
-        "poolPortGPU": poolPortGPU
-      };
+  Map<String, dynamic> toJson() =>
+      {"poolName": poolName, "region": region, "urls": urls, "ports": ports};
 }

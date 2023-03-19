@@ -81,8 +81,6 @@ class _AndroidMinerState extends State<AndroidMiner> {
       if (!minerStatusProvider.isMining) {
         _startMining();
       } else {
-        minerStatusProvider.sendNextHeartBeatInSeconds =
-            Constants.initialHeartBeatInSeconds;
         _sendHeartBeat();
       }
     }
@@ -92,7 +90,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
     final minerStatusProvider =
         Provider.of<MinerStatusProvider>(context, listen: false);
     final coinData =
-        getCoinDataFromMinerConfig(minerStatusProvider.minerConfig);
+        Provider.of<MinerStatusProvider>(context, listen: false).coinData;
     _fetchMinerSummaryPeriodically();
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
@@ -129,7 +127,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
   Future<bool> _stopMining() async {
     final minerConfig =
         Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
-    final coinData = getCoinDataFromMinerConfig(minerConfig);
+    final coinData =
+        Provider.of<MinerStatusProvider>(context, listen: false).coinData;
     _minerSummaryFetchTimer?.cancel();
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
@@ -395,7 +394,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
         Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
 
     final minerConfig = Provider.of<MinerStatusProvider>(context).minerConfig;
-    final coinData = getCoinDataFromMinerConfig(minerConfig);
+    final coinData = Provider.of<MinerStatusProvider>(context).coinData;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -415,10 +414,15 @@ class _AndroidMinerState extends State<AndroidMiner> {
                         const SizedBox(
                           width: 8,
                         ),
-                        Image(
-                          image: AssetImage(coinData.coinLogoPath),
+                        Image.network(
+                          coinData.coinLogoUrl,
                           width: 24,
                           height: 24,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                            Icons.close_rounded,
+                            color: Color(0xFF273951),
+                          ),
                         ),
                       ] else
                         Text(

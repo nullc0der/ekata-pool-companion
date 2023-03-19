@@ -88,8 +88,6 @@ class _DesktopMinerState extends State<DesktopMiner> {
       if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
         _startMining();
       } else {
-        Provider.of<MinerStatusProvider>(context, listen: false)
-            .sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
         _sendHeartBeat();
       }
     }
@@ -100,7 +98,8 @@ class _DesktopMinerState extends State<DesktopMiner> {
         Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
     final threadCount =
         Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
-    final coinData = getCoinDataFromMinerConfig(minerConfig);
+    final coinData =
+        Provider.of<MinerStatusProvider>(context, listen: false).coinData;
     if (DesktopMinerUtil.instance.initialized) {
       DesktopMinerUtil.instance.startMining().then((value) {
         _fetchMinerSummaryPeriodically();
@@ -137,7 +136,8 @@ class _DesktopMinerState extends State<DesktopMiner> {
         final minerConfig =
             Provider.of<MinerStatusProvider>(context, listen: false)
                 .minerConfig;
-        final coinData = getCoinDataFromMinerConfig(minerConfig);
+        final coinData =
+            Provider.of<MinerStatusProvider>(context, listen: false).coinData;
         _minerSummaryFetchTimer?.cancel();
         if (MatomoTracker.instance.initialized) {
           MatomoTracker.instance.trackEvent(
@@ -393,7 +393,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
     final minerConfig = Provider.of<MinerStatusProvider>(context).minerConfig;
     final selectedMinerBinary =
         Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
-    final coinData = getCoinDataFromMinerConfig(minerConfig);
+    final coinData = Provider.of<MinerStatusProvider>(context).coinData;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -413,10 +413,15 @@ class _DesktopMinerState extends State<DesktopMiner> {
                         const SizedBox(
                           width: 8,
                         ),
-                        Image(
-                          image: AssetImage(coinData.coinLogoPath),
+                        Image.network(
+                          coinData.coinLogoUrl,
                           width: 24,
                           height: 24,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(
+                            Icons.close_rounded,
+                            color: Color(0xFF273951),
+                          ),
                         ),
                       ] else
                         Text(
