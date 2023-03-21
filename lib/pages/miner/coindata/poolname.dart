@@ -20,8 +20,8 @@ class _PoolNameState extends State<PoolName> {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
           color: poolName.trim().toLowerCase() == selectedPoolName
-              ? Theme.of(context).primaryColor.withOpacity(0.56)
-              : Theme.of(context).primaryColor.withOpacity(0.23),
+              ? Theme.of(context).primaryColor.withOpacity(0.23)
+              : Colors.white,
           borderRadius: BorderRadius.circular(4)),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -43,6 +43,8 @@ class _PoolNameState extends State<PoolName> {
 
   @override
   Widget build(BuildContext context) {
+    // TODO: Remove next buttons (Discuss)
+
     final coinDataProvider = Provider.of<CoinDataProvider>(context);
     final selectedCoinData = coinDataProvider.selectedCoinData;
     final selectedPoolName = coinDataProvider.selectedPoolName;

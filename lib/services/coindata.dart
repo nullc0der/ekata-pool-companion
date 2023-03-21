@@ -8,13 +8,14 @@ class CoinDataService {
       required int perPage,
       required String alphaSort,
       required bool newestFirst,
-      required String searchQuery}) async {
+      required String searchQuery,
+      required bool cpuMineable}) async {
     try {
       final response = await http.get(Uri.parse(
           "${BackendApiConstants.baseUrl}${BackendApiConstants.coinData}"
           "?pageNumber=$pageNumber&perPage=$perPage"
           "&alphaSort=$alphaSort&newestFirst=$newestFirst"
-          "&searchQuery=$searchQuery"));
+          "&searchQuery=$searchQuery&cpuMineable=$cpuMineable"));
       if (response.statusCode == 200) {
         return coinDatasFromJson(response.body);
       }

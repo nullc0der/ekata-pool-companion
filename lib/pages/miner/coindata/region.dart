@@ -1,3 +1,4 @@
+import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:emoji_flag_converter/emoji_flag_converter.dart';
@@ -21,8 +22,8 @@ class _RegionState extends State<Region> {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
           color: region == selectedRegion
-              ? Theme.of(context).primaryColor.withOpacity(0.56)
-              : Theme.of(context).primaryColor.withOpacity(0.23),
+              ? Theme.of(context).primaryColor.withOpacity(0.23)
+              : Colors.white,
           borderRadius: BorderRadius.circular(4)),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -53,13 +54,11 @@ class _RegionState extends State<Region> {
     final selectedPoolName = coinDataProvider.selectedPoolName;
     final selectedRegion = coinDataProvider.selectedRegion;
 
-    final regions = selectedPoolName != null && selectedCoinData != null
-        ? Set<String>.from(selectedCoinData.pools.map((e) {
-            if (e.poolName.trim().toLowerCase() == selectedPoolName) {
-              return e.region;
-            }
-          }))
-        : <String>{};
+    final selectedPoolsRegions = selectedPoolName != null &&
+            selectedCoinData != null
+        ? Set<Pool>.from(selectedCoinData.pools
+            .where((e) => e.poolName.trim().toLowerCase() == selectedPoolName))
+        : <Pool>{};
 
     return Padding(
       padding: const EdgeInsets.all(8),
@@ -75,9 +74,9 @@ class _RegionState extends State<Region> {
           ),
           Expanded(
               child: ListView(
-            children: regions.isNotEmpty
-                ? regions
-                    .map((e) => _renderOneRegion(e, selectedRegion))
+            children: selectedPoolsRegions.isNotEmpty
+                ? selectedPoolsRegions
+                    .map((e) => _renderOneRegion(e.region, selectedRegion))
                     .toList()
                 : [
                     Container(

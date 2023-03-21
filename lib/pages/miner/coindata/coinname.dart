@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
+import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/services/coindata.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
@@ -24,7 +25,7 @@ class _CoinNameState extends State<CoinName> {
   int _pageNumber = 0;
   String _searchQueryString = "";
   String _alphaSort = "asc";
-  bool _newestFirst = true;
+  final bool _newestFirst = true;
   Timer? _searchDebounce;
   int _lastCoinDataCount = 0;
   bool _hasReachedBottom = false;
@@ -42,6 +43,8 @@ class _CoinNameState extends State<CoinName> {
   }
 
   Future<void> _fetchCoinDatas({bool appendData = false}) async {
+    String? gpuVendor =
+        Provider.of<MinerStatusProvider>(context, listen: false).gpuVendor;
     try {
       setState(() {
         _coinDataFetching = true;
@@ -52,7 +55,8 @@ class _CoinNameState extends State<CoinName> {
           perPage: 10,
           alphaSort: _alphaSort,
           newestFirst: _newestFirst,
-          searchQuery: _searchQueryString);
+          searchQuery: _searchQueryString,
+          cpuMineable: gpuVendor != null);
       if (appendData) {
         Provider.of<CoinDataProvider>(context, listen: false)
             .addCoinDatas(coinDatas);
@@ -78,6 +82,14 @@ class _CoinNameState extends State<CoinName> {
     }
   }
 
+  void _resetCoinDataAndCount() {
+    Provider.of<CoinDataProvider>(context, listen: false).coinDatas = [];
+    setState(() {
+      _hasReachedBottom = false;
+      _lastCoinDataCount = 0;
+    });
+  }
+
   Widget _renderOneCoinName(CoinData coinData, CoinData? selectedCoinData) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -86,7 +98,7 @@ class _CoinNameState extends State<CoinName> {
           color: selectedCoinData != null &&
                   coinData.coinName == selectedCoinData.coinName
               ? Theme.of(context).primaryColor.withOpacity(0.56)
-              : Theme.of(context).primaryColor.withOpacity(0.23),
+              : Colors.white,
           borderRadius: BorderRadius.circular(4)),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -136,6 +148,7 @@ class _CoinNameState extends State<CoinName> {
                 setState(() {
                   _searchQueryString = value;
                 });
+                _resetCoinDataAndCount();
                 _fetchCoinDatas();
               }
             });
@@ -149,6 +162,7 @@ class _CoinNameState extends State<CoinName> {
                 setState(() {
                   _alphaSort = _alphaSort == "asc" ? "desc" : "asc";
                 });
+                _resetCoinDataAndCount();
                 _fetchCoinDatas();
               },
               child: Icon(
@@ -159,24 +173,24 @@ class _CoinNameState extends State<CoinName> {
                 color: Theme.of(context).primaryColor.withOpacity(0.56),
               ),
             )),
-        Positioned(
-            right: 30,
-            top: 15,
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _newestFirst = !_newestFirst;
-                });
-                _fetchCoinDatas();
-              },
-              child: Icon(
-                _newestFirst
-                    ? FontAwesome5.sort_numeric_down_alt
-                    : FontAwesome5.sort_numeric_down,
-                size: 18,
-                color: Theme.of(context).primaryColor.withOpacity(0.56),
-              ),
-            ))
+        // Positioned(
+        //     right: 30,
+        //     top: 15,
+        //     child: GestureDetector(
+        //       onTap: () {
+        //         setState(() {
+        //           _newestFirst = !_newestFirst;
+        //         });
+        //         _fetchCoinDatas();
+        //       },
+        //       child: Icon(
+        //         _newestFirst
+        //             ? FontAwesome5.sort_numeric_down_alt
+        //             : FontAwesome5.sort_numeric_down,
+        //         size: 18,
+        //         color: Theme.of(context).primaryColor.withOpacity(0.56),
+        //       ),
+        //     ))
       ],
     );
   }

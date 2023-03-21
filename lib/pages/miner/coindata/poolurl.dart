@@ -20,8 +20,8 @@ class _PoolUrlState extends State<PoolUrl> {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
           color: poolUrl == selectedPoolUrl
-              ? Theme.of(context).primaryColor.withOpacity(0.56)
-              : Theme.of(context).primaryColor.withOpacity(0.23),
+              ? Theme.of(context).primaryColor.withOpacity(0.23)
+              : Colors.white,
           borderRadius: BorderRadius.circular(4)),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
