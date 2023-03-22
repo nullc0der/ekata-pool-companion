@@ -28,6 +28,8 @@ class _PoolPortState extends State<PoolPort> {
         onTap: () {
           Provider.of<CoinDataProvider>(context, listen: false)
               .selectedPoolPort = poolPort;
+          widget.setCurrentCoinDataWizardStep(
+              CoinDataWizardStep.walletAddressInput);
         },
         child: Row(
           children: [
@@ -85,9 +87,10 @@ class _PoolPortState extends State<PoolPort> {
                   ],
           )),
           Row(
-            mainAxisAlignment: selectedPoolPort != null
-                ? MainAxisAlignment.spaceBetween
-                : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            // mainAxisAlignment: selectedPoolPort != null
+            //     ? MainAxisAlignment.spaceBetween
+            //     : MainAxisAlignment.center,
             children: [
               OutlinedButton(
                   onPressed: () {
@@ -97,12 +100,12 @@ class _PoolPortState extends State<PoolPort> {
                         CoinDataWizardStep.poolUrlSelect);
                   },
                   child: const Text("Select Pool Url")),
-              if (selectedPoolPort != null)
-                ElevatedButton(
-                    onPressed: () {
-                      widget.setCurrentCoinDataWizardStep(null);
-                    },
-                    child: const Text("Done"))
+              // if (selectedPoolPort != null)
+              //   ElevatedButton(
+              //       onPressed: () {
+              //         widget.setCurrentCoinDataWizardStep(null);
+              //       },
+              //       child: const Text("Done"))
             ],
           )
         ],

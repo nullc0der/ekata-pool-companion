@@ -74,6 +74,7 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
 
   Future<UsersMinerConfig> _getFinalMinerConfig(
       UsersMinerConfig usersMinerConfig) async {
+    // TODO: Need to test if pool cred found properly
     final prefs = await SharedPreferences.getInstance();
     final poolCredentialsPrefs =
         prefs.getString(Constants.poolCredentialsSharedPrefs);

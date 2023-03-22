@@ -28,6 +28,7 @@ class _PoolNameState extends State<PoolName> {
         onTap: () {
           Provider.of<CoinDataProvider>(context, listen: false)
               .selectedPoolName = poolName.trim().toLowerCase();
+          widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.regionSelect);
         },
         child: Row(
           children: [
@@ -82,9 +83,10 @@ class _PoolNameState extends State<PoolName> {
                   ],
           )),
           Row(
-            mainAxisAlignment: selectedPoolName != null
-                ? MainAxisAlignment.spaceBetween
-                : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            // mainAxisAlignment: selectedPoolName != null
+            //     ? MainAxisAlignment.spaceBetween
+            //     : MainAxisAlignment.center,
             children: [
               OutlinedButton(
                   onPressed: () {
@@ -94,13 +96,13 @@ class _PoolNameState extends State<PoolName> {
                         CoinDataWizardStep.coinNameSelect);
                   },
                   child: const Text("Select Coin")),
-              if (selectedPoolName != null)
-                ElevatedButton(
-                    onPressed: () {
-                      widget.setCurrentCoinDataWizardStep(
-                          CoinDataWizardStep.regionSelect);
-                    },
-                    child: const Text("Select Region"))
+              // if (selectedPoolName != null)
+              //   ElevatedButton(
+              //       onPressed: () {
+              //         widget.setCurrentCoinDataWizardStep(
+              //             CoinDataWizardStep.regionSelect);
+              //       },
+              //       child: const Text("Select Region"))
             ],
           )
         ],

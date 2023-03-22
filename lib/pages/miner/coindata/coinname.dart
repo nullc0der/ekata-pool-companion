@@ -56,7 +56,7 @@ class _CoinNameState extends State<CoinName> {
           alphaSort: _alphaSort,
           newestFirst: _newestFirst,
           searchQuery: _searchQueryString,
-          cpuMineable: gpuVendor != null);
+          cpuMineable: gpuVendor == null);
       if (appendData) {
         Provider.of<CoinDataProvider>(context, listen: false)
             .addCoinDatas(coinDatas);
@@ -105,6 +105,8 @@ class _CoinNameState extends State<CoinName> {
         onTap: () {
           Provider.of<CoinDataProvider>(context, listen: false)
               .selectedCoinData = coinData;
+          widget
+              .setCurrentCoinDataWizardStep(CoinDataWizardStep.poolNameSelect);
         },
         child: Row(
           children: [
@@ -140,7 +142,7 @@ class _CoinNameState extends State<CoinName> {
             child: TextField(
           decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              hintText: "Search by coin name or algo"),
+              labelText: "Search by coin name or algo"),
           onChanged: (value) {
             if (_searchDebounce?.isActive ?? false) _searchDebounce?.cancel();
             _searchDebounce = Timer(const Duration(milliseconds: 500), () {
@@ -268,9 +270,10 @@ class _CoinNameState extends State<CoinName> {
                                       Theme.of(context).textTheme.labelLarge),
                     )),
           Row(
-            mainAxisAlignment: selectedCoinData != null
-                ? MainAxisAlignment.spaceBetween
-                : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            // mainAxisAlignment: selectedCoinData != null
+            //     ? MainAxisAlignment.spaceBetween
+            //     : MainAxisAlignment.center,
             children: [
               OutlinedButton(
                   onPressed: () {
@@ -283,13 +286,13 @@ class _CoinNameState extends State<CoinName> {
                     widget.setCurrentCoinDataWizardStep(null);
                   },
                   child: const Text("Start Over")),
-              if (selectedCoinData != null)
-                ElevatedButton(
-                    onPressed: () {
-                      widget.setCurrentCoinDataWizardStep(
-                          CoinDataWizardStep.poolNameSelect);
-                    },
-                    child: const Text("Select Pool"))
+              // if (selectedCoinData != null)
+              //   ElevatedButton(
+              //       onPressed: () {
+              //         widget.setCurrentCoinDataWizardStep(
+              //             CoinDataWizardStep.poolNameSelect);
+              //       },
+              //       child: const Text("Select Pool"))
             ],
           )
         ],

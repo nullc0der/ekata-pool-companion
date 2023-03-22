@@ -8,7 +8,6 @@ import 'package:ekatapoolcompanion/pages/miner/desktop_miner.dart';
 import 'package:ekatapoolcompanion/pages/miner/final_miner_config.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner_support.dart';
 import 'package:ekatapoolcompanion/pages/miner/user_miner_config.dart';
-import 'package:ekatapoolcompanion/pages/miner/walletaddress.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
@@ -16,13 +15,7 @@ import 'package:provider/provider.dart';
 
 //TODO: Cleanup - Old files, commented codes, image assets
 
-enum WizardStep {
-  coinNameSelect,
-  walletAddressInput,
-  minerConfig,
-  usersMinerConfigs,
-  miner
-}
+enum WizardStep { coinNameSelect, minerConfig, usersMinerConfigs, miner }
 
 class Miner extends StatefulWidget {
   const Miner({Key? key}) : super(key: key);
@@ -270,8 +263,8 @@ class _MinerState extends State<Miner> {
     switch (wizardStep) {
       case WizardStep.coinNameSelect:
         return CoinDataWidget(setCurrentWizardStep: _setCurrentWizardStep);
-      case WizardStep.walletAddressInput:
-        return WalletAddress(setCurrentWizardStep: _setCurrentWizardStep);
+      // case WizardStep.walletAddressInput:
+      //   return WalletAddress(setCurrentWizardStep: _setCurrentWizardStep);
       case WizardStep.minerConfig:
         return FinalMinerConfig(
           setCurrentWizardStep: _setCurrentWizardStep,

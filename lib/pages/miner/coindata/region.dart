@@ -30,6 +30,7 @@ class _RegionState extends State<Region> {
         onTap: () {
           Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
               region;
+          widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.poolUrlSelect);
         },
         child: Row(
           children: [
@@ -88,9 +89,10 @@ class _RegionState extends State<Region> {
                   ],
           )),
           Row(
-            mainAxisAlignment: selectedRegion != null
-                ? MainAxisAlignment.spaceBetween
-                : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            // mainAxisAlignment: selectedRegion != null
+            //     ? MainAxisAlignment.spaceBetween
+            //     : MainAxisAlignment.center,
             children: [
               OutlinedButton(
                   onPressed: () {
@@ -100,13 +102,13 @@ class _RegionState extends State<Region> {
                         CoinDataWizardStep.poolNameSelect);
                   },
                   child: const Text("Select Pool")),
-              if (selectedRegion != null)
-                ElevatedButton(
-                    onPressed: () {
-                      widget.setCurrentCoinDataWizardStep(
-                          CoinDataWizardStep.poolUrlSelect);
-                    },
-                    child: const Text("Select Url"))
+              // if (selectedRegion != null)
+              //   ElevatedButton(
+              //       onPressed: () {
+              //         widget.setCurrentCoinDataWizardStep(
+              //             CoinDataWizardStep.poolUrlSelect);
+              //       },
+              //       child: const Text("Select Url"))
             ],
           )
         ],

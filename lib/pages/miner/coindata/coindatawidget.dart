@@ -1,15 +1,19 @@
 import 'package:ekatapoolcompanion/models/coindata.dart' show CoinData;
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coinname.dart';
+import 'package:ekatapoolcompanion/pages/miner/coindata/miningengine.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/poolname.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/poolport.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/poolurl.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/region.dart';
+import 'package:ekatapoolcompanion/pages/miner/coindata/walletaddress.dart';
 import 'package:ekatapoolcompanion/pages/miner/currentlymining.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:provider/provider.dart';
 
 enum CoinDataWizardStep {
@@ -17,7 +21,9 @@ enum CoinDataWizardStep {
   poolNameSelect,
   regionSelect,
   poolUrlSelect,
-  portSelect
+  portSelect,
+  walletAddressInput,
+  miningEngineSelect
 }
 
 class CoinDataWidget extends StatefulWidget {
@@ -61,7 +67,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
             ),
             const Spacer(),
             const Icon(
-              Icons.arrow_circle_right_rounded,
+              FontAwesome5.pencil_alt,
               size: 18,
               color: Color(0xFF273951),
             )
@@ -77,6 +83,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
     final selectedRegion = coinDataProvider.selectedRegion;
     final selectedPoolUrl = coinDataProvider.selectedPoolUrl;
     final selectedPoolPort = coinDataProvider.selectedPoolPort;
+    final walletAddress = coinDataProvider.walletAddress;
+    final selectedMiningBinary = coinDataProvider.selectedMinerBinary;
 
     return Card(
       child: Padding(
@@ -129,6 +137,23 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                       size: 24,
                       color: Color(0xFF273951),
                     )),
+              if (walletAddress.isNotEmpty) ...[
+                _showOneCoinData(
+                    "${walletAddress.substring(walletAddress.length - 8)} (Last 8 char)",
+                    CoinDataWizardStep.walletAddressInput,
+                    icon: const Icon(
+                      Icons.wallet,
+                      size: 24,
+                      color: Color(0xFF273951),
+                    )),
+                _showOneCoinData(selectedMiningBinary.name,
+                    CoinDataWizardStep.miningEngineSelect,
+                    icon: const Icon(
+                      Icons.developer_board,
+                      size: 24,
+                      color: Color(0xFF273951),
+                    ))
+              ]
             ],
             if (selectedCoinData == null)
               _showOneCoinData(
@@ -155,9 +180,41 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
             const SizedBox(
               height: 8,
             ),
-            Text(
-              "URL to be used for mining: ${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
-              style: Theme.of(context).textTheme.labelMedium,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "URL to be used for mining: ${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                  if (coinDataProvider.threadCount != null)
+                    Text(
+                      "Thread count: ${coinDataProvider.threadCount.toString()}",
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                  if (coinDataProvider.selectedMinerBinary ==
+                      MinerBinary.xmrigCC) ...[
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    Text(
+                      "XmrigCC Options",
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    Text(
+                      "Server URL: ${coinDataProvider.xmrigCCServerUrl}",
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    Text("Server Token: ${coinDataProvider.xmrigCCServerToken}",
+                        style: Theme.of(context).textTheme.labelMedium),
+                    if (coinDataProvider.xmrigCCWorkerId != null)
+                      Text("Worker Id: ${coinDataProvider.xmrigCCWorkerId}",
+                          style: Theme.of(context).textTheme.labelMedium)
+                  ],
+                ],
+              ),
             ),
             const SizedBox(
               height: 8,
@@ -180,7 +237,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                           algo: selectedCoinData.coinAlgo,
                           url:
                               "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
-                          user: "")
+                          user: coinDataProvider.walletAddress)
                     ]);
                     if (deviceHasGPU) {
                       if (gpuVendor.toLowerCase() == "nvidia") {
@@ -194,10 +251,27 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     }
                     Provider.of<MinerStatusProvider>(context, listen: false)
                         .minerConfig = minerConfig;
-                    widget.setCurrentWizardStep(WizardStep.walletAddressInput);
+                    if (coinDataProvider.threadCount != null) {
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                          .threadCount = coinDataProvider.threadCount;
+                    }
+                    Provider.of<MinerStatusProvider>(context, listen: false)
+                            .selectedMinerBinary =
+                        coinDataProvider.selectedMinerBinary;
+                    if (coinDataProvider.selectedMinerBinary ==
+                        MinerBinary.xmrigCC) {
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                          .xmrigCCServerUrl = coinDataProvider.xmrigCCServerUrl;
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                              .xmrigCCServerToken =
+                          coinDataProvider.xmrigCCServerToken;
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                          .xmrigCCWorkerId = coinDataProvider.xmrigCCWorkerId;
+                    }
+                    widget.setCurrentWizardStep(WizardStep.minerConfig);
                   }
                 },
-                child: const Text("Proceed"),
+                child: const Text("Review final config"),
                 style: ElevatedButton.styleFrom(
                     minimumSize: const Size.fromHeight(35)),
               ),
@@ -276,6 +350,12 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
         return PoolPort(
           setCurrentCoinDataWizardStep: _setCurrentCoinDataWizardStep,
         );
+      case CoinDataWizardStep.walletAddressInput:
+        return WalletAddress(
+            setCurrentCoinDataWizardStep: _setCurrentCoinDataWizardStep);
+      case CoinDataWizardStep.miningEngineSelect:
+        return MiningEngine(
+            setCurrentCoinDataWizardStep: _setCurrentCoinDataWizardStep);
       case null:
         return _showCoinData(coinDataProvider);
     }
