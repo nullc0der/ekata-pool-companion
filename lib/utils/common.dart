@@ -116,25 +116,6 @@ Future<bool> ensureCUDALoaderExist() async {
   return await File(cudaLoaderPath).exists();
 }
 
-// CoinData? getCoinDataFromMinerConfig(MinerConfig? minerConfig) {
-//   if (minerConfig != null && minerConfig.pools.isNotEmpty) {
-//     final poolHost = minerConfig.pools.first.url;
-//     final coinDataList = coinDatas.where((coinData) {
-//       final coinPools = coinData.coinPools.where((coinPool) =>
-//           ("${coinPool.poolAddress}:${coinPool.poolPortCPU}" == poolHost) ||
-//           ("${coinPool.poolAddress}:${coinPool.poolPortGPU}" == poolHost));
-//       if (coinPools.isNotEmpty) {
-//         return true;
-//       }
-//       return false;
-//     });
-//     if (coinDataList.isNotEmpty) {
-//       return coinDataList.first;
-//     }
-//   }
-//   return null;
-// }
-
 Map<String, dynamic> getSystemInfo() {
   final systemInfo = {
     "platform": Platform.operatingSystem,
@@ -234,4 +215,12 @@ Future<String> saveMinerConfigToFile(String config) async {
   final file = await File("${directory.path}/epc_xmrig_config.json")
       .writeAsString(config);
   return file.path;
+}
+
+String getRandomString(int length) {
+  final random = Random.secure();
+  const _chars =
+      'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  return List.generate(length, (index) => _chars[random.nextInt(_chars.length)])
+      .join();
 }

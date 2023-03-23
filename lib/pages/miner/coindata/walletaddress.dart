@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
+import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,7 @@ class _WalletAddressState extends State<WalletAddress> {
   final _walletAddressFormKey = GlobalKey<FormState>();
   final _walletAddressFieldController = TextEditingController();
   final _passwordFieldController = TextEditingController();
+  final _rigIdFieldController = TextEditingController();
 
   @override
   void initState() {
@@ -29,7 +31,7 @@ class _WalletAddressState extends State<WalletAddress> {
         Provider.of<CoinDataProvider>(context, listen: false);
     if (coinDataProvider.selectedPoolUrl != null &&
         coinDataProvider.selectedPoolPort != null) {
-      _loadWalletAddressAndPassword(
+      _loadPoolCredentials(
           "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}");
     }
   }
@@ -40,7 +42,7 @@ class _WalletAddressState extends State<WalletAddress> {
     super.dispose();
   }
 
-  Future<void> _loadWalletAddressAndPassword(String poolAddress) async {
+  Future<void> _loadPoolCredentials(String poolAddress) async {
     final prefs = await SharedPreferences.getInstance();
     String walletAddresses =
         prefs.getString(Constants.walletAddressesKeySharedPrefs) ?? "";
@@ -50,25 +52,34 @@ class _WalletAddressState extends State<WalletAddress> {
           .where((address) => address["poolAddress"] == poolAddress);
       if (addresses.isNotEmpty) {
         final address = addresses.first;
+        final rigId = address["rigId"] != null
+            ? address["rigId"].isNotEmpty
+                ? address["rigId"]
+                : getRandomString(6)
+            : getRandomString(6);
         Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
             address["walletAddress"];
         Provider.of<CoinDataProvider>(context, listen: false).password =
             address["password"];
+        Provider.of<CoinDataProvider>(context, listen: false).rigId = rigId;
         _walletAddressFieldController.text = address["walletAddress"];
         _passwordFieldController.text = address["password"] ?? "";
+        _rigIdFieldController.text = rigId;
       } else {
         _walletAddressFieldController.text = "";
         _passwordFieldController.text = "";
+        _rigIdFieldController.text = getRandomString(6);
       }
     }
   }
 
-  Future<void> _saveWalletAddressAndPassword(String poolAddress) async {
+  Future<void> _savePoolCredentials(String poolAddress) async {
     final prefs = await SharedPreferences.getInstance();
     final walletAddress = _walletAddressFieldController.text;
     final password = _passwordFieldController.text.isNotEmpty
         ? _passwordFieldController.text
         : null;
+    final rigId = _rigIdFieldController.text;
     if (walletAddress.isNotEmpty) {
       String walletAddresses =
           prefs.getString(Constants.walletAddressesKeySharedPrefs) ?? "";
@@ -81,12 +92,14 @@ class _WalletAddressState extends State<WalletAddress> {
           var index = addressesJson.indexOf(address);
           address["walletAddress"] = walletAddress;
           address["password"] = password;
+          address["rigId"] = rigId;
           addressesJson[index] = address;
         } else {
           var address = {
             "poolAddress": poolAddress,
             "walletAddress": walletAddress,
-            "password": password
+            "password": password,
+            "rigId": rigId
           };
           addressesJson.add(address);
         }
@@ -97,7 +110,8 @@ class _WalletAddressState extends State<WalletAddress> {
           {
             "poolAddress": poolAddress,
             "walletAddress": walletAddress,
-            "password": password
+            "password": password,
+            "rigId": rigId
           }
         ];
         prefs.setString(
@@ -106,6 +120,7 @@ class _WalletAddressState extends State<WalletAddress> {
       Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
           walletAddress;
       Provider.of<CoinDataProvider>(context, listen: false).password = password;
+      Provider.of<CoinDataProvider>(context, listen: false).rigId = rigId;
     }
   }
 
@@ -167,6 +182,23 @@ class _WalletAddressState extends State<WalletAddress> {
                         _passwordFieldController.text = password;
                       }
                     },
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  TextFormField(
+                    controller: _rigIdFieldController,
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Enter rig id",
+                        hintText: "Enter a rig id if the pool supports"),
+                    onSaved: (rigId) {
+                      if (rigId != null &&
+                          coinDataProvider.selectedPoolUrl != null &&
+                          coinDataProvider.selectedPoolPort != null) {
+                        _rigIdFieldController.text = rigId;
+                      }
+                    },
                   )
                 ],
               )),
@@ -185,7 +217,7 @@ class _WalletAddressState extends State<WalletAddress> {
                       onPressed: () {
                         if (_walletAddressFormKey.currentState!.validate()) {
                           _walletAddressFormKey.currentState!.save();
-                          _saveWalletAddressAndPassword(
+                          _savePoolCredentials(
                               "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}");
                           widget.setCurrentCoinDataWizardStep(
                               CoinDataWizardStep.miningEngineSelect);

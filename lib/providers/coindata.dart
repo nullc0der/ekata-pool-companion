@@ -20,6 +20,7 @@ class CoinDataProvider extends ChangeNotifier {
   String? _xmrigCCServerToken;
   String? _xmrigCCWorkerId;
   String? _password;
+  String? _rigId;
 
   List<CoinData> get coinDatas => _coinDatas;
 
@@ -46,6 +47,8 @@ class CoinDataProvider extends ChangeNotifier {
   String? get xmrigCCWorkerId => _xmrigCCWorkerId;
 
   String? get password => _password;
+
+  String? get rigId => _rigId;
 
   set coinDatas(List<CoinData> coinDatas) {
     _coinDatas = coinDatas;
@@ -109,6 +112,11 @@ class CoinDataProvider extends ChangeNotifier {
 
   set password(String? password) {
     _password = password;
+    notifyListeners();
+  }
+
+  set rigId(String? rigId) {
+    _rigId = rigId;
     notifyListeners();
   }
 

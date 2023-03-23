@@ -238,7 +238,11 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                           url:
                               "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
                           user: coinDataProvider.walletAddress,
-                          pass: coinDataProvider.password)
+                          pass: coinDataProvider.password,
+                          rigId: coinDataProvider.rigId != null &&
+                                  coinDataProvider.rigId!.isNotEmpty
+                              ? coinDataProvider.rigId
+                              : null)
                     ]);
                     if (deviceHasGPU) {
                       if (gpuVendor.toLowerCase() == "nvidia") {
