@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
+import 'package:ekatapoolcompanion/utils/common.dart';
+import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MiningEngine extends StatefulWidget {
   const MiningEngine({Key? key, required this.setCurrentCoinDataWizardStep})
@@ -26,12 +31,7 @@ class _MiningEngineState extends State<MiningEngine> {
     super.initState();
     final coinDataProvider =
         Provider.of<CoinDataProvider>(context, listen: false);
-    _xmrigCCServerUrlFieldController.text =
-        coinDataProvider.xmrigCCServerUrl ?? "";
-    _xmrigCCServerTokenFieldController.text =
-        coinDataProvider.xmrigCCServerToken ?? "";
-    _xmrigCCWorkerIdFieldController.text =
-        coinDataProvider.xmrigCCWorkerId ?? "";
+    _loadXmrigCCOptions();
     if (coinDataProvider.threadCount != null) {
       _threadCountFieldController.text =
           coinDataProvider.threadCount.toString();
@@ -45,6 +45,56 @@ class _MiningEngineState extends State<MiningEngine> {
     _xmrigCCWorkerIdFieldController.dispose();
     _threadCountFieldController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadXmrigCCOptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    String xmrigCCOptions =
+        prefs.getString(Constants.xmrigCCOptionsSharedPrefs) ?? "";
+    if (xmrigCCOptions.isNotEmpty) {
+      final xmrigCCOptionsJson = jsonDecode(xmrigCCOptions);
+      if (xmrigCCOptionsJson.isNotEmpty) {
+        Provider.of<CoinDataProvider>(context, listen: false).xmrigCCServerUrl =
+            xmrigCCOptionsJson["xmrigCCServerUrl"];
+        Provider.of<CoinDataProvider>(context, listen: false)
+            .xmrigCCServerToken = xmrigCCOptionsJson["xmrigCCServerToken"];
+        Provider.of<CoinDataProvider>(context, listen: false).xmrigCCWorkerId =
+            xmrigCCOptionsJson["xmrigCCWorkerId"];
+        _xmrigCCServerUrlFieldController.text =
+            xmrigCCOptionsJson["xmrigCCServerUrl"];
+        _xmrigCCServerTokenFieldController.text =
+            xmrigCCOptionsJson["xmrigCCServerToken"];
+        _xmrigCCWorkerIdFieldController.text =
+            xmrigCCOptionsJson["xmrigCCWorkerId"] != null &&
+                    xmrigCCOptionsJson["xmrigCCWorkerId"].isNotEmpty
+                ? xmrigCCOptionsJson["xmrigCCWorkerId"]
+                : "epc-worker-${getRandomString(6)}";
+      } else {
+        _xmrigCCServerUrlFieldController.text = "127.0.0.1:3344";
+        _xmrigCCWorkerIdFieldController.text =
+            "epc-worker-${getRandomString(6)}";
+      }
+    } else {
+      _xmrigCCServerUrlFieldController.text = "127.0.0.1:3344";
+      _xmrigCCWorkerIdFieldController.text = "epc-worker-${getRandomString(6)}";
+    }
+  }
+
+  Future<void> _saveXmrigCCOptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    Provider.of<CoinDataProvider>(context, listen: false).xmrigCCServerUrl =
+        _xmrigCCServerUrlFieldController.text;
+    Provider.of<CoinDataProvider>(context, listen: false).xmrigCCServerToken =
+        _xmrigCCServerTokenFieldController.text;
+    Provider.of<CoinDataProvider>(context, listen: false).xmrigCCWorkerId =
+        _xmrigCCWorkerIdFieldController.text;
+    prefs.setString(
+        Constants.xmrigCCOptionsSharedPrefs,
+        jsonEncode({
+          "xmrigCCServerUrl": _xmrigCCServerUrlFieldController.text,
+          "xmrigCCServerToken": _xmrigCCServerTokenFieldController.text,
+          "xmrigCCWorkerId": _xmrigCCWorkerIdFieldController.text
+        }));
   }
 
   Widget _getThreadCountInput() {
@@ -117,8 +167,7 @@ class _MiningEngineState extends State<MiningEngine> {
             return null;
           },
           onSaved: (value) {
-            Provider.of<CoinDataProvider>(context, listen: false)
-                .xmrigCCServerUrl = value;
+            _xmrigCCServerUrlFieldController.text = value ?? "";
           },
         ),
         const SizedBox(
@@ -139,8 +188,7 @@ class _MiningEngineState extends State<MiningEngine> {
             return null;
           },
           onSaved: (value) {
-            Provider.of<CoinDataProvider>(context, listen: false)
-                .xmrigCCServerToken = value;
+            _xmrigCCServerTokenFieldController.text = value ?? "";
           },
         ),
         const SizedBox(
@@ -153,8 +201,7 @@ class _MiningEngineState extends State<MiningEngine> {
               labelText: "xmrigCC Worker ID (Optional)"),
           onSaved: (value) {
             if (value != null && value.isNotEmpty) {
-              Provider.of<CoinDataProvider>(context, listen: false)
-                  .xmrigCCWorkerId = value;
+              _xmrigCCWorkerIdFieldController.text = value ?? "";
             }
           },
         ),
@@ -208,10 +255,10 @@ class _MiningEngineState extends State<MiningEngine> {
                       },
                       child: const Text("Input wallet address")),
                   ElevatedButton(
-                      // TODO: If possible pull onsaved function from formfield here
                       onPressed: () {
                         if (_miningEngineFormKey.currentState!.validate()) {
                           _miningEngineFormKey.currentState!.save();
+                          _saveXmrigCCOptions();
                           widget.setCurrentCoinDataWizardStep(null);
                         }
                       },

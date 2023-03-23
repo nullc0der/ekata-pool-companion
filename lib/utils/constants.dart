@@ -18,6 +18,7 @@ class Constants {
   static const userIdSharedPrefs = "USER_ID";
   static const currentAppVersionSharedPrefs = "CURRENT_APP_VERSION";
   static const poolCredentialsSharedPrefs = "POOL_CREDENTIALS";
+  static const xmrigCCOptionsSharedPrefs = "XMRIGCC_OPTIONS";
   static const initialHeartBeatInSeconds = 60;
   static const supportedAlgo = [
     "gr",

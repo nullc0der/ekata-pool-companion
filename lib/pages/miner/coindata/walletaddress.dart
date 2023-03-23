@@ -39,6 +39,8 @@ class _WalletAddressState extends State<WalletAddress> {
   @override
   void dispose() {
     _walletAddressFieldController.dispose();
+    _passwordFieldController.dispose();
+    _rigIdFieldController.dispose();
     super.dispose();
   }
 
@@ -66,10 +68,10 @@ class _WalletAddressState extends State<WalletAddress> {
         _passwordFieldController.text = address["password"] ?? "";
         _rigIdFieldController.text = rigId;
       } else {
-        _walletAddressFieldController.text = "";
-        _passwordFieldController.text = "";
         _rigIdFieldController.text = getRandomString(6);
       }
+    } else {
+      _rigIdFieldController.text = getRandomString(6);
     }
   }
 
