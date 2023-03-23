@@ -139,7 +139,9 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     )),
               if (walletAddress.isNotEmpty) ...[
                 _showOneCoinData(
-                    "${walletAddress.substring(walletAddress.length - 8)} (Showing last 8 char)",
+                    walletAddress.length >= 8
+                        ? "${walletAddress.substring(walletAddress.length - 8)} (Showing last 8 char)"
+                        : walletAddress,
                     CoinDataWizardStep.walletAddressInput,
                     icon: const Icon(
                       Icons.wallet,
