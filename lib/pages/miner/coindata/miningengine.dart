@@ -182,24 +182,21 @@ class _MiningEngineState extends State<MiningEngine> {
                 height: 8,
               ),
               Expanded(
-                  child: Container(
-                alignment: Alignment.center,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _getMinerBackendDropdown(selectedMinerBinary),
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _getMinerBackendDropdown(selectedMinerBinary),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  if (selectedMinerBinary == MinerBinary.xmrigCC) ...[
+                    _getXmrigCCOptions(),
                     const SizedBox(
                       height: 8,
-                    ),
-                    if (selectedMinerBinary == MinerBinary.xmrigCC) ...[
-                      _getXmrigCCOptions(),
-                      const SizedBox(
-                        height: 8,
-                      )
-                    ],
-                    _getThreadCountInput()
+                    )
                   ],
-                ),
+                  _getThreadCountInput()
+                ],
               )),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -211,6 +208,7 @@ class _MiningEngineState extends State<MiningEngine> {
                       },
                       child: const Text("Input wallet address")),
                   ElevatedButton(
+                      // TODO: If possible pull onsaved function from formfield here
                       onPressed: () {
                         if (_miningEngineFormKey.currentState!.validate()) {
                           _miningEngineFormKey.currentState!.save();

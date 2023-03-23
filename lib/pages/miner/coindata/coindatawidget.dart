@@ -139,7 +139,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     )),
               if (walletAddress.isNotEmpty) ...[
                 _showOneCoinData(
-                    "${walletAddress.substring(walletAddress.length - 8)} (Last 8 char)",
+                    "${walletAddress.substring(walletAddress.length - 8)} (Showing last 8 char)",
                     CoinDataWizardStep.walletAddressInput,
                     icon: const Icon(
                       Icons.wallet,
@@ -237,7 +237,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                           algo: selectedCoinData.coinAlgo,
                           url:
                               "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
-                          user: coinDataProvider.walletAddress)
+                          user: coinDataProvider.walletAddress,
+                          pass: coinDataProvider.password)
                     ]);
                     if (deviceHasGPU) {
                       if (gpuVendor.toLowerCase() == "nvidia") {

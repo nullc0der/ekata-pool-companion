@@ -20,6 +20,7 @@ class WalletAddress extends StatefulWidget {
 class _WalletAddressState extends State<WalletAddress> {
   final _walletAddressFormKey = GlobalKey<FormState>();
   final _walletAddressFieldController = TextEditingController();
+  final _passwordFieldController = TextEditingController();
 
   @override
   void initState() {
@@ -28,7 +29,7 @@ class _WalletAddressState extends State<WalletAddress> {
         Provider.of<CoinDataProvider>(context, listen: false);
     if (coinDataProvider.selectedPoolUrl != null &&
         coinDataProvider.selectedPoolPort != null) {
-      _loadWalletAddress(
+      _loadWalletAddressAndPassword(
           "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}");
     }
   }
@@ -39,7 +40,7 @@ class _WalletAddressState extends State<WalletAddress> {
     super.dispose();
   }
 
-  Future<void> _loadWalletAddress(String poolAddress) async {
+  Future<void> _loadWalletAddressAndPassword(String poolAddress) async {
     final prefs = await SharedPreferences.getInstance();
     String walletAddresses =
         prefs.getString(Constants.walletAddressesKeySharedPrefs) ?? "";
@@ -51,16 +52,23 @@ class _WalletAddressState extends State<WalletAddress> {
         final address = addresses.first;
         Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
             address["walletAddress"];
+        Provider.of<CoinDataProvider>(context, listen: false).password =
+            address["password"];
         _walletAddressFieldController.text = address["walletAddress"];
+        _passwordFieldController.text = address["password"] ?? "";
       } else {
         _walletAddressFieldController.text = "";
+        _passwordFieldController.text = "";
       }
     }
   }
 
-  Future<void> _saveWalletAddress(
-      String poolAddress, String walletAddress) async {
+  Future<void> _saveWalletAddressAndPassword(String poolAddress) async {
     final prefs = await SharedPreferences.getInstance();
+    final walletAddress = _walletAddressFieldController.text;
+    final password = _passwordFieldController.text.isNotEmpty
+        ? _passwordFieldController.text
+        : null;
     if (walletAddress.isNotEmpty) {
       String walletAddresses =
           prefs.getString(Constants.walletAddressesKeySharedPrefs) ?? "";
@@ -72,11 +80,13 @@ class _WalletAddressState extends State<WalletAddress> {
           var address = addresses.first;
           var index = addressesJson.indexOf(address);
           address["walletAddress"] = walletAddress;
+          address["password"] = password;
           addressesJson[index] = address;
         } else {
           var address = {
             "poolAddress": poolAddress,
-            "walletAddress": walletAddress
+            "walletAddress": walletAddress,
+            "password": password
           };
           addressesJson.add(address);
         }
@@ -84,13 +94,18 @@ class _WalletAddressState extends State<WalletAddress> {
             Constants.walletAddressesKeySharedPrefs, jsonEncode(addressesJson));
       } else {
         var addressesJson = [
-          {"poolAddress": poolAddress, "walletAddress": walletAddress}
+          {
+            "poolAddress": poolAddress,
+            "walletAddress": walletAddress,
+            "password": password
+          }
         ];
         prefs.setString(
             Constants.walletAddressesKeySharedPrefs, jsonEncode(addressesJson));
       }
       Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
           walletAddress;
+      Provider.of<CoinDataProvider>(context, listen: false).password = password;
     }
   }
 
@@ -112,30 +127,48 @@ class _WalletAddressState extends State<WalletAddress> {
                 height: 8,
               ),
               Expanded(
-                  child: Container(
-                alignment: Alignment.center,
-                child: TextFormField(
-                  maxLines: null,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Wallet address can't be empty";
-                    }
-                    return null;
-                  },
-                  controller: _walletAddressFieldController,
-                  decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Enter wallet address"),
-                  onSaved: (address) {
-                    if (address != null &&
-                        coinDataProvider.selectedPoolUrl != null &&
-                        coinDataProvider.selectedPoolPort != null) {
-                      _saveWalletAddress(
-                          "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
-                          address.trim());
-                    }
-                  },
-                ),
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextFormField(
+                    maxLines: null,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Wallet address can't be empty";
+                      }
+                      return null;
+                    },
+                    controller: _walletAddressFieldController,
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Enter wallet address"),
+                    onSaved: (address) {
+                      if (address != null &&
+                          coinDataProvider.selectedPoolUrl != null &&
+                          coinDataProvider.selectedPoolPort != null) {
+                        _walletAddressFieldController.text = address.trim();
+                      }
+                    },
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  TextFormField(
+                    controller: _passwordFieldController,
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Enter pool password",
+                        hintText:
+                            "If pool don't need password leave this empty"),
+                    onSaved: (password) {
+                      if (password != null &&
+                          coinDataProvider.selectedPoolUrl != null &&
+                          coinDataProvider.selectedPoolPort != null) {
+                        _passwordFieldController.text = password;
+                      }
+                    },
+                  )
+                ],
               )),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -152,6 +185,8 @@ class _WalletAddressState extends State<WalletAddress> {
                       onPressed: () {
                         if (_walletAddressFormKey.currentState!.validate()) {
                           _walletAddressFormKey.currentState!.save();
+                          _saveWalletAddressAndPassword(
+                              "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}");
                           widget.setCurrentCoinDataWizardStep(
                               CoinDataWizardStep.miningEngineSelect);
                         }
