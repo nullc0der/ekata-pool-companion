@@ -4,6 +4,7 @@ import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/widgets/passwordtextformfield.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -170,13 +171,10 @@ class _WalletAddressState extends State<WalletAddress> {
                   const SizedBox(
                     height: 8,
                   ),
-                  TextFormField(
+                  PasswordTextFormField(
                     controller: _passwordFieldController,
-                    decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Enter pool password",
-                        hintText:
-                            "If pool don't need password leave this empty"),
+                    labelText: "Enter pool password",
+                    hintText: "If pool don't need password leave this empty",
                     onSaved: (password) {
                       if (password != null &&
                           coinDataProvider.selectedPoolUrl != null &&
