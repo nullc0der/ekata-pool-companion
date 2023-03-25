@@ -414,14 +414,19 @@ class _AndroidMinerState extends State<AndroidMiner> {
                         const SizedBox(
                           width: 8,
                         ),
-                        Image.network(
-                          coinData.coinLogoUrl,
-                          width: 24,
-                          height: 24,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                            Icons.close_rounded,
-                            color: Color(0xFF273951),
+                        ClipOval(
+                          child: SizedBox.fromSize(
+                            size: const Size.fromRadius(12),
+                            child: Image.network(
+                              coinData.coinLogoUrl,
+                              width: 24,
+                              height: 24,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                Icons.close_rounded,
+                                color: Color(0xFF273951),
+                              ),
+                            ),
                           ),
                         ),
                       ] else
