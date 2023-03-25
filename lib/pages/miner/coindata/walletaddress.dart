@@ -173,8 +173,7 @@ class _WalletAddressState extends State<WalletAddress> {
                   ),
                   PasswordTextFormField(
                     controller: _passwordFieldController,
-                    labelText: "Enter pool password",
-                    hintText: "If pool don't need password leave this empty",
+                    labelText: "Enter pool password if required",
                     onSaved: (password) {
                       if (password != null &&
                           coinDataProvider.selectedPoolUrl != null &&
