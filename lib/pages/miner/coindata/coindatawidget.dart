@@ -11,6 +11,7 @@ import 'package:ekatapoolcompanion/pages/miner/currentlymining.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
+import 'package:ekatapoolcompanion/providers/uistate.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -325,6 +326,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                         Provider.of<MinerStatusProvider>(context, listen: false)
                             .xmrigCCWorkerId = coinDataProvider.xmrigCCWorkerId;
                       }
+                      Provider.of<UiStateProvider>(context, listen: false)
+                          .minerConfigPageShowMinerEngineSelect = false;
                       widget.setCurrentWizardStep(WizardStep.minerConfig);
                     }
                   },
@@ -360,6 +363,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                 children: [
                   OutlinedButton(
                       onPressed: () {
+                        Provider.of<UiStateProvider>(context, listen: false)
+                            .minerConfigPageShowMinerEngineSelect = true;
                         widget
                             .setCurrentWizardStep(WizardStep.usersMinerConfigs);
                       },
@@ -369,6 +374,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                   ),
                   OutlinedButton(
                       onPressed: () {
+                        Provider.of<UiStateProvider>(context, listen: false)
+                            .minerConfigPageShowMinerEngineSelect = true;
                         widget.setCurrentWizardStep(WizardStep.minerConfig);
                       },
                       child: const Text("Use custom config")),

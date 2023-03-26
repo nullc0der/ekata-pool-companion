@@ -7,8 +7,10 @@ import 'package:ekatapoolcompanion/providers/uistate.dart';
 import 'package:ekatapoolcompanion/services/minerconfig.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/minerconfig_edit_confirm_dialog.dart';
 import 'package:ekatapoolcompanion/widgets/minerconfig_upload_confirm_dialog.dart';
+import 'package:ekatapoolcompanion/widgets/passwordtextformfield.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +31,10 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
   bool _isEditingUsersMinerConfig = false;
   final _minerConfigFormKey = GlobalKey<FormState>();
   final _minerConfigFieldController = TextEditingController();
+  final _xmrigCCServerUrlFieldController = TextEditingController();
+  final _xmrigCCServerTokenFieldController = TextEditingController();
+  final _xmrigCCWorkerIdFieldController = TextEditingController();
+  final _threadCountFieldController = TextEditingController();
 
   @override
   void initState() {
@@ -45,12 +51,71 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
           minerStatusProvider.minerConfig!,
           prettyPrint: true);
     }
+    if (minerStatusProvider.threadCount != null) {
+      _threadCountFieldController.text =
+          minerStatusProvider.threadCount.toString();
+    }
+    _loadXmrigCCOptions();
   }
 
   @override
   void dispose() {
     _minerConfigFieldController.dispose();
+    _xmrigCCServerUrlFieldController.dispose();
+    _xmrigCCServerTokenFieldController.dispose();
+    _xmrigCCWorkerIdFieldController.dispose();
+    _threadCountFieldController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadXmrigCCOptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    String xmrigCCOptions =
+        prefs.getString(Constants.xmrigCCOptionsSharedPrefs) ?? "";
+    if (xmrigCCOptions.isNotEmpty) {
+      final xmrigCCOptionsJson = jsonDecode(xmrigCCOptions);
+      if (xmrigCCOptionsJson.isNotEmpty) {
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCServerUrl = xmrigCCOptionsJson["xmrigCCServerUrl"];
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCServerToken = xmrigCCOptionsJson["xmrigCCServerToken"];
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCWorkerId = xmrigCCOptionsJson["xmrigCCWorkerId"];
+        _xmrigCCServerUrlFieldController.text =
+            xmrigCCOptionsJson["xmrigCCServerUrl"];
+        _xmrigCCServerTokenFieldController.text =
+            xmrigCCOptionsJson["xmrigCCServerToken"];
+        _xmrigCCWorkerIdFieldController.text =
+            xmrigCCOptionsJson["xmrigCCWorkerId"] != null &&
+                    xmrigCCOptionsJson["xmrigCCWorkerId"].isNotEmpty
+                ? xmrigCCOptionsJson["xmrigCCWorkerId"]
+                : "epc-worker-${getRandomString(6)}";
+      } else {
+        _xmrigCCServerUrlFieldController.text = "127.0.0.1:3344";
+        _xmrigCCWorkerIdFieldController.text =
+            "epc-worker-${getRandomString(6)}";
+      }
+    } else {
+      _xmrigCCServerUrlFieldController.text = "127.0.0.1:3344";
+      _xmrigCCWorkerIdFieldController.text = "epc-worker-${getRandomString(6)}";
+    }
+  }
+
+  Future<void> _saveXmrigCCOptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    Provider.of<MinerStatusProvider>(context, listen: false).xmrigCCServerUrl =
+        _xmrigCCServerUrlFieldController.text;
+    Provider.of<MinerStatusProvider>(context, listen: false)
+        .xmrigCCServerToken = _xmrigCCServerTokenFieldController.text;
+    Provider.of<MinerStatusProvider>(context, listen: false).xmrigCCWorkerId =
+        _xmrigCCWorkerIdFieldController.text;
+    prefs.setString(
+        Constants.xmrigCCOptionsSharedPrefs,
+        jsonEncode({
+          "xmrigCCServerUrl": _xmrigCCServerUrlFieldController.text,
+          "xmrigCCServerToken": _xmrigCCServerTokenFieldController.text,
+          "xmrigCCWorkerId": _xmrigCCWorkerIdFieldController.text
+        }));
   }
 
   Future<void> _saveMinerConfigInBackend(String config, bool userUploaded,
@@ -131,6 +196,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
   Future<void> _onPressStartMining() async {
     if (_minerConfigFormKey.currentState!.validate()) {
       _minerConfigFormKey.currentState!.save();
+      _saveXmrigCCOptions();
       final String value = _minerConfigFieldController.text;
       if (value.isNotEmpty) {
         bool? userConfirmedUpload;
@@ -194,90 +260,123 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
     }
   }
 
-  // Widget _getMinerBackendDropdown(MinerBinary selectedMinerBinary) {
-  //   return Column(
-  //     crossAxisAlignment: CrossAxisAlignment.start,
-  //     children: [
-  //       const Text("Select miner backend"),
-  //       DropdownButton<MinerBinary>(
-  //           isExpanded: true,
-  //           hint: const Text("Select miner backend"),
-  //           value: selectedMinerBinary,
-  //           items: MinerBinary.values
-  //               .map<DropdownMenuItem<MinerBinary>>(
-  //                   (MinerBinary minerBinary) => DropdownMenuItem<MinerBinary>(
-  //                         child: Text(minerBinary.name),
-  //                         value: minerBinary,
-  //                       ))
-  //               .toList(),
-  //           onChanged: (MinerBinary? minerBinary) {
-  //             if (minerBinary != null) {
-  //               Provider.of<MinerStatusProvider>(context, listen: false)
-  //                   .selectedMinerBinary = minerBinary;
-  //             }
-  //           })
-  //     ],
-  //   );
-  // }
-  //
-  // Widget _getXmrigCCOptions() {
-  //   return Column(
-  //     children: [
-  //       TextFormField(
-  //         decoration: const InputDecoration(
-  //             border: OutlineInputBorder(), hintText: "xmrigCC Server url"),
-  //         validator: (value) {
-  //           if (value == null || value.isEmpty) {
-  //             return "URL can't be empty";
-  //           }
-  //           return null;
-  //         },
-  //         onSaved: (value) {
-  //           Provider.of<MinerStatusProvider>(context, listen: false)
-  //               .xmrigCCServerUrl = value;
-  //         },
-  //       ),
-  //       const SizedBox(
-  //         height: 8.0,
-  //       ),
-  //       TextFormField(
-  //         obscureText: true,
-  //         enableSuggestions: false,
-  //         autocorrect: false,
-  //         //TODO: IMPORTANT: Review everything done till now
-  //         decoration: const InputDecoration(
-  //             border: OutlineInputBorder(), hintText: "xmrigCC Server token"),
-  //         validator: (value) {
-  //           if (value == null || value.isEmpty) {
-  //             return "Token can't be empty";
-  //           }
-  //           return null;
-  //         },
-  //         onSaved: (value) {
-  //           Provider.of<MinerStatusProvider>(context, listen: false)
-  //               .xmrigCCServerToken = value;
-  //         },
-  //       ),
-  //       const SizedBox(
-  //         height: 8.0,
-  //       ),
-  //       TextFormField(
-  //         decoration: const InputDecoration(
-  //             border: OutlineInputBorder(),
-  //             hintText: "xmrigCC Worker ID (Optional)"),
-  //         onSaved: (value) {
-  //           Provider.of<MinerStatusProvider>(context, listen: false)
-  //               .xmrigCCWorkerId = value;
-  //         },
-  //       ),
-  //     ],
-  //   );
-  // }
+  Widget _getMinerBackendDropdown(MinerBinary selectedMinerBinary) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<MinerBinary>(
+            isExpanded: true,
+            decoration: const InputDecoration(
+                border: OutlineInputBorder(), labelText: "Miner Backend"),
+            value: selectedMinerBinary,
+            items: MinerBinary.values
+                .map<DropdownMenuItem<MinerBinary>>(
+                    (MinerBinary minerBinary) => DropdownMenuItem<MinerBinary>(
+                          child: Text(minerBinary.name),
+                          value: minerBinary,
+                        ))
+                .toList(),
+            onChanged: (MinerBinary? minerBinary) {
+              if (minerBinary != null) {
+                Provider.of<MinerStatusProvider>(context, listen: false)
+                    .selectedMinerBinary = minerBinary;
+              }
+            })
+      ],
+    );
+  }
+
+  Widget _getXmrigCCOptions() {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _xmrigCCServerUrlFieldController,
+          decoration: const InputDecoration(
+              border: OutlineInputBorder(), labelText: "xmrigCC Server url"),
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "URL can't be empty";
+            }
+            return null;
+          },
+          onSaved: (value) {
+            _xmrigCCServerUrlFieldController.text = value ?? "";
+          },
+        ),
+        const SizedBox(
+          height: 8.0,
+        ),
+        PasswordTextFormField(
+          controller: _xmrigCCServerTokenFieldController,
+          labelText: "xmrigCC Server token",
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return "Token can't be empty";
+            }
+            return null;
+          },
+          onSaved: (value) {
+            _xmrigCCServerTokenFieldController.text = value ?? "";
+          },
+        ),
+        const SizedBox(
+          height: 8.0,
+        ),
+        TextFormField(
+          controller: _xmrigCCWorkerIdFieldController,
+          decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: "xmrigCC Worker ID (Optional)"),
+          onSaved: (value) {
+            if (value != null && value.isNotEmpty) {
+              _xmrigCCWorkerIdFieldController.text = value ?? "";
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _getThreadCountInput() {
+    return TextFormField(
+      controller: _threadCountFieldController,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      validator: (value) {
+        if (value != null && value.isNotEmpty) {
+          if (int.tryParse(value) == null) {
+            return "Make sure to enter numeric value";
+          }
+          if (int.tryParse(value)! <= 0) {
+            return "Make sure to enter a value greater than 0";
+          }
+        }
+        return null;
+      },
+      keyboardType: TextInputType.number,
+      decoration: const InputDecoration(
+        border: OutlineInputBorder(),
+        labelText: "Enter Thread Count(Optional)",
+      ),
+      onSaved: (value) {
+        if (value != null &&
+            int.tryParse(value) != null &&
+            int.tryParse(value)! > 0) {
+          Provider.of<MinerStatusProvider>(context, listen: false).threadCount =
+              int.tryParse(value);
+        }
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // final selectedMinerBinary =
-    //     Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
+    final selectedMinerBinary =
+        Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
+    final minerConfigPageShowMinerEngineSelect =
+        Provider.of<UiStateProvider>(context)
+            .minerConfigPageShowMinerEngineSelect;
     return ListView(
       padding: const EdgeInsets.all(8),
       children: [
@@ -298,6 +397,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                   controller: _minerConfigFieldController,
                   decoration: const InputDecoration(
                       border: OutlineInputBorder(), hintText: "Miner Config"),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return "Miner config can't be empty";
@@ -312,15 +412,22 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
               const SizedBox(
                 height: 8.0,
               ),
-              // _getMinerBackendDropdown(selectedMinerBinary),
-              // const SizedBox(
-              //   height: 8.0,
-              // ),
-              // if (selectedMinerBinary == MinerBinary.xmrigCC)
-              //   _getXmrigCCOptions(),
-              // const SizedBox(
-              //   height: 8.0,
-              // ),
+              if (minerConfigPageShowMinerEngineSelect) ...[
+                _getMinerBackendDropdown(selectedMinerBinary),
+                const SizedBox(
+                  height: 8.0,
+                ),
+                if (selectedMinerBinary == MinerBinary.xmrigCC) ...[
+                  _getXmrigCCOptions(),
+                  const SizedBox(
+                    height: 8.0,
+                  )
+                ],
+                _getThreadCountInput(),
+                const SizedBox(
+                  height: 8.0,
+                ),
+              ],
               SizedBox(
                 width: double.infinity,
                 child: Row(
