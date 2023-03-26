@@ -150,6 +150,7 @@ class _WalletAddressState extends State<WalletAddress> {
                 children: [
                   TextFormField(
                     maxLines: null,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return "Wallet address can't be empty";
