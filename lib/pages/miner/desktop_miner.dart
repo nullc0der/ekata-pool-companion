@@ -394,6 +394,10 @@ class _DesktopMinerState extends State<DesktopMiner> {
     final selectedMinerBinary =
         Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
     final coinData = Provider.of<MinerStatusProvider>(context).coinData;
+    final xmrigCCServerUrl =
+        Provider.of<MinerStatusProvider>(context).xmrigCCServerUrl;
+    final xmrigCCWorkerId =
+        Provider.of<MinerStatusProvider>(context).xmrigCCWorkerId;
 
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -451,13 +455,15 @@ class _DesktopMinerState extends State<DesktopMiner> {
                 SizedBox(
                     width: double.infinity,
                     child: _showStartStopMining(isMining: isMining)),
-              if (selectedMinerBinary == MinerBinary.xmrigCC)
-                Wrap(
-                  children: const [
-                    Text(
-                        "EPC running in worker mode, control daemon from xmrigCCServer")
-                  ],
+              if (selectedMinerBinary == MinerBinary.xmrigCC) ...[
+                Text(
+                  "EPC running in worker mode",
+                  style: Theme.of(context).textTheme.labelLarge,
                 ),
+                const Text("Control daemon from xmrigCCServer"),
+                Text("Server URL: $xmrigCCServerUrl"),
+                Text("Worker Id: $xmrigCCWorkerId")
+              ],
               if (minerSummary != null) ...[
                 const SizedBox(
                   height: 8,
