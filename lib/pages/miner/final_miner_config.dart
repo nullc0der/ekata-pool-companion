@@ -92,6 +92,10 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                 minerConfigMd5: currentMinerConfigMd5);
           }
           if (minerConfigMd5 != null && poolCredentials.isNotEmpty) {
+            // NOTE: This and WalletAddress widget saves pool credentials
+            // to different key, need to merge this to WalletAddress preference
+            // also need to add a merger function on init so that existing
+            // preferences gets merged seamlessly
             final poolCredentialsPrefs =
                 prefs.getString(Constants.poolCredentialsSharedPrefs);
             if (poolCredentialsPrefs != null) {

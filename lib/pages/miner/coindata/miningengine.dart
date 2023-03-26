@@ -101,12 +101,13 @@ class _MiningEngineState extends State<MiningEngine> {
   Widget _getThreadCountInput() {
     return TextFormField(
       controller: _threadCountFieldController,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       validator: (value) {
         if (value != null && value.isNotEmpty) {
           if (int.tryParse(value) == null) {
             return "Make sure to enter numeric value";
           }
-          if (int.tryParse(value)! < 0) {
+          if (int.tryParse(value)! <= 0) {
             return "Make sure to enter a value greater than 0";
           }
         }
@@ -161,6 +162,7 @@ class _MiningEngineState extends State<MiningEngine> {
           controller: _xmrigCCServerUrlFieldController,
           decoration: const InputDecoration(
               border: OutlineInputBorder(), labelText: "xmrigCC Server url"),
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return "URL can't be empty";
@@ -177,6 +179,7 @@ class _MiningEngineState extends State<MiningEngine> {
         PasswordTextFormField(
           controller: _xmrigCCServerTokenFieldController,
           labelText: "xmrigCC Server token",
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (value) {
             if (value == null || value.isEmpty) {
               return "Token can't be empty";
