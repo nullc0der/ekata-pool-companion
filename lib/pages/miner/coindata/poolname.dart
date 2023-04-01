@@ -108,7 +108,6 @@ class _PoolNameState extends State<PoolName> {
           ),
           Expanded(
               child: ListView(
-            // TODO: Center container
             children: poolNames.isNotEmpty
                 ? poolNames
                     .map((e) => _renderOnePoolName(e, selectedPoolName))
