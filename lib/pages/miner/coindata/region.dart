@@ -89,26 +89,36 @@ class _RegionState extends State<Region> {
                   ],
           )),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            // mainAxisAlignment: selectedRegion != null
-            //     ? MainAxisAlignment.spaceBetween
-            //     : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              OutlinedButton(
+              ElevatedButton(
                   onPressed: () {
                     Provider.of<CoinDataProvider>(context, listen: false)
                         .selectedRegion = null;
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.poolNameSelect);
                   },
-                  child: const Text("Select Pool")),
-              // if (selectedRegion != null)
-              //   ElevatedButton(
-              //       onPressed: () {
-              //         widget.setCurrentCoinDataWizardStep(
-              //             CoinDataWizardStep.poolUrlSelect);
-              //       },
-              //       child: const Text("Select Url"))
+                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    size: 16,
+                  )),
+              ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        duration: Duration(seconds: 1),
+                        content: Text(
+                            "Next pressed, first item on list will be selected")));
+                    Provider.of<CoinDataProvider>(context, listen: false)
+                        .selectedRegion = selectedPoolsRegions.first.region;
+                    widget.setCurrentCoinDataWizardStep(
+                        CoinDataWizardStep.poolUrlSelect);
+                  },
+                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  child: const Icon(
+                    Icons.arrow_forward,
+                    size: 16,
+                  ))
             ],
           )
         ],

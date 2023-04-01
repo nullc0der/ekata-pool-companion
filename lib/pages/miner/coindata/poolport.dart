@@ -87,25 +87,36 @@ class _PoolPortState extends State<PoolPort> {
                   ],
           )),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            // mainAxisAlignment: selectedPoolPort != null
-            //     ? MainAxisAlignment.spaceBetween
-            //     : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              OutlinedButton(
+              ElevatedButton(
                   onPressed: () {
                     Provider.of<CoinDataProvider>(context, listen: false)
                         .selectedPoolPort = null;
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.poolUrlSelect);
                   },
-                  child: const Text("Select Pool Url")),
-              // if (selectedPoolPort != null)
-              //   ElevatedButton(
-              //       onPressed: () {
-              //         widget.setCurrentCoinDataWizardStep(null);
-              //       },
-              //       child: const Text("Done"))
+                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    size: 16,
+                  )),
+              ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        duration: Duration(seconds: 1),
+                        content: Text(
+                            "Next pressed, first item on list will be selected")));
+                    Provider.of<CoinDataProvider>(context, listen: false)
+                        .selectedPoolPort = poolPorts.first;
+                    widget.setCurrentCoinDataWizardStep(
+                        CoinDataWizardStep.walletAddressInput);
+                  },
+                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  child: const Icon(
+                    Icons.arrow_forward,
+                    size: 16,
+                  ))
             ],
           )
         ],

@@ -247,12 +247,17 @@ class _MiningEngineState extends State<MiningEngine> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  OutlinedButton(
+                  ElevatedButton(
                       onPressed: () {
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.walletAddressInput);
                       },
-                      child: const Text("Input wallet address")),
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        size: 16,
+                      )),
                   ElevatedButton(
                       onPressed: () {
                         if (_miningEngineFormKey.currentState!.validate()) {
@@ -261,7 +266,12 @@ class _MiningEngineState extends State<MiningEngine> {
                           widget.setCurrentCoinDataWizardStep(null);
                         }
                       },
-                      child: const Text("Done"))
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.check,
+                        size: 16,
+                      ))
                 ],
               )
             ],

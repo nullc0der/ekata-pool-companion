@@ -205,14 +205,19 @@ class _WalletAddressState extends State<WalletAddress> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  OutlinedButton(
+                  ElevatedButton(
                       onPressed: () {
                         Provider.of<CoinDataProvider>(context, listen: false)
                             .walletAddress = "";
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.portSelect);
                       },
-                      child: const Text("Select Pool Port")),
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        size: 16,
+                      )),
                   ElevatedButton(
                       onPressed: () {
                         if (_walletAddressFormKey.currentState!.validate()) {
@@ -223,7 +228,12 @@ class _WalletAddressState extends State<WalletAddress> {
                               CoinDataWizardStep.miningEngineSelect);
                         }
                       },
-                      child: const Text("Select mining engine"))
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.arrow_forward,
+                        size: 16,
+                      ))
                 ],
               )
             ])));

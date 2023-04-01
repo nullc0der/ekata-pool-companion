@@ -83,26 +83,37 @@ class _PoolNameState extends State<PoolName> {
                   ],
           )),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            // mainAxisAlignment: selectedPoolName != null
-            //     ? MainAxisAlignment.spaceBetween
-            //     : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              OutlinedButton(
+              ElevatedButton(
                   onPressed: () {
                     Provider.of<CoinDataProvider>(context, listen: false)
                         .selectedPoolName = null;
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.coinNameSelect);
                   },
-                  child: const Text("Select Coin")),
-              // if (selectedPoolName != null)
-              //   ElevatedButton(
-              //       onPressed: () {
-              //         widget.setCurrentCoinDataWizardStep(
-              //             CoinDataWizardStep.regionSelect);
-              //       },
-              //       child: const Text("Select Region"))
+                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    size: 16,
+                  )),
+              ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        duration: Duration(seconds: 1),
+                        content: Text(
+                            "Next pressed, first item on list will be selected")));
+                    Provider.of<CoinDataProvider>(context, listen: false)
+                            .selectedPoolName =
+                        poolNames.first.trim().toLowerCase();
+                    widget.setCurrentCoinDataWizardStep(
+                        CoinDataWizardStep.regionSelect);
+                  },
+                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  child: const Icon(
+                    Icons.arrow_forward,
+                    size: 16,
+                  ))
             ],
           )
         ],

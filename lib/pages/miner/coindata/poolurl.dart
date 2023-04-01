@@ -86,26 +86,36 @@ class _PoolUrlState extends State<PoolUrl> {
                   ],
           )),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            // mainAxisAlignment: selectedPoolUrl != null
-            //     ? MainAxisAlignment.spaceBetween
-            //     : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              OutlinedButton(
+              ElevatedButton(
                   onPressed: () {
                     Provider.of<CoinDataProvider>(context, listen: false)
                         .selectedPoolUrl = null;
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.regionSelect);
                   },
-                  child: const Text("Select Region")),
-              // if (selectedPoolUrl != null)
-              //   ElevatedButton(
-              //       onPressed: () {
-              //         widget.setCurrentCoinDataWizardStep(
-              //             CoinDataWizardStep.portSelect);
-              //       },
-              //       child: const Text("Select Port"))
+                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  child: const Icon(
+                    Icons.arrow_back,
+                    size: 16,
+                  )),
+              ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        duration: Duration(seconds: 1),
+                        content: Text(
+                            "Next pressed, first item on list will be selected")));
+                    Provider.of<CoinDataProvider>(context, listen: false)
+                        .selectedPoolUrl = poolUrls.first;
+                    widget.setCurrentCoinDataWizardStep(
+                        CoinDataWizardStep.portSelect);
+                  },
+                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  child: const Icon(
+                    Icons.arrow_forward,
+                    size: 16,
+                  ))
             ],
           )
         ],
