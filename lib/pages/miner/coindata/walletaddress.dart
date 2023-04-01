@@ -4,6 +4,7 @@ import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/passwordtextformfield.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -127,6 +128,17 @@ class _WalletAddressState extends State<WalletAddress> {
     }
   }
 
+  Future<void> _onPressDone(String poolUrl, int poolPort) async {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 1),
+        content:
+            Text("Done pressed, first item from next steps will be selected")));
+    _savePoolCredentials("$poolUrl:$poolPort");
+    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
+        MinerBinary.xmrig;
+    widget.setCurrentCoinDataWizardStep(null);
+  }
+
   @override
   Widget build(BuildContext context) {
     final coinDataProvider = Provider.of<CoinDataProvider>(context);
@@ -218,22 +230,40 @@ class _WalletAddressState extends State<WalletAddress> {
                         Icons.arrow_back,
                         size: 16,
                       )),
-                  ElevatedButton(
-                      onPressed: () {
-                        if (_walletAddressFormKey.currentState!.validate()) {
-                          _walletAddressFormKey.currentState!.save();
-                          _savePoolCredentials(
-                              "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}");
-                          widget.setCurrentCoinDataWizardStep(
-                              CoinDataWizardStep.miningEngineSelect);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder()),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        size: 16,
-                      ))
+                  Wrap(
+                    spacing: 4,
+                    children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            if (_walletAddressFormKey.currentState!
+                                .validate()) {
+                              _walletAddressFormKey.currentState!.save();
+                              _savePoolCredentials(
+                                  "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}");
+                              widget.setCurrentCoinDataWizardStep(
+                                  CoinDataWizardStep.miningEngineSelect);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                              shape: const StadiumBorder()),
+                          child: const Icon(
+                            Icons.arrow_forward,
+                            size: 16,
+                          )),
+                      ElevatedButton(
+                          onPressed: () async {
+                            await _onPressDone(
+                                coinDataProvider.selectedPoolUrl!,
+                                coinDataProvider.selectedPoolPort!);
+                          },
+                          style: ElevatedButton.styleFrom(
+                              shape: const StadiumBorder()),
+                          child: const Icon(
+                            Icons.check,
+                            size: 16,
+                          ))
+                    ],
+                  )
                 ],
               )
             ])));

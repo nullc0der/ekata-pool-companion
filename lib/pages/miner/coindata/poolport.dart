@@ -1,5 +1,8 @@
+import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
+import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,6 +17,26 @@ class PoolPort extends StatefulWidget {
 }
 
 class _PoolPortState extends State<PoolPort> {
+  Future<void> _onPressDone(CoinData coinData, String poolName,
+      String poolRegion, String poolUrl, int poolPort) async {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 1),
+        content:
+            Text("Done pressed, first item from next steps will be selected")));
+    final poolCredentials = await getPoolCredentials("$poolUrl:$poolPort");
+    Provider.of<CoinDataProvider>(context, listen: false).selectedPoolPort =
+        poolPort;
+    Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
+        poolCredentials["walletAddress"] ?? "";
+    Provider.of<CoinDataProvider>(context, listen: false).password =
+        poolCredentials["password"];
+    Provider.of<CoinDataProvider>(context, listen: false).rigId =
+        poolCredentials["rigId"];
+    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
+        MinerBinary.xmrig;
+    widget.setCurrentCoinDataWizardStep(null);
+  }
+
   Widget _renderOnePoolPort(int poolPort, int? selectedPoolPort) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -49,6 +72,7 @@ class _PoolPortState extends State<PoolPort> {
     final selectedCoinData = coinDataProvider.selectedCoinData;
     final selectedPoolName = coinDataProvider.selectedPoolName;
     final selectedRegion = coinDataProvider.selectedRegion;
+    final selectedPoolUrl = coinDataProvider.selectedPoolUrl;
     final selectedPoolPort = coinDataProvider.selectedPoolPort;
 
     final poolPorts = selectedCoinData != null
@@ -101,22 +125,43 @@ class _PoolPortState extends State<PoolPort> {
                     Icons.arrow_back,
                     size: 16,
                   )),
-              ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        duration: Duration(seconds: 1),
-                        content: Text(
-                            "Next pressed, first item on list will be selected")));
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedPoolPort = poolPorts.first;
-                    widget.setCurrentCoinDataWizardStep(
-                        CoinDataWizardStep.walletAddressInput);
-                  },
-                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
-                  child: const Icon(
-                    Icons.arrow_forward,
-                    size: 16,
-                  ))
+              Wrap(
+                spacing: 4,
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            duration: Duration(seconds: 1),
+                            content: Text(
+                                "Next pressed, first item on list will be selected")));
+                        Provider.of<CoinDataProvider>(context, listen: false)
+                            .selectedPoolPort = poolPorts.first;
+                        widget.setCurrentCoinDataWizardStep(
+                            CoinDataWizardStep.walletAddressInput);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.arrow_forward,
+                        size: 16,
+                      )),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await _onPressDone(
+                            selectedCoinData!,
+                            selectedPoolName!.trim().toLowerCase(),
+                            selectedRegion!,
+                            selectedPoolUrl!,
+                            poolPorts.first);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.check,
+                        size: 16,
+                      ))
+                ],
+              )
             ],
           )
         ],

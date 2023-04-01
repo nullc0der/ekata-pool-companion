@@ -5,6 +5,8 @@ import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/services/coindata.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
+import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:provider/provider.dart';
@@ -88,6 +90,51 @@ class _CoinNameState extends State<CoinName> {
       _hasReachedBottom = false;
       _lastCoinDataCount = 0;
     });
+  }
+
+  Future<void> _onPressDone(CoinData coinData) async {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 1),
+        content:
+            Text("Done pressed, first item from next steps will be selected")));
+    final poolName = Set<String>.from(coinData.pools.map((e) => e.poolName))
+        .first
+        .trim()
+        .toLowerCase();
+    final poolRegion = Set<Pool>.from(coinData.pools
+        .where((e) => e.poolName.trim().toLowerCase() == poolName)).first;
+    final poolUrl = coinData.pools
+        .firstWhere((element) =>
+            element.poolName.toLowerCase().trim() == poolName &&
+            element.region == poolRegion.region)
+        .urls
+        .first;
+    final poolPort = coinData.pools
+        .firstWhere((element) =>
+            element.poolName.toLowerCase().trim() == poolName &&
+            element.region == poolRegion.region)
+        .ports
+        .first;
+    final poolCredentials = await getPoolCredentials("$poolUrl:$poolPort");
+    Provider.of<CoinDataProvider>(context, listen: false).selectedCoinData =
+        coinData;
+    Provider.of<CoinDataProvider>(context, listen: false).selectedPoolName =
+        poolName;
+    Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
+        poolRegion.region;
+    Provider.of<CoinDataProvider>(context, listen: false).selectedPoolUrl =
+        poolUrl;
+    Provider.of<CoinDataProvider>(context, listen: false).selectedPoolPort =
+        poolPort;
+    Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
+        poolCredentials["walletAddress"] ?? "";
+    Provider.of<CoinDataProvider>(context, listen: false).password =
+        poolCredentials["password"];
+    Provider.of<CoinDataProvider>(context, listen: false).rigId =
+        poolCredentials["rigId"];
+    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
+        MinerBinary.xmrig;
+    widget.setCurrentCoinDataWizardStep(null);
   }
 
   Widget _renderOneCoinName(CoinData coinData, CoinData? selectedCoinData) {
@@ -291,22 +338,38 @@ class _CoinNameState extends State<CoinName> {
                     Icons.arrow_back,
                     size: 16,
                   )),
-              ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        duration: Duration(seconds: 1),
-                        content: Text(
-                            "Next pressed, first item on list will be selected")));
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedCoinData = coinDatas.first;
-                    widget.setCurrentCoinDataWizardStep(
-                        CoinDataWizardStep.poolNameSelect);
-                  },
-                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
-                  child: const Icon(
-                    Icons.arrow_forward,
-                    size: 16,
-                  ))
+              Wrap(
+                spacing: 4,
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            duration: Duration(seconds: 1),
+                            content: Text(
+                                "Next pressed, first item on list will be selected")));
+                        Provider.of<CoinDataProvider>(context, listen: false)
+                            .selectedCoinData = coinDatas.first;
+                        widget.setCurrentCoinDataWizardStep(
+                            CoinDataWizardStep.poolNameSelect);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.arrow_forward,
+                        size: 16,
+                      )),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await _onPressDone(coinDatas.first);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.check,
+                        size: 16,
+                      ))
+                ],
+              )
             ],
           )
         ],

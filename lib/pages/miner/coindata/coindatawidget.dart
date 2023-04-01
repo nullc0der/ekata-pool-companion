@@ -171,12 +171,14 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     size: 16,
                     color: Color(0xFF273951),
                   )),
-            if (walletAddress.isNotEmpty) ...[
+            if (selectedPoolUrl != null && selectedPoolPort != null) ...[
               _showOneCoinData(
                   "Wallet Address",
-                  walletAddress.length >= 8
-                      ? "${walletAddress.substring(walletAddress.length - 8)} (Showing last 8 char)"
-                      : walletAddress,
+                  walletAddress.isNotEmpty
+                      ? walletAddress.length >= 8
+                          ? "${walletAddress.substring(walletAddress.length - 8)} (Showing last 8 char)"
+                          : walletAddress
+                      : "Enter wallet address to start mining",
                   CoinDataWizardStep.walletAddressInput,
                   prefixIconOrImage: const Icon(
                     Icons.wallet,
@@ -227,7 +229,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
             ),
             _showSelectedCoinData(coinDataProvider),
             if (coinDataProvider.selectedPoolUrl != null &&
-                coinDataProvider.selectedPoolPort != null) ...[
+                coinDataProvider.selectedPoolPort != null &&
+                coinDataProvider.walletAddress.isNotEmpty) ...[
               const SizedBox(
                 height: 8,
               ),

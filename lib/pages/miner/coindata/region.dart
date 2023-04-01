@@ -1,6 +1,8 @@
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
+import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:emoji_flag_converter/emoji_flag_converter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +18,42 @@ class Region extends StatefulWidget {
 }
 
 class _RegionState extends State<Region> {
+  Future<void> _onPressDone(
+      CoinData coinData, String poolName, Pool poolRegion) async {
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 1),
+        content:
+            Text("Done pressed, first item from next steps will be selected")));
+    final poolUrl = coinData.pools
+        .firstWhere((element) =>
+            element.poolName.toLowerCase().trim() == poolName &&
+            element.region == poolRegion.region)
+        .urls
+        .first;
+    final poolPort = coinData.pools
+        .firstWhere((element) =>
+            element.poolName.toLowerCase().trim() == poolName &&
+            element.region == poolRegion.region)
+        .ports
+        .first;
+    final poolCredentials = await getPoolCredentials("$poolUrl:$poolPort");
+    Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
+        poolRegion.region;
+    Provider.of<CoinDataProvider>(context, listen: false).selectedPoolUrl =
+        poolUrl;
+    Provider.of<CoinDataProvider>(context, listen: false).selectedPoolPort =
+        poolPort;
+    Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
+        poolCredentials["walletAddress"] ?? "";
+    Provider.of<CoinDataProvider>(context, listen: false).password =
+        poolCredentials["password"];
+    Provider.of<CoinDataProvider>(context, listen: false).rigId =
+        poolCredentials["rigId"];
+    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
+        MinerBinary.xmrig;
+    widget.setCurrentCoinDataWizardStep(null);
+  }
+
   Widget _renderOneRegion(String region, String? selectedRegion) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -103,22 +141,41 @@ class _RegionState extends State<Region> {
                     Icons.arrow_back,
                     size: 16,
                   )),
-              ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        duration: Duration(seconds: 1),
-                        content: Text(
-                            "Next pressed, first item on list will be selected")));
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedRegion = selectedPoolsRegions.first.region;
-                    widget.setCurrentCoinDataWizardStep(
-                        CoinDataWizardStep.poolUrlSelect);
-                  },
-                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
-                  child: const Icon(
-                    Icons.arrow_forward,
-                    size: 16,
-                  ))
+              Wrap(
+                spacing: 4,
+                children: [
+                  ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                            duration: Duration(seconds: 1),
+                            content: Text(
+                                "Next pressed, first item on list will be selected")));
+                        Provider.of<CoinDataProvider>(context, listen: false)
+                            .selectedRegion = selectedPoolsRegions.first.region;
+                        widget.setCurrentCoinDataWizardStep(
+                            CoinDataWizardStep.poolUrlSelect);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.arrow_forward,
+                        size: 16,
+                      )),
+                  ElevatedButton(
+                      onPressed: () async {
+                        await _onPressDone(
+                            selectedCoinData!,
+                            selectedPoolName!.trim().toLowerCase(),
+                            selectedPoolsRegions.first);
+                      },
+                      style: ElevatedButton.styleFrom(
+                          shape: const StadiumBorder()),
+                      child: const Icon(
+                        Icons.check,
+                        size: 16,
+                      ))
+                ],
+              )
             ],
           )
         ],
