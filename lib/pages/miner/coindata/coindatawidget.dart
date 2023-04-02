@@ -48,57 +48,50 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
 
   Widget _showOneCoinData(
       String label, String content, CoinDataWizardStep coinDataWizardStep,
-      {required Widget prefixIconOrImage, bool isTopItem = false}) {
+      {required Widget prefixIconOrImage}) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
         _setCurrentCoinDataWizardStep(coinDataWizardStep);
       },
       child: Container(
-        margin: EdgeInsets.only(top: !isTopItem ? 4 : 0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                child: prefixIconOrImage,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle, color: Colors.grey.shade300),
-              ),
-              const SizedBox(
-                width: 8,
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.labelLarge,
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(6),
+              child: prefixIconOrImage,
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle, color: Colors.grey.shade300),
+            ),
+            const SizedBox(
+              width: 8,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                if (content.isNotEmpty) ...[
+                  const SizedBox(
+                    height: 2,
                   ),
-                  if (content.isNotEmpty) ...[
-                    const SizedBox(
-                      height: 2,
-                    ),
-                    Text(
-                      content,
-                      style: Theme.of(context).textTheme.labelMedium,
-                    )
-                  ]
-                ],
-              ),
-              // const Spacer(),
-              // const Icon(
-              //   FontAwesome5.pencil_alt,
-              //   size: 18,
-              //   color: Color(0xFF273951),
-              // )
-            ],
-          ),
+                  Text(
+                    content,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  )
+                ]
+              ],
+            ),
+            // const Spacer(),
+            // const Icon(
+            //   FontAwesome5.pencil_alt,
+            //   size: 18,
+            //   color: Color(0xFF273951),
+            // )
+          ],
         ),
       ),
     );
@@ -113,15 +106,16 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
     final walletAddress = coinDataProvider.walletAddress;
     final selectedMiningBinary = coinDataProvider.selectedMinerBinary;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-      decoration: BoxDecoration(
-          color: const Color(0xFFEBF4F5),
-          borderRadius: BorderRadius.circular(8)),
-      child: Column(
-        children: [
-          if (selectedCoinData != null) ...[
-            _showOneCoinData("Coin/Token Name", selectedCoinData.coinName,
+    return Card(
+      shadowColor: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            if (selectedCoinData != null) ...[
+              _showOneCoinData(
+                "Coin/Token Name",
+                selectedCoinData.coinName,
                 CoinDataWizardStep.coinNameSelect,
                 prefixIconOrImage: ClipOval(
                   child: SizedBox.fromSize(
@@ -138,71 +132,75 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     ),
                   ),
                 ),
-                isTopItem: true),
-            if (selectedPool != null)
+              ),
+              if (selectedPool != null)
+                _showOneCoinData("Pool Name", selectedPool,
+                    CoinDataWizardStep.poolNameSelect,
+                    prefixIconOrImage: const Icon(
+                      Icons.group,
+                      size: 16,
+                      color: Color(0xFF273951),
+                    )),
+              if (selectedRegion != null)
+                _showOneCoinData("Pool Region", selectedRegion,
+                    CoinDataWizardStep.regionSelect,
+                    prefixIconOrImage: const Icon(
+                      Icons.flag,
+                      size: 16,
+                      color: Color(0xFF273951),
+                    )),
+              if (selectedPoolUrl != null)
+                _showOneCoinData("Pool Url", selectedPoolUrl,
+                    CoinDataWizardStep.poolUrlSelect,
+                    prefixIconOrImage: const Icon(
+                      Icons.public,
+                      size: 16,
+                      color: Color(0xFF273951),
+                    )),
+              if (selectedPoolPort != null)
+                _showOneCoinData("Pool Port", selectedPoolPort.toString(),
+                    CoinDataWizardStep.portSelect,
+                    prefixIconOrImage: const Icon(
+                      Icons.onetwothree,
+                      size: 16,
+                      color: Color(0xFF273951),
+                    )),
+              if (selectedPoolUrl != null && selectedPoolPort != null) ...[
+                _showOneCoinData(
+                    "Wallet Address",
+                    walletAddress.isNotEmpty
+                        ? walletAddress.length >= 8
+                            ? "${walletAddress.substring(walletAddress.length - 8)} (Showing last 8 char)"
+                            : walletAddress
+                        : "Enter wallet address to start mining",
+                    CoinDataWizardStep.walletAddressInput,
+                    prefixIconOrImage: const Icon(
+                      Icons.wallet,
+                      size: 16,
+                      color: Color(0xFF273951),
+                    )),
+                _showOneCoinData("Mining Engine", selectedMiningBinary.name,
+                    CoinDataWizardStep.miningEngineSelect,
+                    prefixIconOrImage: const Icon(
+                      Icons.developer_board,
+                      size: 16,
+                      color: Color(0xFF273951),
+                    ))
+              ]
+            ],
+            if (selectedCoinData == null)
               _showOneCoinData(
-                  "Pool Name", selectedPool, CoinDataWizardStep.poolNameSelect,
-                  prefixIconOrImage: const Icon(
-                    Icons.group,
-                    size: 16,
-                    color: Color(0xFF273951),
-                  )),
-            if (selectedRegion != null)
-              _showOneCoinData("Pool Region", selectedRegion,
-                  CoinDataWizardStep.regionSelect,
-                  prefixIconOrImage: const Icon(
-                    Icons.flag,
-                    size: 16,
-                    color: Color(0xFF273951),
-                  )),
-            if (selectedPoolUrl != null)
-              _showOneCoinData(
-                  "Pool Url", selectedPoolUrl, CoinDataWizardStep.poolUrlSelect,
-                  prefixIconOrImage: const Icon(
-                    Icons.public,
-                    size: 16,
-                    color: Color(0xFF273951),
-                  )),
-            if (selectedPoolPort != null)
-              _showOneCoinData("Pool Port", selectedPoolPort.toString(),
-                  CoinDataWizardStep.portSelect,
-                  prefixIconOrImage: const Icon(
-                    Icons.onetwothree,
-                    size: 16,
-                    color: Color(0xFF273951),
-                  )),
-            if (selectedPoolUrl != null && selectedPoolPort != null) ...[
-              _showOneCoinData(
-                  "Wallet Address",
-                  walletAddress.isNotEmpty
-                      ? walletAddress.length >= 8
-                          ? "${walletAddress.substring(walletAddress.length - 8)} (Showing last 8 char)"
-                          : walletAddress
-                      : "Enter wallet address to start mining",
-                  CoinDataWizardStep.walletAddressInput,
-                  prefixIconOrImage: const Icon(
-                    Icons.wallet,
-                    size: 16,
-                    color: Color(0xFF273951),
-                  )),
-              _showOneCoinData("Mining Engine", selectedMiningBinary.name,
-                  CoinDataWizardStep.miningEngineSelect,
-                  prefixIconOrImage: const Icon(
-                    Icons.developer_board,
-                    size: 16,
-                    color: Color(0xFF273951),
-                  ))
-            ]
-          ],
-          if (selectedCoinData == null)
-            _showOneCoinData(
-                "Select coin to start", "", CoinDataWizardStep.coinNameSelect,
+                "Select coin to start",
+                "",
+                CoinDataWizardStep.coinNameSelect,
                 prefixIconOrImage: const Icon(
                   Icons.monetization_on,
                   size: 16,
                   color: Color(0xFF273951),
-                ))
-        ],
+                ),
+              )
+          ],
+        ),
       ),
     );
   }
@@ -276,7 +274,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ElevatedButton(
+                child: FilledButton(
                   onPressed: () {
                     String? gpuVendor =
                         Provider.of<MinerStatusProvider>(context, listen: false)
@@ -335,7 +333,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     }
                   },
                   child: const Text("Review final config"),
-                  style: ElevatedButton.styleFrom(
+                  style: FilledButton.styleFrom(
                       minimumSize: const Size.fromHeight(35)),
                 ),
               ),
