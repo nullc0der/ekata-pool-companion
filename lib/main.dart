@@ -11,7 +11,7 @@ import 'package:ekatapoolcompanion/providers/poolpayment.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/providers/uistate.dart';
 import 'package:ekatapoolcompanion/screens/homepage.dart';
-import 'package:ekatapoolcompanion/utils/common.dart';
+import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -108,12 +108,54 @@ class EkataPoolCompanion extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         title: 'Ekata Pool Companion',
-        theme: ThemeData(
-          primarySwatch: createMaterialColor(const Color(0xFF273951)),
-          textTheme: Theme.of(context).textTheme.apply(
-              bodyColor: const Color(0xFF273951),
-              displayColor: const Color(0xFF273951)),
+        // theme: ThemeData(
+        //   primarySwatch: createMaterialColor(const Color(0xFF273951)),
+        //   textTheme: Theme.of(context).textTheme.apply(
+        //       bodyColor: const Color(0xFF273951),
+        //       displayColor: const Color(0xFF273951)),
+        // ),
+        theme: FlexThemeData.light(
+          scheme: FlexScheme.brandBlue,
+          surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+          blendLevel: 7,
+          subThemesData: const FlexSubThemesData(
+            blendOnLevel: 10,
+            blendOnColors: false,
+            useM2StyleDividerInM3: true,
+            navigationBarSelectedLabelSchemeColor: SchemeColor.onSurface,
+            navigationBarUnselectedLabelSchemeColor: SchemeColor.onSurface,
+            navigationBarMutedUnselectedLabel: false,
+            navigationBarSelectedIconSchemeColor: SchemeColor.onSurface,
+            navigationBarUnselectedIconSchemeColor: SchemeColor.onSurface,
+            navigationBarMutedUnselectedIcon: false,
+            navigationBarIndicatorSchemeColor: SchemeColor.secondaryContainer,
+            navigationBarIndicatorOpacity: 1.00,
+          ),
+          visualDensity: FlexColorScheme.comfortablePlatformDensity,
+          useMaterial3: true,
+          swapLegacyOnMaterial3: true,
         ),
+        darkTheme: FlexThemeData.dark(
+          scheme: FlexScheme.brandBlue,
+          surfaceMode: FlexSurfaceMode.levelSurfacesLowScaffold,
+          blendLevel: 13,
+          subThemesData: const FlexSubThemesData(
+            blendOnLevel: 20,
+            useM2StyleDividerInM3: true,
+            navigationBarSelectedLabelSchemeColor: SchemeColor.onSurface,
+            navigationBarUnselectedLabelSchemeColor: SchemeColor.onSurface,
+            navigationBarMutedUnselectedLabel: false,
+            navigationBarSelectedIconSchemeColor: SchemeColor.onSurface,
+            navigationBarUnselectedIconSchemeColor: SchemeColor.onSurface,
+            navigationBarMutedUnselectedIcon: false,
+            navigationBarIndicatorSchemeColor: SchemeColor.secondaryContainer,
+            navigationBarIndicatorOpacity: 1.00,
+          ),
+          visualDensity: FlexColorScheme.comfortablePlatformDensity,
+          useMaterial3: true,
+          swapLegacyOnMaterial3: true,
+        ),
+        themeMode: ThemeMode.system,
         home: const HomePage());
   }
 }

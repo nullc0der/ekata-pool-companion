@@ -1,5 +1,6 @@
 import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:flutter/material.dart';
+import 'package:fluttericon/font_awesome5_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const textLinks = [
@@ -13,12 +14,18 @@ const textLinks = [
 
 const imageLink = [
   {
-    "logo": "assets/images/discord-logo.png",
+    "logo": Icon(
+      FontAwesome5.discord,
+      size: 18,
+    ),
     "url": "https://discord.gg/KsMA8FDV",
     "name": "discord"
   },
   {
-    "logo": "assets/images/telegram-logo.png",
+    "logo": Icon(
+      FontAwesome5.telegram,
+      size: 18,
+    ),
     "url": "https://t.me/ekata_io",
     "name": "telegram"
   }
@@ -41,37 +48,35 @@ Future<void> showAboutAppDialog(BuildContext context) async {
                 Text("Version: $version"),
                 const Text("Xmrig Engine Version: 6.19.0"),
                 const Text("XmrigCC Engine Version: 3.3.2"),
-                ...textLinks
-                    .map((e) => GestureDetector(
-                          child: Text(
-                            e["name"]!,
-                            style: const TextStyle(
-                                decoration: TextDecoration.underline),
-                          ),
-                          onTap: () async {
-                            if (!await launchUrl(Uri.parse(e["url"]!),
-                                mode: LaunchMode.externalApplication)) {
-                              throw Exception(
-                                  "could not launch ${e["name"]!.toLowerCase()} url");
-                            }
-                          },
-                        ))
-                    .toList(),
+                ...textLinks.map((e) => GestureDetector(
+                      child: Text(
+                        e["name"]!,
+                        style: const TextStyle(
+                            decoration: TextDecoration.underline),
+                      ),
+                      onTap: () async {
+                        if (!await launchUrl(Uri.parse(e["url"]!),
+                            mode: LaunchMode.externalApplication)) {
+                          throw Exception(
+                              "could not launch ${e["name"]!.toLowerCase()} url");
+                        }
+                      },
+                    )),
+                const SizedBox(
+                  height: 16,
+                ),
                 Wrap(
                   spacing: 4,
                   alignment: WrapAlignment.center,
                   children: imageLink
                       .map((e) => GestureDetector(
-                          child: Image(
-                            image: AssetImage(e["logo"]!),
-                            width: 24,
-                            height: 24,
-                          ),
+                          child: e["logo"]! as Widget,
                           onTap: () async {
-                            if (!await launchUrl(Uri.parse(e["url"]!),
+                            if (!await launchUrl(
+                                Uri.parse(e["url"]!.toString()),
                                 mode: LaunchMode.externalApplication)) {
                               throw Exception(
-                                  "could not launch ${e["name"]!.toLowerCase()} url");
+                                  "could not launch ${e["name"]!.toString().toLowerCase()} url");
                             }
                           }))
                       .toList(),

@@ -1,6 +1,5 @@
 import 'package:ekatapoolcompanion/widgets/about_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   const CustomAppBar({Key? key, required this.title})
@@ -21,19 +20,15 @@ class _CustomAppBarState extends State<CustomAppBar> {
   Widget build(BuildContext context) {
     return AppBar(
       title: Text(widget.title),
-      titleSpacing: 8,
-      backgroundColor: Colors.white,
-      foregroundColor: Theme.of(context).primaryColor,
-      systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
-          statusBarIconBrightness: Brightness.dark),
-      elevation: 0,
+      // titleSpacing: 8,
+      // backgroundColor: Colors.white,
+      // foregroundColor: Theme.of(context).primaryColor,
+      // TODO: Check if this required in Android after FlexColorScheme
+      // systemOverlayStyle: const SystemUiOverlayStyle(
+      //     statusBarColor: Colors.white,
+      //     statusBarIconBrightness: Brightness.dark),
+      // elevation: 0,
       actions: [
-        // GestureDetector(
-        //   onTap: () {},
-        //   child: const Padding(
-        //       padding: EdgeInsets.only(right: 2.0), child: Icon(Icons.search)),
-        // ),
         PopupMenuButton(
             offset: const Offset(0.0, 40.0),
             itemBuilder: (context) {

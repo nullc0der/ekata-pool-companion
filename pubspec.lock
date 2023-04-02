@@ -153,6 +153,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.55.2"
+  flex_color_scheme:
+    dependency: "direct main"
+    description:
+      name: flex_color_scheme
+      sha256: c8153899b7146143ca844da12bca910cf35eb58e65a8ffc3f8530820952be43c
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.0-dev.3"
+  flex_seed_scheme:
+    dependency: transitive
+    description:
+      name: flex_seed_scheme
+      sha256: "7058288ef97d348657ac95cea25d65a9aac181ca08387ede891fd7230ad7600f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.3"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -679,5 +695,5 @@ packages:
     source: hosted
     version: "3.1.1"
 sdks:
-  dart: ">=2.18.0 <3.0.0"
-  flutter: ">=3.3.0"
+  dart: ">=2.19.0 <3.0.0"
+  flutter: ">=3.7.0"

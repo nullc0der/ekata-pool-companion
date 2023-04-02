@@ -249,8 +249,28 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
         appBar: const CustomAppBar(
-          title: 'Ekata Pool Companion',
+          title: "Ekata Pool Companion",
         ),
+        // appBar: AppBar(
+        //   title: const Text("Ekata Pool Companion"),
+        //   actions: [
+        //     PopupMenuButton(
+        //         offset: const Offset(0.0, 40.0),
+        //         itemBuilder: (context) {
+        //           return [
+        //             PopupMenuItem(
+        //               onTap: () {
+        //                 Future.delayed(const Duration(seconds: 0),
+        //                     () => showAboutAppDialog(context));
+        //               },
+        //               child: Row(
+        //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        //                   children: const [Icon(Icons.info), Text('About')]),
+        //             )
+        //           ];
+        //         })
+        //   ],
+        // ),
         body: showBottomNavbar
             ? _getBody(bottomNavbarCurrentIndex)
             : const Miner(),

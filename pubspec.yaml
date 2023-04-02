@@ -54,6 +54,7 @@ dependencies:
   system_info2: ^2.0.4
   emoji_flag_converter: ^1.1.0
   fluttericon: ^2.0.0
+  flex_color_scheme: ^7.0.0-dev.3
 
 dev_dependencies:
   flutter_test:
