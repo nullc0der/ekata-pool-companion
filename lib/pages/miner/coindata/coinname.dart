@@ -321,7 +321,9 @@ class _CoinNameState extends State<CoinName> {
                                       Theme.of(context).textTheme.labelLarge),
                     )),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: coinDatas.isNotEmpty
+                ? MainAxisAlignment.spaceBetween
+                : MainAxisAlignment.center,
             children: [
               ElevatedButton(
                   onPressed: () {
@@ -338,38 +340,39 @@ class _CoinNameState extends State<CoinName> {
                     Icons.arrow_back,
                     size: 16,
                   )),
-              Wrap(
-                spacing: 4,
-                children: [
-                  ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                            duration: Duration(seconds: 1),
-                            content: Text(
-                                "Next pressed, first item on list will be selected")));
-                        Provider.of<CoinDataProvider>(context, listen: false)
-                            .selectedCoinData = coinDatas.first;
-                        widget.setCurrentCoinDataWizardStep(
-                            CoinDataWizardStep.poolNameSelect);
-                      },
-                      style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder()),
-                      child: const Icon(
-                        Icons.arrow_forward,
-                        size: 16,
-                      )),
-                  ElevatedButton(
-                      onPressed: () async {
-                        await _onPressDone(coinDatas.first);
-                      },
-                      style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder()),
-                      child: const Icon(
-                        Icons.check,
-                        size: 16,
-                      ))
-                ],
-              )
+              if (coinDatas.isNotEmpty)
+                Wrap(
+                  spacing: 4,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                              duration: Duration(seconds: 1),
+                              content: Text(
+                                  "Next pressed, first item on list will be selected")));
+                          Provider.of<CoinDataProvider>(context, listen: false)
+                              .selectedCoinData = coinDatas.first;
+                          widget.setCurrentCoinDataWizardStep(
+                              CoinDataWizardStep.poolNameSelect);
+                        },
+                        style: ElevatedButton.styleFrom(
+                            shape: const StadiumBorder()),
+                        child: const Icon(
+                          Icons.arrow_forward,
+                          size: 16,
+                        )),
+                    ElevatedButton(
+                        onPressed: () async {
+                          await _onPressDone(coinDatas.first);
+                        },
+                        style: ElevatedButton.styleFrom(
+                            shape: const StadiumBorder()),
+                        child: const Icon(
+                          Icons.check,
+                          size: 16,
+                        ))
+                  ],
+                )
             ],
           )
         ],
