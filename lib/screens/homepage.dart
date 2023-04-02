@@ -16,7 +16,7 @@ import 'package:ekatapoolcompanion/services/systeminfo.dart';
 import 'package:ekatapoolcompanion/services/userid.dart';
 import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:ekatapoolcompanion/utils/constants.dart';
-import 'package:ekatapoolcompanion/widgets/custom_app_bar.dart';
+import 'package:ekatapoolcompanion/widgets/about_dialog.dart';
 import 'package:ekatapoolcompanion/widgets/custom_bottom_navigation.dart';
 import 'package:ekatapoolcompanion/widgets/pool_select_action_sheet.dart';
 import 'package:flutter/foundation.dart';
@@ -248,29 +248,26 @@ class _HomePageState extends State<HomePage> {
         Provider.of<UiStateProvider>(context).bottomNavigationIndex;
 
     return Scaffold(
-        appBar: const CustomAppBar(
-          title: "Ekata Pool Companion",
+        appBar: AppBar(
+          title: const Text("Ekata Pool Companion"),
+          actions: [
+            PopupMenuButton(
+                offset: const Offset(0.0, 40.0),
+                itemBuilder: (context) {
+                  return [
+                    PopupMenuItem(
+                      onTap: () {
+                        Future.delayed(const Duration(seconds: 0),
+                            () => showAboutAppDialog(context));
+                      },
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: const [Icon(Icons.info), Text('About')]),
+                    )
+                  ];
+                })
+          ],
         ),
-        // appBar: AppBar(
-        //   title: const Text("Ekata Pool Companion"),
-        //   actions: [
-        //     PopupMenuButton(
-        //         offset: const Offset(0.0, 40.0),
-        //         itemBuilder: (context) {
-        //           return [
-        //             PopupMenuItem(
-        //               onTap: () {
-        //                 Future.delayed(const Duration(seconds: 0),
-        //                     () => showAboutAppDialog(context));
-        //               },
-        //               child: Row(
-        //                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        //                   children: const [Icon(Icons.info), Text('About')]),
-        //             )
-        //           ];
-        //         })
-        //   ],
-        // ),
         body: showBottomNavbar
             ? _getBody(bottomNavbarCurrentIndex)
             : const Miner(),
