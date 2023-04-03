@@ -146,7 +146,7 @@ class _WalletAddressState extends State<WalletAddress> {
     return Form(
         key: _walletAddressFormKey,
         child: Padding(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
@@ -171,7 +171,6 @@ class _WalletAddressState extends State<WalletAddress> {
                     },
                     controller: _walletAddressFieldController,
                     decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
                         labelText: "Enter wallet address"),
                     onSaved: (address) {
                       if (address != null &&
@@ -201,7 +200,6 @@ class _WalletAddressState extends State<WalletAddress> {
                   TextFormField(
                     controller: _rigIdFieldController,
                     decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
                         labelText: "Enter rig id",
                         hintText: "Enter a rig id if the pool supports"),
                     onSaved: (rigId) {
@@ -225,7 +223,8 @@ class _WalletAddressState extends State<WalletAddress> {
                             CoinDataWizardStep.portSelect);
                       },
                       style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder()),
+                          shape: const StadiumBorder(),
+                          shadowColor: Colors.transparent),
                       child: const Icon(
                         Icons.arrow_back,
                         size: 16,
@@ -245,7 +244,8 @@ class _WalletAddressState extends State<WalletAddress> {
                             }
                           },
                           style: ElevatedButton.styleFrom(
-                              shape: const StadiumBorder()),
+                              shape: const StadiumBorder(),
+                              shadowColor: Colors.transparent),
                           child: const Icon(
                             Icons.arrow_forward,
                             size: 16,
@@ -257,7 +257,8 @@ class _WalletAddressState extends State<WalletAddress> {
                                 coinDataProvider.selectedPoolPort!);
                           },
                           style: ElevatedButton.styleFrom(
-                              shape: const StadiumBorder()),
+                              shape: const StadiumBorder(),
+                              shadowColor: Colors.transparent),
                           child: const Icon(
                             Icons.check,
                             size: 16,

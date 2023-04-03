@@ -115,7 +115,6 @@ class _MiningEngineState extends State<MiningEngine> {
       },
       keyboardType: TextInputType.number,
       decoration: const InputDecoration(
-        border: OutlineInputBorder(),
         labelText: "Enter Thread Count(Optional)",
       ),
       onSaved: (value) {
@@ -135,8 +134,7 @@ class _MiningEngineState extends State<MiningEngine> {
       children: [
         DropdownButtonFormField<MinerBinary>(
             isExpanded: true,
-            decoration: const InputDecoration(
-                border: OutlineInputBorder(), labelText: "Miner Backend"),
+            decoration: const InputDecoration(labelText: "Miner Backend"),
             value: selectedMinerBinary,
             items: MinerBinary.values
                 .map<DropdownMenuItem<MinerBinary>>(
@@ -160,8 +158,7 @@ class _MiningEngineState extends State<MiningEngine> {
       children: [
         TextFormField(
           controller: _xmrigCCServerUrlFieldController,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(), labelText: "xmrigCC Server url"),
+          decoration: const InputDecoration(labelText: "xmrigCC Server url"),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -195,9 +192,8 @@ class _MiningEngineState extends State<MiningEngine> {
         ),
         TextFormField(
           controller: _xmrigCCWorkerIdFieldController,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: "xmrigCC Worker ID (Optional)"),
+          decoration:
+              const InputDecoration(labelText: "xmrigCC Worker ID (Optional)"),
           onSaved: (value) {
             if (value != null && value.isNotEmpty) {
               _xmrigCCWorkerIdFieldController.text = value ?? "";
@@ -216,7 +212,7 @@ class _MiningEngineState extends State<MiningEngine> {
     return Form(
         key: _miningEngineFormKey,
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -253,7 +249,8 @@ class _MiningEngineState extends State<MiningEngine> {
                             CoinDataWizardStep.walletAddressInput);
                       },
                       style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder()),
+                          shape: const StadiumBorder(),
+                          shadowColor: Colors.transparent),
                       child: const Icon(
                         Icons.arrow_back,
                         size: 16,
@@ -267,7 +264,8 @@ class _MiningEngineState extends State<MiningEngine> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder()),
+                          shape: const StadiumBorder(),
+                          shadowColor: Colors.transparent),
                       child: const Icon(
                         Icons.check,
                         size: 16,

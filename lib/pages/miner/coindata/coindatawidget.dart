@@ -274,7 +274,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: FilledButton(
+                child: ElevatedButton(
                   onPressed: () {
                     String? gpuVendor =
                         Provider.of<MinerStatusProvider>(context, listen: false)
@@ -333,8 +333,9 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     }
                   },
                   child: const Text("Review final config"),
-                  style: FilledButton.styleFrom(
-                      minimumSize: const Size.fromHeight(35)),
+                  style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(35),
+                      shadowColor: Colors.transparent),
                 ),
               ),
             ],

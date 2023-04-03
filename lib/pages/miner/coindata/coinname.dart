@@ -144,8 +144,8 @@ class _CoinNameState extends State<CoinName> {
       decoration: BoxDecoration(
           color: selectedCoinData != null &&
                   coinData.coinName == selectedCoinData.coinName
-              ? Theme.of(context).primaryColor.withOpacity(0.56)
-              : Colors.white,
+              ? Theme.of(context).primaryColor.withOpacity(0.23)
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(4)),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -191,9 +191,8 @@ class _CoinNameState extends State<CoinName> {
       children: [
         Positioned(
             child: TextField(
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: "Search by coin name or algo"),
+          decoration:
+              const InputDecoration(labelText: "Search by coin name or algo"),
           onChanged: (value) {
             if (_searchDebounce?.isActive ?? false) _searchDebounce?.cancel();
             _searchDebounce = Timer(const Duration(milliseconds: 500), () {
@@ -208,8 +207,9 @@ class _CoinNameState extends State<CoinName> {
           },
         )),
         Positioned(
-            right: 5,
-            top: 15,
+            right: 10,
+            top: 20,
+            // On multi item add a row, and add spacing with SizedBox
             child: GestureDetector(
               onTap: () {
                 setState(() {
@@ -255,7 +255,7 @@ class _CoinNameState extends State<CoinName> {
     final selectedCoinData = coinDataProvider.selectedCoinData;
 
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -335,7 +335,9 @@ class _CoinNameState extends State<CoinName> {
                         .selectedPoolPort = null;
                     widget.setCurrentCoinDataWizardStep(null);
                   },
-                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  style: ElevatedButton.styleFrom(
+                      shape: const StadiumBorder(),
+                      shadowColor: Colors.transparent),
                   child: const Icon(
                     Icons.arrow_back,
                     size: 16,
@@ -356,7 +358,8 @@ class _CoinNameState extends State<CoinName> {
                               CoinDataWizardStep.poolNameSelect);
                         },
                         style: ElevatedButton.styleFrom(
-                            shape: const StadiumBorder()),
+                            shape: const StadiumBorder(),
+                            shadowColor: Colors.transparent),
                         child: const Icon(
                           Icons.arrow_forward,
                           size: 16,
@@ -366,7 +369,8 @@ class _CoinNameState extends State<CoinName> {
                           await _onPressDone(coinDatas.first);
                         },
                         style: ElevatedButton.styleFrom(
-                            shape: const StadiumBorder()),
+                            shape: const StadiumBorder(),
+                            shadowColor: Colors.transparent),
                         child: const Icon(
                           Icons.check,
                           size: 16,

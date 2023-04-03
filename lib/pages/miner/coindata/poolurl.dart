@@ -52,7 +52,7 @@ class _PoolUrlState extends State<PoolUrl> {
       decoration: BoxDecoration(
           color: poolUrl == selectedPoolUrl
               ? Theme.of(context).primaryColor.withOpacity(0.23)
-              : Colors.white,
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(4)),
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -90,7 +90,7 @@ class _PoolUrlState extends State<PoolUrl> {
         : [];
 
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -126,7 +126,9 @@ class _PoolUrlState extends State<PoolUrl> {
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.regionSelect);
                   },
-                  style: ElevatedButton.styleFrom(shape: const StadiumBorder()),
+                  style: ElevatedButton.styleFrom(
+                      shape: const StadiumBorder(),
+                      shadowColor: Colors.transparent),
                   child: const Icon(
                     Icons.arrow_back,
                     size: 16,
@@ -146,7 +148,8 @@ class _PoolUrlState extends State<PoolUrl> {
                             CoinDataWizardStep.portSelect);
                       },
                       style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder()),
+                          shape: const StadiumBorder(),
+                          shadowColor: Colors.transparent),
                       child: const Icon(
                         Icons.arrow_forward,
                         size: 16,
@@ -160,7 +163,8 @@ class _PoolUrlState extends State<PoolUrl> {
                             poolUrls.first);
                       },
                       style: ElevatedButton.styleFrom(
-                          shape: const StadiumBorder()),
+                          shape: const StadiumBorder(),
+                          shadowColor: Colors.transparent),
                       child: const Icon(
                         Icons.check,
                         size: 16,

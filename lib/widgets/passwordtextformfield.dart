@@ -42,7 +42,6 @@ class _PasswordTextFormFieldState extends State<PasswordTextFormField> {
               });
             },
           ),
-          border: const OutlineInputBorder(),
           labelText: widget.labelText,
           hintText: widget.hintText),
       autovalidateMode: widget.autovalidateMode,
