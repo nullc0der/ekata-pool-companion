@@ -250,11 +250,11 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
             minerConfig;
         Provider.of<MinerStatusProvider>(context, listen: false)
             .minerConfigPath = filePath;
-        Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
-            minerConfig.pools.first.url == "70.35.206.105:3333" ||
-                minerConfig.pools.first.url == "70.35.206.105:5555";
-        Provider.of<UiStateProvider>(context, listen: false)
-            .bottomNavigationIndex = 3;
+        // Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
+        //     minerConfig.pools.first.url == "70.35.206.105:3333" ||
+        //         minerConfig.pools.first.url == "70.35.206.105:5555";
+        // Provider.of<UiStateProvider>(context, listen: false)
+        //     .bottomNavigationIndex = 3;
         widget.setCurrentWizardStep(WizardStep.miner);
       }
     }
@@ -266,8 +266,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
       children: [
         DropdownButtonFormField<MinerBinary>(
             isExpanded: true,
-            decoration: const InputDecoration(
-                border: OutlineInputBorder(), labelText: "Miner Backend"),
+            decoration: const InputDecoration(labelText: "Miner Backend"),
             value: selectedMinerBinary,
             items: MinerBinary.values
                 .map<DropdownMenuItem<MinerBinary>>(
@@ -291,8 +290,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
       children: [
         TextFormField(
           controller: _xmrigCCServerUrlFieldController,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(), labelText: "xmrigCC Server url"),
+          decoration: const InputDecoration(labelText: "xmrigCC Server url"),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (value) {
             if (value == null || value.isEmpty) {
@@ -326,9 +324,8 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
         ),
         TextFormField(
           controller: _xmrigCCWorkerIdFieldController,
-          decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: "xmrigCC Worker ID (Optional)"),
+          decoration:
+              const InputDecoration(labelText: "xmrigCC Worker ID (Optional)"),
           onSaved: (value) {
             if (value != null && value.isNotEmpty) {
               _xmrigCCWorkerIdFieldController.text = value ?? "";
@@ -356,7 +353,6 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
       },
       keyboardType: TextInputType.number,
       decoration: const InputDecoration(
-        border: OutlineInputBorder(),
         labelText: "Enter Thread Count(Optional)",
       ),
       onSaved: (value) {
@@ -377,106 +373,120 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
     final minerConfigPageShowMinerEngineSelect =
         Provider.of<UiStateProvider>(context)
             .minerConfigPageShowMinerEngineSelect;
-    return ListView(
-      padding: const EdgeInsets.all(8),
-      children: [
-        Text(
-          "Review Config",
-          style: TextStyle(fontSize: 18, color: Theme.of(context).primaryColor),
-        ),
-        const SizedBox(
-          height: 8,
-        ),
-        Form(
-          key: _minerConfigFormKey,
-          child: Column(
-            children: [
-              TextFormField(
-                  minLines: 25,
-                  maxLines: 30,
-                  controller: _minerConfigFieldController,
-                  decoration: const InputDecoration(
-                      border: OutlineInputBorder(), hintText: "Miner Config"),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Miner config can't be empty";
-                    }
-                    try {
-                      minerConfigFromJson(value);
-                    } on FormatException catch (e) {
-                      return e.message;
-                    }
-                    return null;
-                  }),
-              const SizedBox(
-                height: 8.0,
-              ),
-              if (minerConfigPageShowMinerEngineSelect) ...[
-                _getMinerBackendDropdown(selectedMinerBinary),
-                const SizedBox(
-                  height: 8.0,
-                ),
-                if (selectedMinerBinary == MinerBinary.xmrigCC) ...[
-                  _getXmrigCCOptions(),
-                  const SizedBox(
-                    height: 8.0,
-                  )
-                ],
-                _getThreadCountInput(),
-                const SizedBox(
-                  height: 8.0,
-                ),
-              ],
-              SizedBox(
-                width: double.infinity,
-                child: Row(
-                  children: [
-                    Expanded(
-                        child: OutlinedButton(
-                            onPressed: () {
-                              Provider.of<MinerStatusProvider>(context,
-                                      listen: false)
-                                  .minerConfig = null;
-                              widget.setCurrentWizardStep(
-                                  WizardStep.coinNameSelect);
-                            },
-                            child: const Text("Start Over"))),
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    Expanded(
-                      child: ElevatedButton(
-                          style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all(
-                                  Colors.green.shade900)),
-                          onPressed: _onPressStartMining,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text("Start Mining"),
-                              if (_isMinerConfigSaving) ...[
+    return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                    minWidth: constraints.maxWidth,
+                    minHeight: constraints.maxHeight - 16),
+                child: IntrinsicHeight(
+                  child: Form(
+                    key: _minerConfigFormKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Review Config",
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        Expanded(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            TextFormField(
+                                minLines: 1,
+                                maxLines: 12,
+                                controller: _minerConfigFieldController,
+                                decoration: const InputDecoration(
+                                    labelText: "Enter your miner config here",
+                                    alignLabelWithHint: true),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Miner config can't be empty";
+                                  }
+                                  try {
+                                    minerConfigFromJson(value);
+                                  } on FormatException catch (e) {
+                                    return e.message;
+                                  }
+                                  return null;
+                                }),
+                            const SizedBox(
+                              height: 8.0,
+                            ),
+                            if (minerConfigPageShowMinerEngineSelect) ...[
+                              _getMinerBackendDropdown(selectedMinerBinary),
+                              const SizedBox(
+                                height: 8.0,
+                              ),
+                              if (selectedMinerBinary ==
+                                  MinerBinary.xmrigCC) ...[
+                                _getXmrigCCOptions(),
                                 const SizedBox(
-                                  width: 4,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                  height: 10,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
+                                  height: 8.0,
                                 )
-                              ]
+                              ],
+                              _getThreadCountInput(),
+                              const SizedBox(
+                                height: 8.0,
+                              ),
                             ],
-                          )),
-                    )
-                  ],
+                          ],
+                        )),
+                        SizedBox(
+                          width: double.infinity,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                  child: OutlinedButton(
+                                      onPressed: () {
+                                        Provider.of<MinerStatusProvider>(
+                                                context,
+                                                listen: false)
+                                            .minerConfig = null;
+                                        widget.setCurrentWizardStep(
+                                            WizardStep.coinNameSelect);
+                                      },
+                                      child: const Text("Start Over"))),
+                              const SizedBox(
+                                width: 8,
+                              ),
+                              Expanded(
+                                child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                        shadowColor: Colors.transparent),
+                                    onPressed: _onPressStartMining,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Text("Start Mining"),
+                                        if (_isMinerConfigSaving) ...[
+                                          const SizedBox(
+                                            width: 4,
+                                          ),
+                                          const SizedBox(
+                                            width: 10,
+                                            height: 10,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                            ),
+                                          )
+                                        ]
+                                      ],
+                                    )),
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                 ),
-              )
-            ],
-          ),
-        )
-      ],
-    );
+              ),
+            ));
   }
 }

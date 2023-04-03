@@ -24,9 +24,8 @@ Future<bool?> showMinerConfigUploadConfirmDialog(BuildContext context) async {
                       Navigator.pop(context, true);
                     },
                     child: const Text("Yes"),
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(Colors.green.shade900)))
+                    style: ElevatedButton.styleFrom(
+                        shadowColor: Colors.transparent))
               ],
             )
           ],

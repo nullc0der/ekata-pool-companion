@@ -207,152 +207,64 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
 
   Widget _showCoinData(CoinDataProvider coinDataProvider) {
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: coinDataProvider.selectedCoinData == null ? 230 : 20,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: coinDataProvider.selectedCoinData == null ? 230 : 20,
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              "Configure Miner",
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Configure Miner",
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-            ),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          _showSelectedCoinData(coinDataProvider),
+          if (coinDataProvider.selectedPoolUrl != null &&
+              coinDataProvider.selectedPoolPort != null &&
+              coinDataProvider.walletAddress.isNotEmpty) ...[
             const SizedBox(
               height: 8,
             ),
-            _showSelectedCoinData(coinDataProvider),
-            if (coinDataProvider.selectedPoolUrl != null &&
-                coinDataProvider.selectedPoolPort != null &&
-                coinDataProvider.walletAddress.isNotEmpty) ...[
-              const SizedBox(
-                height: 8,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "URL to be used for mining: ${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                  if (coinDataProvider.threadCount != null)
                     Text(
-                      "URL to be used for mining: ${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
+                      "Thread count: ${coinDataProvider.threadCount.toString()}",
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
-                    if (coinDataProvider.threadCount != null)
-                      Text(
-                        "Thread count: ${coinDataProvider.threadCount.toString()}",
-                        style: Theme.of(context).textTheme.labelMedium,
-                      ),
-                    if (coinDataProvider.selectedMinerBinary ==
-                        MinerBinary.xmrigCC) ...[
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      Text(
-                        "XmrigCC Options",
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      Text(
-                        "Server URL: ${coinDataProvider.xmrigCCServerUrl}",
-                        style: Theme.of(context).textTheme.labelMedium,
-                      ),
-                      Text(
-                          "Server Token: ${coinDataProvider.xmrigCCServerToken}",
-                          style: Theme.of(context).textTheme.labelMedium),
-                      if (coinDataProvider.xmrigCCWorkerId != null)
-                        Text("Worker Id: ${coinDataProvider.xmrigCCWorkerId}",
-                            style: Theme.of(context).textTheme.labelMedium)
-                    ],
+                  if (coinDataProvider.selectedMinerBinary ==
+                      MinerBinary.xmrigCC) ...[
+                    const SizedBox(
+                      height: 8,
+                    ),
+                    Text(
+                      "XmrigCC Options",
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    Text(
+                      "Server URL: ${coinDataProvider.xmrigCCServerUrl}",
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    Text("Server Token: ${coinDataProvider.xmrigCCServerToken}",
+                        style: Theme.of(context).textTheme.labelMedium),
+                    if (coinDataProvider.xmrigCCWorkerId != null)
+                      Text("Worker Id: ${coinDataProvider.xmrigCCWorkerId}",
+                          style: Theme.of(context).textTheme.labelMedium)
                   ],
-                ),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: ElevatedButton(
-                  onPressed: () {
-                    String? gpuVendor =
-                        Provider.of<MinerStatusProvider>(context, listen: false)
-                            .gpuVendor;
-                    bool deviceHasGPU = gpuVendor != null;
-                    CoinData? selectedCoinData =
-                        coinDataProvider.selectedCoinData;
-                    if (selectedCoinData != null) {
-                      Provider.of<MinerStatusProvider>(context, listen: false)
-                          .coinData = selectedCoinData;
-                      MinerConfig minerConfig = MinerConfig(pools: [
-                        Pool(
-                            algo: selectedCoinData.coinAlgo,
-                            url:
-                                "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
-                            user: coinDataProvider.walletAddress,
-                            pass: coinDataProvider.password,
-                            rigId: coinDataProvider.rigId != null &&
-                                    coinDataProvider.rigId!.isNotEmpty
-                                ? coinDataProvider.rigId
-                                : null)
-                      ]);
-                      if (deviceHasGPU) {
-                        if (gpuVendor.toLowerCase() == "nvidia") {
-                          minerConfig.cuda = Gpu(enabled: true);
-                        }
-                        if (gpuVendor.toLowerCase() == "amd") {
-                          minerConfig.opencl = Gpu(enabled: true);
-                        }
-                      } else {
-                        minerConfig.cpu = Cpu(enabled: true);
-                      }
-                      Provider.of<MinerStatusProvider>(context, listen: false)
-                          .minerConfig = minerConfig;
-                      if (coinDataProvider.threadCount != null) {
-                        Provider.of<MinerStatusProvider>(context, listen: false)
-                            .threadCount = coinDataProvider.threadCount;
-                      }
-                      Provider.of<MinerStatusProvider>(context, listen: false)
-                              .selectedMinerBinary =
-                          coinDataProvider.selectedMinerBinary;
-                      if (coinDataProvider.selectedMinerBinary ==
-                          MinerBinary.xmrigCC) {
-                        Provider.of<MinerStatusProvider>(context, listen: false)
-                                .xmrigCCServerUrl =
-                            coinDataProvider.xmrigCCServerUrl;
-                        Provider.of<MinerStatusProvider>(context, listen: false)
-                                .xmrigCCServerToken =
-                            coinDataProvider.xmrigCCServerToken;
-                        Provider.of<MinerStatusProvider>(context, listen: false)
-                            .xmrigCCWorkerId = coinDataProvider.xmrigCCWorkerId;
-                      }
-                      Provider.of<UiStateProvider>(context, listen: false)
-                          .minerConfigPageShowMinerEngineSelect = false;
-                      widget.setCurrentWizardStep(WizardStep.minerConfig);
-                    }
-                  },
-                  child: const Text("Review final config"),
-                  style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(35),
-                      shadowColor: Colors.transparent),
-                ),
-              ),
-            ],
-            const SizedBox(
-              height: 24,
-            ),
-            Text(
-              "Advanced Options",
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 80),
-              child: Divider(
-                height: 0,
+                ],
               ),
             ),
             const SizedBox(
@@ -360,36 +272,125 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  OutlinedButton(
-                      onPressed: () {
-                        Provider.of<UiStateProvider>(context, listen: false)
-                            .minerConfigPageShowMinerEngineSelect = true;
-                        widget
-                            .setCurrentWizardStep(WizardStep.usersMinerConfigs);
-                      },
-                      child: const Text("Saved configs")),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  OutlinedButton(
-                      onPressed: () {
-                        Provider.of<UiStateProvider>(context, listen: false)
-                            .minerConfigPageShowMinerEngineSelect = true;
-                        widget.setCurrentWizardStep(WizardStep.minerConfig);
-                      },
-                      child: const Text("Use custom config")),
-                ],
+              child: ElevatedButton(
+                onPressed: () {
+                  String? gpuVendor =
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                          .gpuVendor;
+                  bool deviceHasGPU = gpuVendor != null;
+                  CoinData? selectedCoinData =
+                      coinDataProvider.selectedCoinData;
+                  if (selectedCoinData != null) {
+                    Provider.of<MinerStatusProvider>(context, listen: false)
+                        .coinData = selectedCoinData;
+                    MinerConfig minerConfig = MinerConfig(pools: [
+                      Pool(
+                          algo: selectedCoinData.coinAlgo,
+                          url:
+                              "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
+                          user: coinDataProvider.walletAddress,
+                          pass: coinDataProvider.password,
+                          rigId: coinDataProvider.rigId != null &&
+                                  coinDataProvider.rigId!.isNotEmpty
+                              ? coinDataProvider.rigId
+                              : null)
+                    ]);
+                    if (deviceHasGPU) {
+                      if (gpuVendor.toLowerCase() == "nvidia") {
+                        minerConfig.cuda = Gpu(enabled: true);
+                      }
+                      if (gpuVendor.toLowerCase() == "amd") {
+                        minerConfig.opencl = Gpu(enabled: true);
+                      }
+                    } else {
+                      minerConfig.cpu = Cpu(enabled: true);
+                    }
+                    Provider.of<MinerStatusProvider>(context, listen: false)
+                        .minerConfig = minerConfig;
+                    if (coinDataProvider.threadCount != null) {
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                          .threadCount = coinDataProvider.threadCount;
+                    }
+                    Provider.of<MinerStatusProvider>(context, listen: false)
+                            .selectedMinerBinary =
+                        coinDataProvider.selectedMinerBinary;
+                    if (coinDataProvider.selectedMinerBinary ==
+                        MinerBinary.xmrigCC) {
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                          .xmrigCCServerUrl = coinDataProvider.xmrigCCServerUrl;
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                              .xmrigCCServerToken =
+                          coinDataProvider.xmrigCCServerToken;
+                      Provider.of<MinerStatusProvider>(context, listen: false)
+                          .xmrigCCWorkerId = coinDataProvider.xmrigCCWorkerId;
+                    }
+                    Provider.of<UiStateProvider>(context, listen: false)
+                        .minerConfigPageShowMinerEngineSelect = false;
+                    widget.setCurrentWizardStep(WizardStep.minerConfig);
+                  }
+                },
+                child: const Text("Review final config"),
+                style: ElevatedButton.styleFrom(
+                    minimumSize: const Size.fromHeight(35),
+                    shadowColor: Colors.transparent),
               ),
             ),
-            const SizedBox(
-              height: 16,
-            ),
-            CurrentlyMining(setCurrentWizardStep: widget.setCurrentWizardStep)
           ],
-        ),
+          const SizedBox(
+            height: 24,
+          ),
+          Text(
+            "Advanced Options",
+            style: Theme.of(context).textTheme.labelLarge,
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 80),
+            child: Divider(
+              height: 0,
+            ),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Provider.of<UiStateProvider>(context, listen: false)
+                        .minerConfigPageShowMinerEngineSelect = true;
+                    widget.setCurrentWizardStep(WizardStep.usersMinerConfigs);
+                  },
+                  child: const Text("Saved configs"),
+                  style:
+                      ElevatedButton.styleFrom(shadowColor: Colors.transparent),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Provider.of<UiStateProvider>(context, listen: false)
+                        .minerConfigPageShowMinerEngineSelect = true;
+                    widget.setCurrentWizardStep(WizardStep.minerConfig);
+                  },
+                  child: const Text("Use custom config"),
+                  style:
+                      ElevatedButton.styleFrom(shadowColor: Colors.transparent),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          CurrentlyMining(setCurrentWizardStep: widget.setCurrentWizardStep)
+        ],
       ),
     );
   }

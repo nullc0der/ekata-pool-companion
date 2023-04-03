@@ -35,7 +35,7 @@ class _PasswordTextFormFieldState extends State<PasswordTextFormField> {
       decoration: InputDecoration(
           suffixIcon: GestureDetector(
             child:
-                Icon(_showPassword ? Icons.visibility : Icons.visibility_off),
+                Icon(!_showPassword ? Icons.visibility : Icons.visibility_off),
             onTap: () {
               setState(() {
                 _showPassword = !_showPassword;
