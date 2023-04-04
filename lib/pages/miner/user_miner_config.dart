@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
-import 'package:ekatapoolcompanion/providers/uistate.dart';
 import 'package:ekatapoolcompanion/services/minerconfig.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
@@ -111,11 +110,11 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
         minerConfig;
     Provider.of<MinerStatusProvider>(context, listen: false).minerConfigPath =
         filePath;
-    Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
-        minerConfig.pools.first.url == "70.35.206.105:3333" ||
-            minerConfig.pools.first.url == "70.35.206.105:5555";
-    Provider.of<UiStateProvider>(context, listen: false).bottomNavigationIndex =
-        3;
+    // Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
+    //     minerConfig.pools.first.url == "70.35.206.105:3333" ||
+    //         minerConfig.pools.first.url == "70.35.206.105:5555";
+    // Provider.of<UiStateProvider>(context, listen: false).bottomNavigationIndex =
+    //     3;
     widget.setCurrentWizardStep(WizardStep.miner);
   }
 
@@ -163,171 +162,160 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
 
   Widget _renderOneMinerConfig(UsersMinerConfig minerConfig) {
     final List pools = minerConfig.minerConfig["pools"];
-    return Container(
+    return Card(
+      shadowColor: Colors.transparent,
       margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withOpacity(0.23),
-          borderRadius: BorderRadius.circular(4)),
-      child: Column(children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Chip(
-                backgroundColor:
-                    Theme.of(context).primaryColor.withOpacity(0.5),
-                avatar: Icon(Icons.timer,
-                    size: 16, color: Theme.of(context).primaryColor),
-                label: Text(
-                  DateFormat.yMd().add_jm().format(
-                      DateTime.fromMillisecondsSinceEpoch(
-                          minerConfig.timeStamp)),
-                  style: TextStyle(color: Theme.of(context).primaryColor),
-                ))
-          ],
-        ),
-        const SizedBox(
-          height: 8,
-        ),
-        ...pools.asMap().entries.map((entry) {
-          final pool = entry.value;
-          return Column(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              if (entry.key % 2 != 0)
-                const SizedBox(
-                  height: 4,
-                ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Wrap(
-                    spacing: 2,
-                    children: [
-                      Icon(
-                        Icons.link,
-                        color: Theme.of(context).primaryColor,
-                        size: 20,
-                      ),
-                      const Text("Pool Address",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.w300)),
-                    ],
+              Chip(
+                  shape: const StadiumBorder(),
+                  avatar: const Icon(Icons.timer, size: 16),
+                  label: Text(
+                    DateFormat.yMd().add_jm().format(
+                        DateTime.fromMillisecondsSinceEpoch(
+                            minerConfig.timeStamp)),
+                  )),
+            ],
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          ...pools.asMap().entries.map((entry) {
+            final pool = entry.value;
+            return Column(
+              children: [
+                if (entry.key % 2 != 0)
+                  const SizedBox(
+                    height: 4,
                   ),
-                  Text(
-                    pool["url"],
-                    style: Theme.of(context).textTheme.bodyLarge,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 2,
+                      children: [
+                        const Icon(
+                          Icons.link,
+                          size: 20,
+                        ),
+                        Text("Pool Address",
+                            style: Theme.of(context).textTheme.titleMedium),
+                      ],
+                    ),
+                    Text(
+                      pool["url"],
+                      style: Theme.of(context).textTheme.labelMedium,
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 2,
+                      children: [
+                        const Icon(Icons.developer_board, size: 20),
+                        Text(
+                          "Algo",
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    Text(
+                      pool["algo"],
+                      style: Theme.of(context).textTheme.labelMedium,
+                    )
+                  ],
+                ),
+                if (entry.key % 2 == 0 && pools.length != entry.key + 1)
+                  const SizedBox(
+                    height: 4,
+                  ),
+                if (pools.length != entry.key + 1)
+                  Divider(
+                    thickness: 1,
+                    indent: 20,
+                    endIndent: 20,
+                    color: Theme.of(context).primaryColor,
                   )
-                ],
+              ],
+            );
+          }),
+          const SizedBox(
+            height: 8,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                  onPressed: () => _onPressDeleteMinerConfig(minerConfig),
+                  child: Wrap(
+                    spacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.delete,
+                        size: 18,
+                      ),
+                      Text("Delete")
+                    ],
+                  )),
+              const SizedBox(
+                width: 4,
+              ),
+              TextButton(
+                child: Wrap(
+                  spacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: const [
+                    Icon(
+                      Icons.arrow_forward,
+                      size: 18,
+                    ),
+                    Text("Edit")
+                  ],
+                ),
+                onPressed: () => _onPressEditMinerConfig(minerConfig),
               ),
               const SizedBox(
-                height: 8,
+                width: 4,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Wrap(
-                    spacing: 2,
-                    children: [
-                      Icon(Icons.developer_board,
-                          color: Theme.of(context).primaryColor, size: 20),
-                      const Text(
-                        "Algo",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w300),
+              FilledButton(
+                  style: FilledButton.styleFrom(
+                    shadowColor: Colors.transparent,
+                  ),
+                  onPressed: () => _onPressStartMining(minerConfig),
+                  child: Wrap(
+                    spacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: const [
+                      Icon(
+                        Icons.check,
+                        size: 18,
                       ),
+                      Text("Use")
                     ],
-                  ),
-                  Text(
-                    pool["algo"],
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  )
-                ],
-              ),
-              if (entry.key % 2 == 0 && pools.length != entry.key + 1)
-                const SizedBox(
-                  height: 4,
-                ),
-              if (pools.length != entry.key + 1)
-                Divider(
-                  thickness: 1,
-                  indent: 20,
-                  endIndent: 20,
-                  color: Theme.of(context).primaryColor,
-                )
+                  )),
             ],
-          );
-        }),
-        const SizedBox(
-          height: 8,
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: const StadiumBorder(),
-                ),
-                onPressed: () => _onPressDeleteMinerConfig(minerConfig),
-                child: Wrap(
-                  spacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.delete,
-                      size: 18,
-                    ),
-                    Text("Delete")
-                  ],
-                )),
-            const SizedBox(
-              width: 4,
-            ),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  shape: const StadiumBorder(),
-                ),
-                onPressed: () => _onPressStartMining(minerConfig),
-                child: Wrap(
-                  spacing: 4,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.check,
-                      size: 18,
-                    ),
-                    Text("Use")
-                  ],
-                )),
-            const SizedBox(
-              width: 4,
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                shape: const StadiumBorder(),
-              ),
-              child: Wrap(
-                spacing: 4,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: const [
-                  Icon(
-                    Icons.arrow_forward,
-                    size: 18,
-                  ),
-                  Text("Edit")
-                ],
-              ),
-              onPressed: () => _onPressEditMinerConfig(minerConfig),
-            )
-          ],
-        )
-      ]),
+          )
+        ]),
+      ),
     );
   }
 
   Widget _minerConfigSearchForm() {
     return TextField(
-      decoration: const InputDecoration(
-          border: OutlineInputBorder(), hintText: "Search by pool url or algo"),
+      decoration:
+          const InputDecoration(labelText: "Search by pool url or algo"),
       onChanged: (value) {
         if (_searchDebounce?.isActive ?? false) _searchDebounce?.cancel();
         _searchDebounce = Timer(const Duration(milliseconds: 500), () {
@@ -429,7 +417,7 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -438,7 +426,7 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
             children: [
               Text(
                 "Saved Miner Configs",
-                style: Theme.of(context).textTheme.labelLarge,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
               OutlinedButton(
                   onPressed: () =>
