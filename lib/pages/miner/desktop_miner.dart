@@ -264,8 +264,9 @@ class _DesktopMinerState extends State<DesktopMiner> {
             activeTrackColor: Colors.green.withOpacity(0.4),
             inactiveThumbColor: Colors.red,
             inactiveTrackColor: Colors.red.withOpacity(0.4),
-            activeThumbImage: const AssetImage("assets/images/power.png"),
-            inactiveThumbImage: const AssetImage("assets/images/power.png"),
+            thumbIcon: MaterialStateProperty.resolveWith<Icon?>((states) {
+              return const Icon(Icons.power_settings_new);
+            }),
             value: isMining,
             onChanged: (_) => {!isMining ? _startMining() : _stopMining()},
           ),
@@ -304,10 +305,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
               ? _currentMinerLog
                   .map((e) => FormattedLog(logTexts: common.formatLogs(e)))
                   .toList()
-              : [
-                  Text("Log will appear here once mining starts",
-                      style: TextStyle(color: Theme.of(context).primaryColor))
-                ]),
+              : [const Text("Log will appear here once mining starts")]),
     );
   }
 
@@ -315,27 +313,30 @@ class _DesktopMinerState extends State<DesktopMiner> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        RichText(
-          text: TextSpan(children: [
-            WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Container(
-                  padding: const EdgeInsets.only(right: 4.0),
-                  child: Icon(
-                    icon,
-                    color: Theme.of(context).primaryColor,
-                    size: 16,
-                  )),
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 14,
             ),
-            TextSpan(
-                text: title,
-                style: TextStyle(color: Theme.of(context).primaryColor))
-          ]),
+            const SizedBox(
+              width: 4,
+            ),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            const SizedBox(
+              width: 4,
+            ),
+          ],
         ),
-        Text(
+        Flexible(
+            child: Text(
           data,
-          style: TextStyle(color: Theme.of(context).primaryColor),
-        )
+          style: Theme.of(context).textTheme.labelSmall,
+        ))
       ],
     );
   }
@@ -399,121 +400,106 @@ class _DesktopMinerState extends State<DesktopMiner> {
     final xmrigCCWorkerId =
         Provider.of<MinerStatusProvider>(context).xmrigCCWorkerId;
 
-    return ListView(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      children: [
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (minerConfig != null)
-                SizedBox(
-                  width: double.infinity,
-                  child: Row(
-                    children: [
-                      if (coinData != null) ...[
-                        Text("Currently Mining: ${coinData.coinName}"),
-                        const SizedBox(
-                          width: 8,
-                        ),
-                        ClipOval(
-                          child: SizedBox.fromSize(
-                            size: const Size.fromRadius(12),
-                            child: Image.network(
-                              coinData.coinLogoUrl,
-                              width: 24,
-                              height: 24,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(
-                                Icons.close_rounded,
-                                color: Color(0xFF273951),
-                              ),
+    return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (minerConfig != null)
+              SizedBox(
+                width: double.infinity,
+                child: Row(
+                  children: [
+                    if (coinData != null) ...[
+                      Text("Currently Mining: ${coinData.coinName}"),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      ClipOval(
+                        child: SizedBox.fromSize(
+                          size: const Size.fromRadius(12),
+                          child: Image.network(
+                            coinData.coinLogoUrl,
+                            width: 24,
+                            height: 24,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                              Icons.close_rounded,
+                              color: Color(0xFF273951),
                             ),
                           ),
                         ),
-                      ] else
-                        Text(
-                            "Currently Mining: ${minerConfig.pools.first.algo}"),
-                      const Spacer(),
-                      OutlinedButton(
-                          onPressed: () {
-                            Provider.of<MinerStatusProvider>(context,
-                                    listen: false)
-                                .minerConfig = null;
-                            widget.setCurrentWizardStep(
-                                WizardStep.coinNameSelect);
-                          },
-                          child: const Text("Mine Another"))
-                    ],
-                  ),
+                      ),
+                    ] else
+                      Text("Currently Mining: ${minerConfig.pools.first.algo}"),
+                    const Spacer(),
+                    OutlinedButton(
+                        onPressed: () {
+                          Provider.of<MinerStatusProvider>(context,
+                                  listen: false)
+                              .minerConfig = null;
+                          widget
+                              .setCurrentWizardStep(WizardStep.coinNameSelect);
+                        },
+                        child: const Text("Mine Another"))
+                  ],
                 ),
+              ),
+            const SizedBox(
+              height: 16,
+            ),
+            if (selectedMinerBinary == MinerBinary.xmrig)
+              SizedBox(
+                  width: double.infinity,
+                  child: _showStartStopMining(isMining: isMining)),
+            if (selectedMinerBinary == MinerBinary.xmrigCC) ...[
+              Text(
+                "EPC running in worker mode",
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              const Text("Control daemon from xmrigCCServer"),
+              Text("Server URL: $xmrigCCServerUrl"),
+              Text("Worker Id: $xmrigCCWorkerId")
+            ],
+            if (minerSummary != null) ...[
+              const SizedBox(
+                height: 8,
+              ),
+              Text(
+                "Miner Summary",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(
+                width: 80,
+                child: Divider(
+                  thickness: 2,
+                ),
+              ),
+              ..._minerSummaries(minerSummary),
+            ],
+            if (_chartDatas.isNotEmpty)
+              Chart(
+                chartData: _chartDatas,
+                chartName: "Hashrate",
+              ),
+            if (isMining) ...[
               const SizedBox(
                 height: 16,
               ),
-              if (selectedMinerBinary == MinerBinary.xmrig)
-                SizedBox(
-                    width: double.infinity,
-                    child: _showStartStopMining(isMining: isMining)),
-              if (selectedMinerBinary == MinerBinary.xmrigCC) ...[
-                Text(
-                  "EPC running in worker mode",
-                  style: Theme.of(context).textTheme.labelLarge,
+              Text(
+                "Miner log",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(
+                width: 80,
+                child: Divider(
+                  thickness: 2,
                 ),
-                const Text("Control daemon from xmrigCCServer"),
-                Text("Server URL: $xmrigCCServerUrl"),
-                Text("Worker Id: $xmrigCCWorkerId")
-              ],
-              if (minerSummary != null) ...[
-                const SizedBox(
-                  height: 8,
-                ),
-                Text(
-                  "Miner Summary",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor),
-                ),
-                SizedBox(
-                  width: 80,
-                  child: Divider(
-                    color: Theme.of(context).primaryColor,
-                    thickness: 2,
-                  ),
-                ),
-                ..._minerSummaries(minerSummary),
-              ],
-              if (_chartDatas.isNotEmpty)
-                Chart(
-                  chartData: _chartDatas,
-                  chartName: "Hashrate",
-                ),
-              if (isMining) ...[
-                const SizedBox(
-                  height: 16,
-                ),
-                Text(
-                  "Miner log",
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor),
-                ),
-                SizedBox(
-                  width: 80,
-                  child: Divider(
-                    color: Theme.of(context).primaryColor,
-                    thickness: 2,
-                  ),
-                ),
-                _minerLogsContainer()
-              ],
+              ),
+              _minerLogsContainer()
             ],
-          ),
-        )
-      ],
-    );
+          ],
+        ));
   }
 }
 

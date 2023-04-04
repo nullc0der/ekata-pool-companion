@@ -18,15 +18,11 @@ class Chart extends StatelessWidget {
         children: [
           Text(
             chartName,
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor),
+            style: Theme.of(context).textTheme.titleMedium,
           ),
-          SizedBox(
+          const SizedBox(
             width: 80,
             child: Divider(
-              color: Theme.of(context).primaryColor,
               thickness: 2,
             ),
           ),
