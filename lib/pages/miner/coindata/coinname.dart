@@ -138,50 +138,32 @@ class _CoinNameState extends State<CoinName> {
   }
 
   Widget _renderOneCoinName(CoinData coinData, CoinData? selectedCoinData) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-          color: selectedCoinData != null &&
-                  coinData.coinName == selectedCoinData.coinName
-              ? Theme.of(context).primaryColor.withOpacity(0.23)
-              : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(4)),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          Provider.of<CoinDataProvider>(context, listen: false)
-              .selectedCoinData = coinData;
-          widget
-              .setCurrentCoinDataWizardStep(CoinDataWizardStep.poolNameSelect);
-        },
-        child: Row(
-          children: [
-            ClipOval(
-              child: SizedBox.fromSize(
-                  size: const Size.fromRadius(12),
-                  child: Image.network(
-                    coinData.coinLogoUrl,
-                    width: 24,
-                    height: 24,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const Icon(Icons.close_rounded),
-                  )),
-            ),
-            const SizedBox(
-              width: 8,
-            ),
-            Text(
-              coinData.coinName,
-              style: Theme.of(context).textTheme.labelLarge,
-            ),
-            const Spacer(),
-            Text(
-              coinData.coinAlgo,
-              style: Theme.of(context).textTheme.bodySmall,
-            )
-          ],
-        ),
+    return ListTile(
+      selected: coinData.coinName == selectedCoinData?.coinName,
+      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      onTap: () {
+        Provider.of<CoinDataProvider>(context, listen: false).selectedCoinData =
+            coinData;
+        widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.poolNameSelect);
+      },
+      title: Text(
+        coinData.coinName,
+      ),
+      subtitle: Text(
+        coinData.coinAlgo,
+      ),
+      horizontalTitleGap: 0,
+      leading: ClipOval(
+        child: SizedBox.fromSize(
+            size: const Size.fromRadius(12),
+            child: Image.network(
+              coinData.coinLogoUrl,
+              width: 24,
+              height: 24,
+              errorBuilder: (context, error, stackTrace) =>
+                  const Icon(Icons.close_rounded),
+            )),
       ),
     );
   }
@@ -261,7 +243,7 @@ class _CoinNameState extends State<CoinName> {
         children: [
           Text(
             "Select coin",
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(
             height: 8,

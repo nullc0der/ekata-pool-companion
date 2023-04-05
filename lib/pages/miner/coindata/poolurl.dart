@@ -46,29 +46,17 @@ class _PoolUrlState extends State<PoolUrl> {
   }
 
   Widget _renderOnePoolUrl(String poolUrl, String? selectedPoolUrl) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-          color: poolUrl == selectedPoolUrl
-              ? Theme.of(context).primaryColor.withOpacity(0.23)
-              : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(4)),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          Provider.of<CoinDataProvider>(context, listen: false)
-              .selectedPoolUrl = poolUrl;
-          widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.portSelect);
-        },
-        child: Row(
-          children: [
-            Text(
-              poolUrl,
-              style: Theme.of(context).textTheme.labelLarge,
-            )
-          ],
-        ),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      selected: poolUrl == selectedPoolUrl,
+      onTap: () {
+        Provider.of<CoinDataProvider>(context, listen: false).selectedPoolUrl =
+            poolUrl;
+        widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.portSelect);
+      },
+      title: Text(
+        poolUrl,
       ),
     );
   }
@@ -96,7 +84,7 @@ class _PoolUrlState extends State<PoolUrl> {
         children: [
           Text(
             "Select url",
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(
             height: 8,

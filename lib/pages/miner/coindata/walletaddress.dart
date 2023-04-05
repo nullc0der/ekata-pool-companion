@@ -150,8 +150,8 @@ class _WalletAddressState extends State<WalletAddress> {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(
-                "Enter Wallet Address",
-                style: Theme.of(context).textTheme.headlineMedium,
+                "Pool Credentials",
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(
                 height: 8,

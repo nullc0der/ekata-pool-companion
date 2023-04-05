@@ -38,30 +38,18 @@ class _PoolPortState extends State<PoolPort> {
   }
 
   Widget _renderOnePoolPort(int poolPort, int? selectedPoolPort) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-          color: poolPort == selectedPoolPort
-              ? Theme.of(context).primaryColor.withOpacity(0.23)
-              : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(4)),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          Provider.of<CoinDataProvider>(context, listen: false)
-              .selectedPoolPort = poolPort;
-          widget.setCurrentCoinDataWizardStep(
-              CoinDataWizardStep.walletAddressInput);
-        },
-        child: Row(
-          children: [
-            Text(
-              poolPort.toString(),
-              style: Theme.of(context).textTheme.labelLarge,
-            )
-          ],
-        ),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      selected: poolPort == selectedPoolPort,
+      onTap: () {
+        Provider.of<CoinDataProvider>(context, listen: false).selectedPoolPort =
+            poolPort;
+        widget.setCurrentCoinDataWizardStep(
+            CoinDataWizardStep.walletAddressInput);
+      },
+      title: Text(
+        poolPort.toString(),
       ),
     );
   }
@@ -90,7 +78,7 @@ class _PoolPortState extends State<PoolPort> {
         children: [
           Text(
             "Select port",
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(
             height: 8,

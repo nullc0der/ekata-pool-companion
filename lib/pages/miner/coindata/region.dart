@@ -55,33 +55,19 @@ class _RegionState extends State<Region> {
   }
 
   Widget _renderOneRegion(String region, String? selectedRegion) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-          color: region == selectedRegion
-              ? Theme.of(context).primaryColor.withOpacity(0.23)
-              : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(4)),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
-              region;
-          widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.poolUrlSelect);
-        },
-        child: Row(
-          children: [
-            Text(EmojiConverter.fromAlpha2CountryCode(region)),
-            const SizedBox(
-              width: 8,
-            ),
-            Text(
-              region,
-              style: Theme.of(context).textTheme.labelLarge,
-            )
-          ],
-        ),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      selected: region == selectedRegion,
+      onTap: () {
+        Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
+            region;
+        widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.poolUrlSelect);
+      },
+      horizontalTitleGap: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      leading: Text(EmojiConverter.fromAlpha2CountryCode(region)),
+      title: Text(
+        region,
       ),
     );
   }
@@ -106,7 +92,7 @@ class _RegionState extends State<Region> {
         children: [
           Text(
             "Select region",
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(
             height: 8,

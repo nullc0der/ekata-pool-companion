@@ -57,30 +57,18 @@ class _PoolNameState extends State<PoolName> {
   }
 
   Widget _renderOnePoolName(String poolName, String? selectedPoolName) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-          color: poolName.trim().toLowerCase() == selectedPoolName
-              ? Theme.of(context).primaryColor.withOpacity(0.23)
-              : Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(4)),
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          Provider.of<CoinDataProvider>(context, listen: false)
-              .selectedPoolName = poolName.trim().toLowerCase();
-          widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.regionSelect);
-        },
-        child: Row(
-          children: [
-            Text(
-              poolName,
-              style: Theme.of(context).textTheme.labelLarge,
-            )
-          ],
-        ),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      selected: poolName.trim().toLowerCase() == selectedPoolName,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      title: Text(
+        poolName,
       ),
+      onTap: () {
+        Provider.of<CoinDataProvider>(context, listen: false).selectedPoolName =
+            poolName.trim().toLowerCase();
+        widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.regionSelect);
+      },
     );
   }
 
@@ -101,7 +89,7 @@ class _PoolNameState extends State<PoolName> {
         children: [
           Text(
             "Select pool",
-            style: Theme.of(context).textTheme.headlineMedium,
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(
             height: 8,

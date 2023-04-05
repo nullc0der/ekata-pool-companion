@@ -218,7 +218,7 @@ class _MiningEngineState extends State<MiningEngine> {
             children: [
               Text(
                 "Select Mining Engine",
-                style: Theme.of(context).textTheme.headlineMedium,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(
                 height: 8,
