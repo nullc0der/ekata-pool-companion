@@ -24,25 +24,27 @@ Future<void> main() async {
     setWindowMaxSize(const Size(450, 750));
     setWindowMinSize(const Size(450, 750));
   }
+  final UiStateProvider uiStateProvider = UiStateProvider();
+  await uiStateProvider.loadThemeConfig();
   if (!kDebugMode) {
     await SentryFlutter.init((options) {
       options.dsn =
           'https://93f420112d92434884109e77d8ecce56@o47401.ingest.sentry.io/6579571';
       options.tracesSampleRate = 0.5;
-    }, appRunner: () => runApp(_mainApp()));
+    }, appRunner: () => runApp(_mainApp(uiStateProvider)));
   } else {
-    runApp(_mainApp());
+    runApp(_mainApp(uiStateProvider));
   }
 }
 
-Widget _mainApp() {
+Widget _mainApp(UiStateProvider uiStateProvider) {
   return MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => PoolStatProvider()),
       ChangeNotifierProvider(create: (_) => AddressStatProvider()),
       ChangeNotifierProvider(create: (_) => MinerSummaryProvider()),
       ChangeNotifierProvider(create: (_) => MinerStatusProvider()),
-      ChangeNotifierProvider(create: (_) => UiStateProvider()),
+      ChangeNotifierProvider(create: (_) => uiStateProvider),
       ChangeNotifierProvider(create: (_) => CoinDataProvider()),
       ChangeNotifierProxyProvider<PoolStatProvider, PoolBlockProvider>(
           create: (_) => PoolBlockProvider(),
@@ -106,10 +108,12 @@ class EkataPoolCompanion extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final UiStateProvider uiStateProvider =
+        Provider.of<UiStateProvider>(context);
     return MaterialApp(
         title: 'Ekata Pool Companion',
         theme: FlexThemeData.light(
-          scheme: FlexScheme.bahamaBlue,
+          colors: FlexColor.schemesList[uiStateProvider.colorSchemeIndex].light,
           subThemesData: const FlexSubThemesData(
             interactionEffects: false,
             tintedDisabledControls: false,
@@ -145,7 +149,7 @@ class EkataPoolCompanion extends StatelessWidget {
           swapLegacyOnMaterial3: true,
         ),
         darkTheme: FlexThemeData.dark(
-          scheme: FlexScheme.bahamaBlue,
+          colors: FlexColor.schemesList[uiStateProvider.colorSchemeIndex].dark,
           subThemesData: const FlexSubThemesData(
             interactionEffects: false,
             tintedDisabledControls: false,
@@ -180,7 +184,7 @@ class EkataPoolCompanion extends StatelessWidget {
           useMaterial3: true,
           swapLegacyOnMaterial3: true,
         ),
-        themeMode: ThemeMode.system,
+        themeMode: uiStateProvider.themeMode,
         home: const HomePage());
   }
 }

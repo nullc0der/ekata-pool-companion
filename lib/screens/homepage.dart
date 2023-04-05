@@ -7,6 +7,7 @@ import 'package:ekatapoolcompanion/pages/dashboard.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/pages/payments.dart';
 import 'package:ekatapoolcompanion/pages/pool_blocks.dart';
+import 'package:ekatapoolcompanion/pages/theme_chooser.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/poolstat.dart';
 import 'package:ekatapoolcompanion/providers/uistate.dart';
@@ -26,6 +27,11 @@ import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// TODO: App navigation is fucked up, it is done in multiple level based on enum,
+// we are loosing back button functionality, need to refactor to use flutter
+// navigation feature
+enum CurrentPage { themeChooser, other }
+
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -38,6 +44,7 @@ class _HomePageState extends State<HomePage> {
   StreamSubscription<dynamic>? _notificationTapEventSubscription;
   final EventChannel _notificationTapEventChannel = const EventChannel(
       "io.ekata.ekatapoolcompanion/notification_tap_event_channel");
+  CurrentPage _currentPage = CurrentPage.other;
 
   @override
   void initState() {
@@ -186,6 +193,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _setCurrentPage(CurrentPage currentPage) {
+    setState(() {
+      _currentPage = currentPage;
+    });
+  }
+
   Widget _getBody(int index) {
     switch (index) {
       case 0:
@@ -260,17 +273,39 @@ class _HomePageState extends State<HomePage> {
                         Future.delayed(const Duration(seconds: 0),
                             () => showAboutAppDialog(context));
                       },
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: const [Icon(Icons.info), Text('About')]),
+                      child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: const [
+                            Icon(Icons.info),
+                            SizedBox(
+                              width: 4,
+                            ),
+                            Text('About')
+                          ]),
+                    ),
+                    PopupMenuItem(
+                      onTap: () {
+                        _setCurrentPage(CurrentPage.themeChooser);
+                      },
+                      child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: const [
+                            Icon(Icons.dark_mode),
+                            SizedBox(
+                              width: 4,
+                            ),
+                            Text('Configure Theme')
+                          ]),
                     )
                   ];
                 })
           ],
         ),
-        body: showBottomNavbar
-            ? _getBody(bottomNavbarCurrentIndex)
-            : const Miner(),
+        body: _currentPage == CurrentPage.themeChooser
+            ? ThemeChooser(setCurrentPage: _setCurrentPage)
+            : showBottomNavbar
+                ? _getBody(bottomNavbarCurrentIndex)
+                : const Miner(),
         bottomNavigationBar: showBottomNavbar
             ? CustomBottomNavigation(
                 selectedIndex: bottomNavbarCurrentIndex,
