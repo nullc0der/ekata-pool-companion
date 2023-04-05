@@ -395,7 +395,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                           maxLines: 12,
                           controller: _minerConfigFieldController,
                           decoration: const InputDecoration(
-                              labelText: "Enter your miner config here",
+                              labelText: "Edit your miner config here:",
                               alignLabelWithHint: true),
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           validator: (value) {
