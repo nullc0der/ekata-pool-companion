@@ -51,12 +51,13 @@ class _RegionState extends State<Region> {
         poolCredentials["rigId"];
     Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
         MinerBinary.xmrig;
+    Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
 
   Widget _renderOneRegion(String region, String? selectedRegion) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
       selected: region == selectedRegion,
       onTap: () {
         Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =

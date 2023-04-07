@@ -53,12 +53,13 @@ class _PoolNameState extends State<PoolName> {
         poolCredentials["rigId"];
     Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
         MinerBinary.xmrig;
+    Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
 
   Widget _renderOnePoolName(String poolName, String? selectedPoolName) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
       selected: poolName.trim().toLowerCase() == selectedPoolName,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       title: Text(

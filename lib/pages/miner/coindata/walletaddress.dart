@@ -50,31 +50,35 @@ class _WalletAddressState extends State<WalletAddress> {
     final prefs = await SharedPreferences.getInstance();
     String walletAddresses =
         prefs.getString(Constants.walletAddressesKeySharedPrefs) ?? "";
+    final Map<String, String> poolCredentials = {
+      "walletAddress": "",
+      "password": "",
+      "rigId": getRandomString(6)
+    };
     if (walletAddresses.isNotEmpty) {
       var addressesJson = jsonDecode(walletAddresses);
       var addresses = addressesJson
           .where((address) => address["poolAddress"] == poolAddress);
       if (addresses.isNotEmpty) {
         final address = addresses.first;
-        final rigId = address["rigId"] != null
-            ? address["rigId"].isNotEmpty
-                ? address["rigId"]
-                : getRandomString(6)
-            : getRandomString(6);
-        Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
-            address["walletAddress"];
-        Provider.of<CoinDataProvider>(context, listen: false).password =
-            address["password"];
-        Provider.of<CoinDataProvider>(context, listen: false).rigId = rigId;
-        _walletAddressFieldController.text = address["walletAddress"];
-        _passwordFieldController.text = address["password"] ?? "";
-        _rigIdFieldController.text = rigId;
-      } else {
-        _rigIdFieldController.text = getRandomString(6);
+        poolCredentials["walletAddress"] = address["walletAddress"];
+        if (address["password"] != null) {
+          poolCredentials["password"] = address["password"];
+        }
+        if (address["rigId"] != null && address["rigId"].isNotEmpty) {
+          poolCredentials["rigId"] = address["rigId"];
+        }
       }
-    } else {
-      _rigIdFieldController.text = getRandomString(6);
     }
+    Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
+        poolCredentials["walletAddress"]!;
+    Provider.of<CoinDataProvider>(context, listen: false).password =
+        poolCredentials["password"];
+    Provider.of<CoinDataProvider>(context, listen: false).rigId =
+        poolCredentials["rigId"];
+    _walletAddressFieldController.text = poolCredentials["walletAddress"]!;
+    _passwordFieldController.text = poolCredentials["password"]!;
+    _rigIdFieldController.text = poolCredentials["rigId"]!;
   }
 
   Future<void> _savePoolCredentials(String poolAddress) async {
@@ -129,14 +133,18 @@ class _WalletAddressState extends State<WalletAddress> {
   }
 
   Future<void> _onPressDone(String poolUrl, int poolPort) async {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        duration: Duration(seconds: 1),
-        content:
-            Text("Done pressed, first item from next steps will be selected")));
-    _savePoolCredentials("$poolUrl:$poolPort");
-    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
-        MinerBinary.xmrig;
-    widget.setCurrentCoinDataWizardStep(null);
+    if (_walletAddressFormKey.currentState!.validate()) {
+      _walletAddressFormKey.currentState!.save();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          duration: Duration(seconds: 1),
+          content: Text(
+              "Done pressed, first item from next steps will be selected")));
+      _savePoolCredentials("$poolUrl:$poolPort");
+      Provider.of<CoinDataProvider>(context, listen: false)
+          .selectedMinerBinary = MinerBinary.xmrig;
+      Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
+      widget.setCurrentCoinDataWizardStep(null);
+    }
   }
 
   @override

@@ -34,12 +34,13 @@ class _PoolPortState extends State<PoolPort> {
         poolCredentials["rigId"];
     Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
         MinerBinary.xmrig;
+    Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
 
   Widget _renderOnePoolPort(int poolPort, int? selectedPoolPort) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       selected: poolPort == selectedPoolPort,
       onTap: () {

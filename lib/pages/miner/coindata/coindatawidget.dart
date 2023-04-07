@@ -47,50 +47,61 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
   }
 
   Widget _showOneCoinData(
-      String label, String content, CoinDataWizardStep coinDataWizardStep,
-      {required Widget prefixIconOrImage}) {
+      String label, List<String> content, CoinDataWizardStep coinDataWizardStep,
+      {required Widget prefixIconOrImage, Widget? subContent}) {
     return InkWell(
-      borderRadius: BorderRadius.circular(8),
       onTap: () {
         _setCurrentCoinDataWizardStep(coinDataWizardStep);
       },
       child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         margin: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              child: prefixIconOrImage,
-              decoration: BoxDecoration(
-                  shape: BoxShape.circle, color: Colors.grey.shade300),
-            ),
-            const SizedBox(
-              width: 8,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
               children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelLarge,
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  child: prefixIconOrImage,
+                  decoration: BoxDecoration(
+                      shape: BoxShape.circle, color: Colors.grey.shade300),
                 ),
-                if (content.isNotEmpty) ...[
-                  const SizedBox(
-                    height: 2,
-                  ),
-                  Text(
-                    content,
-                    style: Theme.of(context).textTheme.labelMedium,
-                  )
-                ]
+                const SizedBox(
+                  width: 8,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    if (content.isNotEmpty)
+                      ...content.map((e) => e.isNotEmpty
+                          ? Container(
+                              margin: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                e,
+                                style: Theme.of(context).textTheme.labelMedium,
+                              ),
+                            )
+                          : Container())
+                  ],
+                ),
+                // const Spacer(),
+                // const Icon(
+                //   FontAwesome5.pencil_alt,
+                //   size: 18,
+                //   color: Color(0xFF273951),
+                // )
               ],
             ),
-            // const Spacer(),
-            // const Icon(
-            //   FontAwesome5.pencil_alt,
-            //   size: 18,
-            //   color: Color(0xFF273951),
-            // )
+            if (subContent != null)
+              Padding(
+                padding: const EdgeInsets.only(left: 36),
+                child: subContent,
+              )
           ],
         ),
       ),
@@ -104,103 +115,130 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
     final selectedPoolUrl = coinDataProvider.selectedPoolUrl;
     final selectedPoolPort = coinDataProvider.selectedPoolPort;
     final walletAddress = coinDataProvider.walletAddress;
-    final selectedMiningBinary = coinDataProvider.selectedMinerBinary;
+    final selectedMinerBinary = coinDataProvider.selectedMinerBinary;
 
     return Card(
       shadowColor: Colors.transparent,
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Column(
-          children: [
-            if (selectedCoinData != null) ...[
-              _showOneCoinData(
-                "Coin/Token Name",
-                selectedCoinData.coinName,
-                CoinDataWizardStep.coinNameSelect,
-                prefixIconOrImage: ClipOval(
-                  child: SizedBox.fromSize(
-                    size: const Size.fromRadius(9),
-                    child: Image.network(
-                      selectedCoinData.coinLogoUrl,
-                      width: 18,
-                      height: 18,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                        Icons.close_rounded,
-                        size: 16,
-                        color: Colors.white,
-                      ),
+      child: Column(
+        children: [
+          if (selectedCoinData != null) ...[
+            _showOneCoinData(
+              "Coin/Token Name",
+              [selectedCoinData.coinName],
+              CoinDataWizardStep.coinNameSelect,
+              prefixIconOrImage: ClipOval(
+                child: SizedBox.fromSize(
+                  size: const Size.fromRadius(9),
+                  child: Image.network(
+                    selectedCoinData.coinLogoUrl,
+                    width: 18,
+                    height: 18,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.close_rounded,
+                      size: 16,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
-              if (selectedPool != null)
-                _showOneCoinData("Pool Name", selectedPool,
-                    CoinDataWizardStep.poolNameSelect,
-                    prefixIconOrImage: const Icon(
-                      Icons.group,
-                      size: 16,
-                      color: Color(0xFF273951),
-                    )),
-              if (selectedRegion != null)
-                _showOneCoinData("Pool Region", selectedRegion,
-                    CoinDataWizardStep.regionSelect,
-                    prefixIconOrImage: const Icon(
-                      Icons.flag,
-                      size: 16,
-                      color: Color(0xFF273951),
-                    )),
-              if (selectedPoolUrl != null)
-                _showOneCoinData("Pool Url", selectedPoolUrl,
-                    CoinDataWizardStep.poolUrlSelect,
-                    prefixIconOrImage: const Icon(
-                      Icons.public,
-                      size: 16,
-                      color: Color(0xFF273951),
-                    )),
-              if (selectedPoolPort != null)
-                _showOneCoinData("Pool Port", selectedPoolPort.toString(),
-                    CoinDataWizardStep.portSelect,
-                    prefixIconOrImage: const Icon(
-                      Icons.onetwothree,
-                      size: 16,
-                      color: Color(0xFF273951),
-                    )),
-              if (selectedPoolUrl != null && selectedPoolPort != null) ...[
-                _showOneCoinData(
-                    "Wallet Address",
+            ),
+            if (selectedPool != null)
+              _showOneCoinData("Pool Name", [selectedPool],
+                  CoinDataWizardStep.poolNameSelect,
+                  prefixIconOrImage: const Icon(
+                    Icons.group,
+                    size: 16,
+                    color: Color(0xFF273951),
+                  )),
+            if (selectedRegion != null)
+              _showOneCoinData("Pool Region", [selectedRegion],
+                  CoinDataWizardStep.regionSelect,
+                  prefixIconOrImage: const Icon(
+                    Icons.flag,
+                    size: 16,
+                    color: Color(0xFF273951),
+                  )),
+            if (selectedPoolUrl != null)
+              _showOneCoinData("Pool Url", [selectedPoolUrl],
+                  CoinDataWizardStep.poolUrlSelect,
+                  prefixIconOrImage: const Icon(
+                    Icons.public,
+                    size: 16,
+                    color: Color(0xFF273951),
+                  )),
+            if (selectedPoolPort != null)
+              _showOneCoinData("Pool Port", [selectedPoolPort.toString()],
+                  CoinDataWizardStep.portSelect,
+                  prefixIconOrImage: const Icon(
+                    Icons.onetwothree,
+                    size: 16,
+                    color: Color(0xFF273951),
+                  )),
+            if (selectedPoolUrl != null && selectedPoolPort != null) ...[
+              _showOneCoinData(
+                  "Wallet Address",
+                  [
                     walletAddress.isNotEmpty
                         ? walletAddress.length >= 8
                             ? "${walletAddress.substring(walletAddress.length - 8)} (Showing last 8 char)"
                             : walletAddress
-                        : "Enter wallet address to start mining",
-                    CoinDataWizardStep.walletAddressInput,
-                    prefixIconOrImage: const Icon(
-                      Icons.wallet,
-                      size: 16,
-                      color: Color(0xFF273951),
-                    )),
-                _showOneCoinData("Mining Engine", selectedMiningBinary.name,
-                    CoinDataWizardStep.miningEngineSelect,
-                    prefixIconOrImage: const Icon(
-                      Icons.developer_board,
-                      size: 16,
-                      color: Color(0xFF273951),
-                    ))
-              ]
-            ],
-            if (selectedCoinData == null)
-              _showOneCoinData(
-                "Select coin to start",
-                "",
-                CoinDataWizardStep.coinNameSelect,
-                prefixIconOrImage: const Icon(
-                  Icons.monetization_on,
-                  size: 16,
-                  color: Color(0xFF273951),
-                ),
-              )
+                        : "Enter wallet address to start mining"
+                  ],
+                  CoinDataWizardStep.walletAddressInput,
+                  prefixIconOrImage: const Icon(
+                    Icons.wallet,
+                    size: 16,
+                    color: Color(0xFF273951),
+                  )),
+              _showOneCoinData("Mining Engine", [selectedMinerBinary.name],
+                  CoinDataWizardStep.miningEngineSelect,
+                  prefixIconOrImage: const Icon(
+                    Icons.developer_board,
+                    size: 16,
+                    color: Color(0xFF273951),
+                  ),
+                  subContent: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (coinDataProvider.threadCount != null) ...[
+                        Text(
+                          "Miner Options",
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
+                        Text(
+                          "Thread count: ${coinDataProvider.threadCount.toString()}",
+                          style: Theme.of(context).textTheme.labelSmall,
+                        )
+                      ],
+                      if (coinDataProvider.selectedMinerBinary ==
+                          MinerBinary.xmrigCC) ...[
+                        Text(
+                          "Server URL: ${coinDataProvider.xmrigCCServerUrl}",
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                        Text(
+                            "Server Token: ${coinDataProvider.xmrigCCServerToken}",
+                            style: Theme.of(context).textTheme.labelSmall),
+                        if (coinDataProvider.xmrigCCWorkerId != null)
+                          Text("Worker Id: ${coinDataProvider.xmrigCCWorkerId}",
+                              style: Theme.of(context).textTheme.labelSmall)
+                      ],
+                    ],
+                  )),
+            ]
           ],
-        ),
+          if (selectedCoinData == null)
+            _showOneCoinData(
+              "Select coin to start",
+              [""],
+              CoinDataWizardStep.coinNameSelect,
+              prefixIconOrImage: const Icon(
+                Icons.monetization_on,
+                size: 16,
+                color: Color(0xFF273951),
+              ),
+            )
+        ],
       ),
     );
   }
@@ -225,48 +263,6 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                   if (coinDataProvider.selectedPoolUrl != null &&
                       coinDataProvider.selectedPoolPort != null &&
                       coinDataProvider.walletAddress.isNotEmpty) ...[
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "URL to be used for mining: ${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
-                            style: Theme.of(context).textTheme.labelMedium,
-                          ),
-                          if (coinDataProvider.threadCount != null)
-                            Text(
-                              "Thread count: ${coinDataProvider.threadCount.toString()}",
-                              style: Theme.of(context).textTheme.labelMedium,
-                            ),
-                          if (coinDataProvider.selectedMinerBinary ==
-                              MinerBinary.xmrigCC) ...[
-                            const SizedBox(
-                              height: 8,
-                            ),
-                            Text(
-                              "XmrigCC Options",
-                              style: Theme.of(context).textTheme.labelLarge,
-                            ),
-                            Text(
-                              "Server URL: ${coinDataProvider.xmrigCCServerUrl}",
-                              style: Theme.of(context).textTheme.labelMedium,
-                            ),
-                            Text(
-                                "Server Token: ${coinDataProvider.xmrigCCServerToken}",
-                                style: Theme.of(context).textTheme.labelMedium),
-                            if (coinDataProvider.xmrigCCWorkerId != null)
-                              Text(
-                                  "Worker Id: ${coinDataProvider.xmrigCCWorkerId}",
-                                  style:
-                                      Theme.of(context).textTheme.labelMedium)
-                          ],
-                        ],
-                      ),
-                    ),
                     const SizedBox(
                       height: 8,
                     ),
@@ -347,7 +343,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     ),
                   ],
                   const SizedBox(
-                    height: 24,
+                    height: 8,
                   ),
                   Text(
                     "Advanced Options",

@@ -42,12 +42,13 @@ class _PoolUrlState extends State<PoolUrl> {
         poolCredentials["rigId"];
     Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
         MinerBinary.xmrig;
+    Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
 
   Widget _renderOnePoolUrl(String poolUrl, String? selectedPoolUrl) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       selected: poolUrl == selectedPoolUrl,
       onTap: () {

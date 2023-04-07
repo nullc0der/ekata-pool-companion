@@ -134,13 +134,14 @@ class _CoinNameState extends State<CoinName> {
         poolCredentials["rigId"];
     Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
         MinerBinary.xmrig;
+    Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
 
   Widget _renderOneCoinName(CoinData coinData, CoinData? selectedCoinData) {
     return ListTile(
       selected: coinData.coinName == selectedCoinData?.coinName,
-      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       onTap: () {
         Provider.of<CoinDataProvider>(context, listen: false).selectedCoinData =
