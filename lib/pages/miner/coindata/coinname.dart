@@ -310,12 +310,6 @@ class _CoinNameState extends State<CoinName> {
             children: [
               ElevatedButton(
                   onPressed: () {
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedCoinData = null;
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedPoolUrl = null;
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedPoolPort = null;
                     widget.setCurrentCoinDataWizardStep(null);
                   },
                   style: ElevatedButton.styleFrom(
@@ -331,12 +325,15 @@ class _CoinNameState extends State<CoinName> {
                   children: [
                     ElevatedButton(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                              duration: Duration(seconds: 1),
-                              content: Text(
-                                  "Next pressed, first item on list will be selected")));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  duration: Duration(seconds: 1),
+                                  content: Text(
+                                      "Next pressed, first or selected item"
+                                      " on list will be selected")));
                           Provider.of<CoinDataProvider>(context, listen: false)
-                              .selectedCoinData = coinDatas.first;
+                                  .selectedCoinData =
+                              selectedCoinData ?? coinDatas.first;
                           widget.setCurrentCoinDataWizardStep(
                               CoinDataWizardStep.poolNameSelect);
                         },
@@ -349,7 +346,8 @@ class _CoinNameState extends State<CoinName> {
                         )),
                     ElevatedButton(
                         onPressed: () async {
-                          await _onPressDone(coinDatas.first);
+                          await _onPressDone(
+                              selectedCoinData ?? coinDatas.first);
                         },
                         style: ElevatedButton.styleFrom(
                             shape: const StadiumBorder(),

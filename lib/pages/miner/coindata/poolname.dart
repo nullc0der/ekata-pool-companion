@@ -115,8 +115,6 @@ class _PoolNameState extends State<PoolName> {
             children: [
               ElevatedButton(
                   onPressed: () {
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedPoolName = null;
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.coinNameSelect);
                   },
@@ -132,13 +130,17 @@ class _PoolNameState extends State<PoolName> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                            duration: Duration(seconds: 1),
-                            content: Text(
-                                "Next pressed, first item on list will be selected")));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                duration: Duration(seconds: 1),
+                                content:
+                                    Text("Next pressed, first or selected item"
+                                        " on list will be selected")));
                         Provider.of<CoinDataProvider>(context, listen: false)
-                                .selectedPoolName =
-                            poolNames.first.trim().toLowerCase();
+                            .selectedPoolName = selectedPoolName != null &&
+                                poolNames.contains(selectedPoolName)
+                            ? selectedPoolName
+                            : poolNames.first.trim().toLowerCase();
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.regionSelect);
                       },
@@ -151,8 +153,12 @@ class _PoolNameState extends State<PoolName> {
                       )),
                   ElevatedButton(
                       onPressed: () async {
-                        await _onPressDone(selectedCoinData!,
-                            poolNames.first.trim().toLowerCase());
+                        await _onPressDone(
+                            selectedCoinData!,
+                            selectedPoolName != null &&
+                                    poolNames.contains(selectedPoolName)
+                                ? selectedPoolName
+                                : poolNames.first.trim().toLowerCase());
                       },
                       style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),

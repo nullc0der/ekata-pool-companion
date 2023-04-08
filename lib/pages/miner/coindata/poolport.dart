@@ -104,8 +104,6 @@ class _PoolPortState extends State<PoolPort> {
             children: [
               ElevatedButton(
                   onPressed: () {
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedPoolPort = null;
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.poolUrlSelect);
                   },
@@ -121,12 +119,17 @@ class _PoolPortState extends State<PoolPort> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                            duration: Duration(seconds: 1),
-                            content: Text(
-                                "Next pressed, first item on list will be selected")));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                duration: Duration(seconds: 1),
+                                content:
+                                    Text("Next pressed, first or selected item"
+                                        " on list will be selected")));
                         Provider.of<CoinDataProvider>(context, listen: false)
-                            .selectedPoolPort = poolPorts.first;
+                            .selectedPoolPort = selectedPoolPort != null &&
+                                poolPorts.contains(selectedPoolPort)
+                            ? selectedPoolPort
+                            : poolPorts.first;
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.walletAddressInput);
                       },
@@ -144,7 +147,10 @@ class _PoolPortState extends State<PoolPort> {
                             selectedPoolName!.trim().toLowerCase(),
                             selectedRegion!,
                             selectedPoolUrl!,
-                            poolPorts.first);
+                            selectedPoolPort != null &&
+                                    poolPorts.contains(selectedPoolPort)
+                                ? selectedPoolPort
+                                : poolPorts.first);
                       },
                       style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),

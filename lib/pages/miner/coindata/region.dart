@@ -19,7 +19,7 @@ class Region extends StatefulWidget {
 
 class _RegionState extends State<Region> {
   Future<void> _onPressDone(
-      CoinData coinData, String poolName, Pool poolRegion) async {
+      CoinData coinData, String poolName, String poolRegion) async {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         duration: Duration(seconds: 1),
         content:
@@ -27,18 +27,18 @@ class _RegionState extends State<Region> {
     final poolUrl = coinData.pools
         .firstWhere((element) =>
             element.poolName.toLowerCase().trim() == poolName &&
-            element.region == poolRegion.region)
+            element.region == poolRegion)
         .urls
         .first;
     final poolPort = coinData.pools
         .firstWhere((element) =>
             element.poolName.toLowerCase().trim() == poolName &&
-            element.region == poolRegion.region)
+            element.region == poolRegion)
         .ports
         .first;
     final poolCredentials = await getPoolCredentials("$poolUrl:$poolPort");
     Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
-        poolRegion.region;
+        poolRegion;
     Provider.of<CoinDataProvider>(context, listen: false).selectedPoolUrl =
         poolUrl;
     Provider.of<CoinDataProvider>(context, listen: false).selectedPoolPort =
@@ -80,11 +80,12 @@ class _RegionState extends State<Region> {
     final selectedPoolName = coinDataProvider.selectedPoolName;
     final selectedRegion = coinDataProvider.selectedRegion;
 
-    final selectedPoolsRegions = selectedPoolName != null &&
-            selectedCoinData != null
+    final selectedPools = selectedPoolName != null && selectedCoinData != null
         ? Set<Pool>.from(selectedCoinData.pools
             .where((e) => e.poolName.trim().toLowerCase() == selectedPoolName))
         : <Pool>{};
+
+    final regions = Set<String>.from(selectedPools.map((pool) => pool.region));
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -100,9 +101,9 @@ class _RegionState extends State<Region> {
           ),
           Expanded(
               child: ListView(
-            children: selectedPoolsRegions.isNotEmpty
-                ? selectedPoolsRegions
-                    .map((e) => _renderOneRegion(e.region, selectedRegion))
+            children: regions.isNotEmpty
+                ? regions
+                    .map((region) => _renderOneRegion(region, selectedRegion))
                     .toList()
                 : [
                     Container(
@@ -118,8 +119,6 @@ class _RegionState extends State<Region> {
             children: [
               ElevatedButton(
                   onPressed: () {
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedRegion = null;
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.poolNameSelect);
                   },
@@ -135,12 +134,17 @@ class _RegionState extends State<Region> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                            duration: Duration(seconds: 1),
-                            content: Text(
-                                "Next pressed, first item on list will be selected")));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                duration: Duration(seconds: 1),
+                                content:
+                                    Text("Next pressed, first or selected item"
+                                        " on list will be selected")));
                         Provider.of<CoinDataProvider>(context, listen: false)
-                            .selectedRegion = selectedPoolsRegions.first.region;
+                            .selectedRegion = selectedRegion != null &&
+                                regions.contains(selectedRegion)
+                            ? selectedRegion
+                            : regions.first;
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.poolUrlSelect);
                       },
@@ -156,7 +160,10 @@ class _RegionState extends State<Region> {
                         await _onPressDone(
                             selectedCoinData!,
                             selectedPoolName!.trim().toLowerCase(),
-                            selectedPoolsRegions.first);
+                            selectedRegion != null &&
+                                    regions.contains(selectedRegion)
+                                ? selectedRegion
+                                : regions.first);
                       },
                       style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),

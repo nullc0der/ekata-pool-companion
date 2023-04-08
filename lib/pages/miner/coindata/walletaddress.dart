@@ -68,6 +68,10 @@ class _WalletAddressState extends State<WalletAddress> {
         if (address["rigId"] != null && address["rigId"].isNotEmpty) {
           poolCredentials["rigId"] = address["rigId"];
         }
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            duration: Duration(seconds: 1),
+            content: Text(
+                "Pool credentials for selected address found, will autofill")));
       }
     }
     Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
@@ -225,8 +229,6 @@ class _WalletAddressState extends State<WalletAddress> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
-                        Provider.of<CoinDataProvider>(context, listen: false)
-                            .walletAddress = "";
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.portSelect);
                       },

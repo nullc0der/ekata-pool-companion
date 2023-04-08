@@ -110,8 +110,6 @@ class _PoolUrlState extends State<PoolUrl> {
             children: [
               ElevatedButton(
                   onPressed: () {
-                    Provider.of<CoinDataProvider>(context, listen: false)
-                        .selectedPoolUrl = null;
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.regionSelect);
                   },
@@ -127,12 +125,17 @@ class _PoolUrlState extends State<PoolUrl> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                            duration: Duration(seconds: 1),
-                            content: Text(
-                                "Next pressed, first item on list will be selected")));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                duration: Duration(seconds: 1),
+                                content:
+                                    Text("Next pressed, first or selected item"
+                                        " on list will be selected")));
                         Provider.of<CoinDataProvider>(context, listen: false)
-                            .selectedPoolUrl = poolUrls.first;
+                            .selectedPoolUrl = selectedPoolUrl != null &&
+                                poolUrls.contains(selectedPoolUrl)
+                            ? selectedPoolUrl
+                            : poolUrls.first;
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.portSelect);
                       },
@@ -149,7 +152,10 @@ class _PoolUrlState extends State<PoolUrl> {
                             selectedCoinData!,
                             selectedPoolName!.trim().toLowerCase(),
                             selectedRegion!,
-                            poolUrls.first);
+                            selectedPoolUrl != null &&
+                                    poolUrls.contains(selectedPoolUrl)
+                                ? selectedPoolUrl
+                                : poolUrls.first);
                       },
                       style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),
