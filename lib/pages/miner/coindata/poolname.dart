@@ -96,20 +96,16 @@ class _PoolNameState extends State<PoolName> {
             height: 8,
           ),
           Expanded(
-              child: ListView(
-            children: poolNames.isNotEmpty
-                ? poolNames
-                    .map((e) => _renderOnePoolName(e, selectedPoolName))
-                    .toList()
-                : [
-                    Container(
-                      alignment: Alignment.center,
+              child: poolNames.isNotEmpty
+                  ? ListView(
+                      children: poolNames
+                          .map((e) => _renderOnePoolName(e, selectedPoolName))
+                          .toList())
+                  : Center(
                       child: Text(
                           "There is no pool in selected coin at this moment",
                           style: Theme.of(context).textTheme.labelLarge),
-                    )
-                  ],
-          )),
+                    )),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

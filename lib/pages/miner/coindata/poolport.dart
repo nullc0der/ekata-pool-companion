@@ -85,20 +85,16 @@ class _PoolPortState extends State<PoolPort> {
             height: 8,
           ),
           Expanded(
-              child: ListView(
-            children: poolPorts.isNotEmpty
-                ? poolPorts
-                    .map((e) => _renderOnePoolPort(e, selectedPoolPort))
-                    .toList()
-                : [
-                    Container(
-                      alignment: Alignment.center,
+              child: poolPorts.isNotEmpty
+                  ? ListView(
+                      children: poolPorts
+                          .map((e) => _renderOnePoolPort(e, selectedPoolPort))
+                          .toList())
+                  : Center(
                       child: Text(
                           "There is no pool port in selected region at this moment",
                           style: Theme.of(context).textTheme.labelLarge),
-                    )
-                  ],
-          )),
+                    )),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

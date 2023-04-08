@@ -100,20 +100,17 @@ class _RegionState extends State<Region> {
             height: 8,
           ),
           Expanded(
-              child: ListView(
-            children: regions.isNotEmpty
-                ? regions
-                    .map((region) => _renderOneRegion(region, selectedRegion))
-                    .toList()
-                : [
-                    Container(
-                      alignment: Alignment.center,
+              child: regions.isNotEmpty
+                  ? ListView(
+                      children: regions
+                          .map((region) =>
+                              _renderOneRegion(region, selectedRegion))
+                          .toList())
+                  : Center(
                       child: Text(
                           "There is no region in selected pool at this moment",
                           style: Theme.of(context).textTheme.labelLarge),
-                    )
-                  ],
-          )),
+                    )),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

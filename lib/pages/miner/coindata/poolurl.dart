@@ -91,20 +91,17 @@ class _PoolUrlState extends State<PoolUrl> {
             height: 8,
           ),
           Expanded(
-              child: ListView(
-            children: poolUrls.isNotEmpty
-                ? poolUrls
-                    .map((e) => _renderOnePoolUrl(e, selectedPoolUrl))
-                    .toList()
-                : [
-                    Container(
-                      alignment: Alignment.center,
+              child: poolUrls.isNotEmpty
+                  ? ListView(
+                      children: poolUrls
+                          .map((e) => _renderOnePoolUrl(e, selectedPoolUrl))
+                          .toList(),
+                    )
+                  : Center(
                       child: Text(
                           "There is no pool url in selected region at this moment",
                           style: Theme.of(context).textTheme.labelLarge),
-                    )
-                  ],
-          )),
+                    )),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
