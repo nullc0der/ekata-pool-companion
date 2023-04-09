@@ -7,6 +7,7 @@ import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/passwordtextformfield.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -140,6 +141,12 @@ class _MiningEngineState extends State<MiningEngine> {
                 .toList(),
             onChanged: (MinerBinary? minerBinary) {
               if (minerBinary != null) {
+                if (MatomoTracker.instance.initialized) {
+                  MatomoTracker.instance.trackEvent(
+                      eventCategory: "CoinData Wizard",
+                      action: "Selected Mining Engine",
+                      eventName: minerBinary.name);
+                }
                 Provider.of<CoinDataProvider>(context, listen: false)
                     .selectedMinerBinary = minerBinary;
               }
@@ -240,6 +247,12 @@ class _MiningEngineState extends State<MiningEngine> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
+                        if (MatomoTracker.instance.initialized) {
+                          MatomoTracker.instance.trackEvent(
+                            eventCategory: "CoinData Wizard",
+                            action: "Pressed Previous - MiningEngine",
+                          );
+                        }
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.walletAddressInput);
                       },
@@ -255,6 +268,11 @@ class _MiningEngineState extends State<MiningEngine> {
                         if (_miningEngineFormKey.currentState!.validate()) {
                           _miningEngineFormKey.currentState!.save();
                           _saveXmrigCCOptions();
+                          if (MatomoTracker.instance.initialized) {
+                            MatomoTracker.instance.trackEvent(
+                                eventCategory: "CoinData Wizard",
+                                action: "Pressed Done - MiningEngine");
+                          }
                           widget.setCurrentCoinDataWizardStep(null);
                         }
                       },

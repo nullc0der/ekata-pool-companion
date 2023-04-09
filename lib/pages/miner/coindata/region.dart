@@ -5,6 +5,7 @@ import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:emoji_flag_converter/emoji_flag_converter.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 class Region extends StatefulWidget {
@@ -20,6 +21,12 @@ class Region extends StatefulWidget {
 class _RegionState extends State<Region> {
   Future<void> _onPressDone(
       CoinData coinData, String poolName, String poolRegion) async {
+    if (MatomoTracker.instance.initialized) {
+      MatomoTracker.instance.trackEvent(
+          eventCategory: "CoinData Wizard",
+          action: "Pressed Done - Region",
+          eventName: poolRegion);
+    }
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         duration: Duration(seconds: 1),
         content:
@@ -62,6 +69,12 @@ class _RegionState extends State<Region> {
       onTap: () {
         Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
             region;
+        if (MatomoTracker.instance.initialized) {
+          MatomoTracker.instance.trackEvent(
+              eventCategory: "CoinData Wizard",
+              action: "Selected Region",
+              eventName: region);
+        }
         widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.poolUrlSelect);
       },
       horizontalTitleGap: 0,
@@ -116,6 +129,12 @@ class _RegionState extends State<Region> {
             children: [
               ElevatedButton(
                   onPressed: () {
+                    if (MatomoTracker.instance.initialized) {
+                      MatomoTracker.instance.trackEvent(
+                        eventCategory: "CoinData Wizard",
+                        action: "Pressed Previous - Region",
+                      );
+                    }
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.poolNameSelect);
                   },
@@ -131,6 +150,10 @@ class _RegionState extends State<Region> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
+                        final region = selectedRegion != null &&
+                                regions.contains(selectedRegion)
+                            ? selectedRegion
+                            : regions.first;
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 duration: Duration(seconds: 1),
@@ -138,10 +161,13 @@ class _RegionState extends State<Region> {
                                     Text("Next pressed, first or selected item"
                                         " on list will be selected")));
                         Provider.of<CoinDataProvider>(context, listen: false)
-                            .selectedRegion = selectedRegion != null &&
-                                regions.contains(selectedRegion)
-                            ? selectedRegion
-                            : regions.first;
+                            .selectedRegion = region;
+                        if (MatomoTracker.instance.initialized) {
+                          MatomoTracker.instance.trackEvent(
+                              eventCategory: "CoinData Wizard",
+                              action: "Pressed Next - Region",
+                              eventName: region);
+                        }
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.poolUrlSelect);
                       },

@@ -20,6 +20,7 @@ import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -183,6 +184,12 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
   Future<void> _onPressStartMining(CoinDataProvider coinDataProvider) async {
     CoinData? selectedCoinData = coinDataProvider.selectedCoinData;
     if (selectedCoinData != null) {
+      if (MatomoTracker.instance.initialized) {
+        MatomoTracker.instance.trackEvent(
+          eventCategory: "CoinData Wizard",
+          action: "Pressed Start Mining",
+        );
+      }
       final minerConfig = _getMinerConfig(coinDataProvider);
       final minerConfigJSONString = minerConfigToJson(minerConfig);
       if (!kDebugMode) {
@@ -219,6 +226,12 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
     if (coinDataProvider.selectedPoolUrl != null &&
         coinDataProvider.selectedPoolPort != null &&
         coinDataProvider.walletAddress.isNotEmpty) {
+      if (MatomoTracker.instance.initialized) {
+        MatomoTracker.instance.trackEvent(
+            eventCategory: "CoinData Wizard",
+            action: "Pressed Customize Config",
+            eventName: "With CoinData");
+      }
       final minerConfig = _getMinerConfig(coinDataProvider);
       Provider.of<MinerStatusProvider>(context, listen: false).coinData =
           coinDataProvider.selectedCoinData;
@@ -245,6 +258,13 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
             .xmrigCCServerToken = coinDataProvider.xmrigCCServerToken;
         Provider.of<MinerStatusProvider>(context, listen: false)
             .xmrigCCWorkerId = coinDataProvider.xmrigCCWorkerId;
+      }
+    } else {
+      if (MatomoTracker.instance.initialized) {
+        MatomoTracker.instance.trackEvent(
+            eventCategory: "CoinData Wizard",
+            action: "Pressed Customize Config",
+            eventName: "Without CoinData");
       }
     }
     Provider.of<UiStateProvider>(context, listen: false)
@@ -480,6 +500,12 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                           onPressed: _userUploadedConfigSaved
                               ? null
                               : () async {
+                                  if (MatomoTracker.instance.initialized) {
+                                    MatomoTracker.instance.trackEvent(
+                                      eventCategory: "CoinData Wizard",
+                                      action: "Pressed Save Config",
+                                    );
+                                  }
                                   await _saveMinerConfigInBackend(
                                       minerConfigToJson(
                                           _getMinerConfig(coinDataProvider)),
@@ -565,6 +591,12 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
+                            if (MatomoTracker.instance.initialized) {
+                              MatomoTracker.instance.trackEvent(
+                                eventCategory: "CoinData Wizard",
+                                action: "Pressed Saved Config",
+                              );
+                            }
                             Provider.of<UiStateProvider>(context, listen: false)
                                 .minerConfigPageShowMinerEngineSelect = true;
                             widget.setCurrentWizardStep(

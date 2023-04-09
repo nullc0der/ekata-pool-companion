@@ -4,6 +4,7 @@ import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 class PoolName extends StatefulWidget {
@@ -18,6 +19,12 @@ class PoolName extends StatefulWidget {
 
 class _PoolNameState extends State<PoolName> {
   Future<void> _onPressDone(CoinData coinData, String poolName) async {
+    if (MatomoTracker.instance.initialized) {
+      MatomoTracker.instance.trackEvent(
+          eventCategory: "CoinData Wizard",
+          action: "Pressed Done - PoolName",
+          eventName: poolName);
+    }
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         duration: Duration(seconds: 1),
         content:
@@ -68,6 +75,12 @@ class _PoolNameState extends State<PoolName> {
       onTap: () {
         Provider.of<CoinDataProvider>(context, listen: false).selectedPoolName =
             poolName.trim().toLowerCase();
+        if (MatomoTracker.instance.initialized) {
+          MatomoTracker.instance.trackEvent(
+              eventCategory: "CoinData Wizard",
+              action: "Selected PoolName",
+              eventName: poolName);
+        }
         widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.regionSelect);
       },
     );
@@ -111,6 +124,12 @@ class _PoolNameState extends State<PoolName> {
             children: [
               ElevatedButton(
                   onPressed: () {
+                    if (MatomoTracker.instance.initialized) {
+                      MatomoTracker.instance.trackEvent(
+                        eventCategory: "CoinData Wizard",
+                        action: "Pressed Previous - PoolName",
+                      );
+                    }
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.coinNameSelect);
                   },
@@ -126,6 +145,10 @@ class _PoolNameState extends State<PoolName> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
+                        final poolName = selectedPoolName != null &&
+                                poolNames.contains(selectedPoolName)
+                            ? selectedPoolName
+                            : poolNames.first.trim().toLowerCase();
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 duration: Duration(seconds: 1),
@@ -133,10 +156,13 @@ class _PoolNameState extends State<PoolName> {
                                     Text("Next pressed, first or selected item"
                                         " on list will be selected")));
                         Provider.of<CoinDataProvider>(context, listen: false)
-                            .selectedPoolName = selectedPoolName != null &&
-                                poolNames.contains(selectedPoolName)
-                            ? selectedPoolName
-                            : poolNames.first.trim().toLowerCase();
+                            .selectedPoolName = poolName;
+                        if (MatomoTracker.instance.initialized) {
+                          MatomoTracker.instance.trackEvent(
+                              eventCategory: "CoinData Wizard",
+                              action: "Pressed Next - PoolName",
+                              eventName: poolName);
+                        }
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.regionSelect);
                       },

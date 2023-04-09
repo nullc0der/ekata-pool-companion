@@ -4,6 +4,7 @@ import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 class PoolPort extends StatefulWidget {
@@ -19,6 +20,12 @@ class PoolPort extends StatefulWidget {
 class _PoolPortState extends State<PoolPort> {
   Future<void> _onPressDone(CoinData coinData, String poolName,
       String poolRegion, String poolUrl, int poolPort) async {
+    if (MatomoTracker.instance.initialized) {
+      MatomoTracker.instance.trackEvent(
+          eventCategory: "CoinData Wizard",
+          action: "Pressed Done - PoolPort",
+          eventName: poolPort.toString());
+    }
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         duration: Duration(seconds: 1),
         content:
@@ -46,6 +53,12 @@ class _PoolPortState extends State<PoolPort> {
       onTap: () {
         Provider.of<CoinDataProvider>(context, listen: false).selectedPoolPort =
             poolPort;
+        if (MatomoTracker.instance.initialized) {
+          MatomoTracker.instance.trackEvent(
+              eventCategory: "CoinData Wizard",
+              action: "Selected Pool Port",
+              eventName: poolPort.toString());
+        }
         widget.setCurrentCoinDataWizardStep(
             CoinDataWizardStep.walletAddressInput);
       },
@@ -100,6 +113,12 @@ class _PoolPortState extends State<PoolPort> {
             children: [
               ElevatedButton(
                   onPressed: () {
+                    if (MatomoTracker.instance.initialized) {
+                      MatomoTracker.instance.trackEvent(
+                        eventCategory: "CoinData Wizard",
+                        action: "Pressed Previous - PoolPort",
+                      );
+                    }
                     widget.setCurrentCoinDataWizardStep(
                         CoinDataWizardStep.poolUrlSelect);
                   },
@@ -115,6 +134,10 @@ class _PoolPortState extends State<PoolPort> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
+                        final int poolPort = selectedPoolPort != null &&
+                                poolPorts.contains(selectedPoolPort)
+                            ? selectedPoolPort
+                            : poolPorts.first;
                         ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                                 duration: Duration(seconds: 1),
@@ -122,10 +145,13 @@ class _PoolPortState extends State<PoolPort> {
                                     Text("Next pressed, first or selected item"
                                         " on list will be selected")));
                         Provider.of<CoinDataProvider>(context, listen: false)
-                            .selectedPoolPort = selectedPoolPort != null &&
-                                poolPorts.contains(selectedPoolPort)
-                            ? selectedPoolPort
-                            : poolPorts.first;
+                            .selectedPoolPort = poolPort;
+                        if (MatomoTracker.instance.initialized) {
+                          MatomoTracker.instance.trackEvent(
+                              eventCategory: "CoinData Wizard",
+                              action: "Pressed Next - PoolPort",
+                              eventName: poolPort.toString());
+                        }
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.walletAddressInput);
                       },

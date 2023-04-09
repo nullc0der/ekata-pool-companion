@@ -9,6 +9,7 @@ import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttericon/font_awesome5_icons.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 class CoinName extends StatefulWidget {
@@ -93,6 +94,12 @@ class _CoinNameState extends State<CoinName> {
   }
 
   Future<void> _onPressDone(CoinData coinData) async {
+    if (MatomoTracker.instance.initialized) {
+      MatomoTracker.instance.trackEvent(
+          eventCategory: "CoinData Wizard",
+          action: "Pressed Done - CoinName",
+          eventName: coinData.coinName);
+    }
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         duration: Duration(seconds: 1),
         content:
@@ -146,6 +153,12 @@ class _CoinNameState extends State<CoinName> {
       onTap: () {
         Provider.of<CoinDataProvider>(context, listen: false).selectedCoinData =
             coinData;
+        if (MatomoTracker.instance.initialized) {
+          MatomoTracker.instance.trackEvent(
+              eventCategory: "CoinData Wizard",
+              action: "Selected Coin",
+              eventName: coinData.coinName);
+        }
         widget.setCurrentCoinDataWizardStep(CoinDataWizardStep.poolNameSelect);
       },
       title: Text(
@@ -310,6 +323,12 @@ class _CoinNameState extends State<CoinName> {
             children: [
               ElevatedButton(
                   onPressed: () {
+                    if (MatomoTracker.instance.initialized) {
+                      MatomoTracker.instance.trackEvent(
+                        eventCategory: "CoinData Wizard",
+                        action: "Pressed Previous - CoinName",
+                      );
+                    }
                     widget.setCurrentCoinDataWizardStep(null);
                   },
                   style: ElevatedButton.styleFrom(
@@ -325,6 +344,7 @@ class _CoinNameState extends State<CoinName> {
                   children: [
                     ElevatedButton(
                         onPressed: () {
+                          final coinData = selectedCoinData ?? coinDatas.first;
                           ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   duration: Duration(seconds: 1),
@@ -332,8 +352,13 @@ class _CoinNameState extends State<CoinName> {
                                       "Next pressed, first or selected item"
                                       " on list will be selected")));
                           Provider.of<CoinDataProvider>(context, listen: false)
-                                  .selectedCoinData =
-                              selectedCoinData ?? coinDatas.first;
+                              .selectedCoinData = coinData;
+                          if (MatomoTracker.instance.initialized) {
+                            MatomoTracker.instance.trackEvent(
+                                eventCategory: "CoinData Wizard",
+                                action: "Pressed Next - CoinName",
+                                eventName: coinData.coinName);
+                          }
                           widget.setCurrentCoinDataWizardStep(
                               CoinDataWizardStep.poolNameSelect);
                         },

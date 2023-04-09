@@ -7,6 +7,7 @@ import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/passwordtextformfield.dart';
 import 'package:flutter/material.dart';
+import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -139,6 +140,12 @@ class _WalletAddressState extends State<WalletAddress> {
   Future<void> _onPressDone(String poolUrl, int poolPort) async {
     if (_walletAddressFormKey.currentState!.validate()) {
       _walletAddressFormKey.currentState!.save();
+      if (MatomoTracker.instance.initialized) {
+        MatomoTracker.instance.trackEvent(
+          eventCategory: "CoinData Wizard",
+          action: "Pressed Done - WalletAddress",
+        );
+      }
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           duration: Duration(seconds: 1),
           content: Text(
@@ -229,6 +236,12 @@ class _WalletAddressState extends State<WalletAddress> {
                 children: [
                   ElevatedButton(
                       onPressed: () {
+                        if (MatomoTracker.instance.initialized) {
+                          MatomoTracker.instance.trackEvent(
+                            eventCategory: "CoinData Wizard",
+                            action: "Pressed Previous - WalletAddress",
+                          );
+                        }
                         widget.setCurrentCoinDataWizardStep(
                             CoinDataWizardStep.portSelect);
                       },
@@ -249,6 +262,12 @@ class _WalletAddressState extends State<WalletAddress> {
                               _walletAddressFormKey.currentState!.save();
                               _savePoolCredentials(
                                   "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}");
+                              if (MatomoTracker.instance.initialized) {
+                                MatomoTracker.instance.trackEvent(
+                                  eventCategory: "CoinData Wizard",
+                                  action: "Pressed Next - WalletAddress",
+                                );
+                              }
                               widget.setCurrentCoinDataWizardStep(
                                   CoinDataWizardStep.miningEngineSelect);
                             }
