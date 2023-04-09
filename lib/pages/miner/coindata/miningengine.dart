@@ -22,9 +22,11 @@ class MiningEngine extends StatefulWidget {
 
 class _MiningEngineState extends State<MiningEngine> {
   final _miningEngineFormKey = GlobalKey<FormState>();
-  final _xmrigCCServerUrlFieldController = TextEditingController();
+  final _xmrigCCServerUrlFieldController =
+      TextEditingController(text: "127.0.0.1:3344");
   final _xmrigCCServerTokenFieldController = TextEditingController();
-  final _xmrigCCWorkerIdFieldController = TextEditingController();
+  final _xmrigCCWorkerIdFieldController =
+      TextEditingController(text: "epc-worker-${getRandomString(6)}");
   final _threadCountFieldController = TextEditingController();
 
   @override
@@ -65,19 +67,12 @@ class _MiningEngineState extends State<MiningEngine> {
             xmrigCCOptionsJson["xmrigCCServerUrl"];
         _xmrigCCServerTokenFieldController.text =
             xmrigCCOptionsJson["xmrigCCServerToken"];
-        _xmrigCCWorkerIdFieldController.text =
-            xmrigCCOptionsJson["xmrigCCWorkerId"] != null &&
-                    xmrigCCOptionsJson["xmrigCCWorkerId"].isNotEmpty
-                ? xmrigCCOptionsJson["xmrigCCWorkerId"]
-                : "epc-worker-${getRandomString(6)}";
-      } else {
-        _xmrigCCServerUrlFieldController.text = "127.0.0.1:3344";
-        _xmrigCCWorkerIdFieldController.text =
-            "epc-worker-${getRandomString(6)}";
+        if (xmrigCCOptionsJson["xmrigCCWorkerId"] != null &&
+            xmrigCCOptionsJson["xmrigCCWorkerId"].isNotEmpty) {
+          _xmrigCCWorkerIdFieldController.text =
+              xmrigCCOptionsJson["xmrigCCWorkerId"];
+        }
       }
-    } else {
-      _xmrigCCServerUrlFieldController.text = "127.0.0.1:3344";
-      _xmrigCCWorkerIdFieldController.text = "epc-worker-${getRandomString(6)}";
     }
   }
 

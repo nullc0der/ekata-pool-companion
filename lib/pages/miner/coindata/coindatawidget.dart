@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:ekatapoolcompanion/models/coindata.dart' show CoinData;
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coinname.dart';
@@ -12,9 +14,14 @@ import 'package:ekatapoolcompanion/pages/miner/miner.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/uistate.dart';
+import 'package:ekatapoolcompanion/services/minerconfig.dart';
+import 'package:ekatapoolcompanion/utils/common.dart';
+import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 enum CoinDataWizardStep {
   coinNameSelect,
@@ -38,12 +45,172 @@ class CoinDataWidget extends StatefulWidget {
 
 class _CoinDataWidgetState extends State<CoinDataWidget> {
   CoinDataWizardStep? _currentCoinDataWizardStep;
+  bool _userUploadedConfigSaving = false;
+  bool _userUploadedConfigSaved = false;
+  bool _userUploadedConfigSaveHasError = false;
+  bool _configSaving = false;
 
   void _setCurrentCoinDataWizardStep(
       CoinDataWizardStep? currentCoinDataWizardStep) {
     setState(() {
       _currentCoinDataWizardStep = currentCoinDataWizardStep;
     });
+  }
+
+  Future<void> _saveMinerConfigInBackend(
+      String config, bool userUploaded) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString(Constants.userIdSharedPrefs);
+    final poolCredentials = {};
+    if (userId != null) {
+      final minerConfig = jsonDecode(config);
+      if (minerConfig["pools"].isNotEmpty) {
+        if (userUploaded) {
+          minerConfig["pools"].forEach((pool) {
+            poolCredentials[pool["url"]] = {
+              "user": pool["user"],
+              "pass": pool["pass"]
+            };
+          });
+        }
+        final newPools = minerConfig["pools"].map((pool) {
+          pool["user"] = null;
+          pool["pass"] = null;
+          return pool;
+        }).toList();
+        minerConfig["pools"] = newPools;
+      }
+      try {
+        if (userUploaded) {
+          setState(() {
+            _userUploadedConfigSaving = true;
+            _userUploadedConfigSaved = false;
+            _userUploadedConfigSaveHasError = false;
+          });
+          String? minerConfigMd5 = await MinerConfigService.createMinerConfig(
+            userId: userId,
+            minerConfig: jsonEncode(minerConfig).trim(),
+            userUploaded: true,
+          );
+          if (minerConfigMd5 != null && poolCredentials.isNotEmpty) {
+            // NOTE: Check final_miner_config note
+            final poolCredentialsPrefs =
+                prefs.getString(Constants.poolCredentialsSharedPrefs);
+            if (poolCredentialsPrefs != null) {
+              final Map<String, dynamic> poolCredentialPrefsDecoded =
+                  jsonDecode(poolCredentialsPrefs);
+              prefs.setString(
+                  Constants.poolCredentialsSharedPrefs,
+                  jsonEncode({
+                    ...poolCredentialPrefsDecoded,
+                    minerConfigMd5: poolCredentials
+                  }));
+            } else {
+              prefs.setString(Constants.poolCredentialsSharedPrefs,
+                  jsonEncode({minerConfigMd5: poolCredentials}));
+            }
+            setState(() {
+              _userUploadedConfigSaving = false;
+              _userUploadedConfigSaved = true;
+              _userUploadedConfigSaveHasError = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Saved successfully")));
+          }
+        } else {
+          setState(() {
+            _configSaving = true;
+          });
+          await MinerConfigService.createMinerConfig(
+              userId: userId, minerConfig: jsonEncode(minerConfig).trim());
+          setState(() {
+            _configSaving = false;
+          });
+        }
+      } on Exception catch (_) {
+        if (userUploaded) {
+          setState(() {
+            _userUploadedConfigSaving = false;
+            _userUploadedConfigSaved = false;
+            _userUploadedConfigSaveHasError = true;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              backgroundColor: Theme.of(context).colorScheme.error,
+              content: Text(
+                "There is some error saving at this moment",
+                style: TextStyle(color: Theme.of(context).colorScheme.onError),
+              )));
+        } else {
+          setState(() {
+            _configSaving = false;
+          });
+        }
+      }
+    }
+  }
+
+  MinerConfig _getMinerConfig(CoinDataProvider coinDataProvider) {
+    String? gpuVendor =
+        Provider.of<MinerStatusProvider>(context, listen: false).gpuVendor;
+    bool deviceHasGPU = gpuVendor != null;
+    MinerConfig minerConfig = MinerConfig(pools: [
+      Pool(
+          algo: coinDataProvider.selectedCoinData!.coinAlgo,
+          url:
+              "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
+          user: coinDataProvider.walletAddress,
+          pass: coinDataProvider.password,
+          rigId: coinDataProvider.rigId != null &&
+                  coinDataProvider.rigId!.isNotEmpty
+              ? coinDataProvider.rigId
+              : null)
+    ]);
+    if (deviceHasGPU) {
+      if (gpuVendor.toLowerCase() == "nvidia") {
+        minerConfig.cuda = Gpu(enabled: true);
+      }
+      if (gpuVendor.toLowerCase() == "amd") {
+        minerConfig.opencl = Gpu(enabled: true);
+      }
+    } else {
+      minerConfig.cpu = Cpu(enabled: true);
+    }
+    return minerConfig;
+  }
+
+  Future<void> _onPressStartMining(CoinDataProvider coinDataProvider) async {
+    CoinData? selectedCoinData = coinDataProvider.selectedCoinData;
+    if (selectedCoinData != null) {
+      final minerConfig = _getMinerConfig(coinDataProvider);
+      final minerConfigJSONString = minerConfigToJson(minerConfig);
+      await _saveMinerConfigInBackend(minerConfigJSONString, false);
+      // TODO: restore debug modes
+      if (!kDebugMode) {}
+      final filePath = await saveMinerConfigToFile(minerConfigJSONString);
+      Provider.of<MinerStatusProvider>(context, listen: false).coinData =
+          selectedCoinData;
+      Provider.of<MinerStatusProvider>(context, listen: false).minerConfigPath =
+          filePath;
+      Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
+          minerConfig;
+      if (coinDataProvider.threadCount != null) {
+        Provider.of<MinerStatusProvider>(context, listen: false).threadCount =
+            coinDataProvider.threadCount;
+      }
+      Provider.of<MinerStatusProvider>(context, listen: false)
+          .selectedMinerBinary = coinDataProvider.selectedMinerBinary;
+      if (coinDataProvider.selectedMinerBinary == MinerBinary.xmrigCC) {
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCServerUrl = coinDataProvider.xmrigCCServerUrl;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCServerToken = coinDataProvider.xmrigCCServerToken;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCWorkerId = coinDataProvider.xmrigCCWorkerId;
+      }
+      Provider.of<UiStateProvider>(context, listen: false)
+          .minerConfigPageShowMinerEngineSelect = false;
+      widget.setCurrentWizardStep(WizardStep.miner);
+    }
   }
 
   Widget _showOneCoinData(
@@ -266,81 +433,74 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     const SizedBox(
                       height: 8,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          String? gpuVendor = Provider.of<MinerStatusProvider>(
-                                  context,
-                                  listen: false)
-                              .gpuVendor;
-                          bool deviceHasGPU = gpuVendor != null;
-                          CoinData? selectedCoinData =
-                              coinDataProvider.selectedCoinData;
-                          if (selectedCoinData != null) {
-                            Provider.of<MinerStatusProvider>(context,
-                                    listen: false)
-                                .coinData = selectedCoinData;
-                            MinerConfig minerConfig = MinerConfig(pools: [
-                              Pool(
-                                  algo: selectedCoinData.coinAlgo,
-                                  url:
-                                      "${coinDataProvider.selectedPoolUrl}:${coinDataProvider.selectedPoolPort}",
-                                  user: coinDataProvider.walletAddress,
-                                  pass: coinDataProvider.password,
-                                  rigId: coinDataProvider.rigId != null &&
-                                          coinDataProvider.rigId!.isNotEmpty
-                                      ? coinDataProvider.rigId
-                                      : null)
-                            ]);
-                            if (deviceHasGPU) {
-                              if (gpuVendor.toLowerCase() == "nvidia") {
-                                minerConfig.cuda = Gpu(enabled: true);
-                              }
-                              if (gpuVendor.toLowerCase() == "amd") {
-                                minerConfig.opencl = Gpu(enabled: true);
-                              }
-                            } else {
-                              minerConfig.cpu = Cpu(enabled: true);
-                            }
-                            Provider.of<MinerStatusProvider>(context,
-                                    listen: false)
-                                .minerConfig = minerConfig;
-                            if (coinDataProvider.threadCount != null) {
-                              Provider.of<MinerStatusProvider>(context,
-                                      listen: false)
-                                  .threadCount = coinDataProvider.threadCount;
-                            }
-                            Provider.of<MinerStatusProvider>(context,
-                                        listen: false)
-                                    .selectedMinerBinary =
-                                coinDataProvider.selectedMinerBinary;
-                            if (coinDataProvider.selectedMinerBinary ==
-                                MinerBinary.xmrigCC) {
-                              Provider.of<MinerStatusProvider>(context,
-                                          listen: false)
-                                      .xmrigCCServerUrl =
-                                  coinDataProvider.xmrigCCServerUrl;
-                              Provider.of<MinerStatusProvider>(context,
-                                          listen: false)
-                                      .xmrigCCServerToken =
-                                  coinDataProvider.xmrigCCServerToken;
-                              Provider.of<MinerStatusProvider>(context,
-                                          listen: false)
-                                      .xmrigCCWorkerId =
-                                  coinDataProvider.xmrigCCWorkerId;
-                            }
-                            Provider.of<UiStateProvider>(context, listen: false)
-                                .minerConfigPageShowMinerEngineSelect = false;
-                            widget.setCurrentWizardStep(WizardStep.minerConfig);
-                          }
-                        },
-                        child: const Text("Review final config"),
-                        style: ElevatedButton.styleFrom(
-                            minimumSize: const Size.fromHeight(35),
-                            shadowColor: Colors.transparent),
-                      ),
-                    ),
+                    Wrap(
+                      alignment: WrapAlignment.center,
+                      spacing: 8,
+                      children: [
+                        ElevatedButton(
+                          onPressed: _userUploadedConfigSaved
+                              ? null
+                              : () async {
+                                  await _saveMinerConfigInBackend(
+                                      minerConfigToJson(
+                                          _getMinerConfig(coinDataProvider)),
+                                      true);
+                                },
+                          child: _userUploadedConfigSaved
+                              ? Wrap(
+                                  spacing: 4,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: const [
+                                    Text("Saved"),
+                                    Icon(Icons.check)
+                                  ],
+                                )
+                              : _userUploadedConfigSaving
+                                  ? Wrap(
+                                      spacing: 4,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      children: const [
+                                        Text("Saving"),
+                                        SizedBox(
+                                          width: 10,
+                                          height: 10,
+                                          child: CircularProgressIndicator(),
+                                        )
+                                      ],
+                                    )
+                                  : const Text("Save Config"),
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: _userUploadedConfigSaveHasError
+                                  ? Theme.of(context).colorScheme.error
+                                  : null,
+                              foregroundColor: _userUploadedConfigSaveHasError
+                                  ? Theme.of(context).colorScheme.onError
+                                  : null,
+                              shadowColor: Colors.transparent),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await _onPressStartMining(coinDataProvider);
+                          },
+                          child: Wrap(
+                            spacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              const Text("Start Mining"),
+                              if (_configSaving)
+                                const SizedBox(
+                                  width: 10,
+                                  height: 10,
+                                  child: CircularProgressIndicator(),
+                                )
+                            ],
+                          ),
+                          style: ElevatedButton.styleFrom(
+                              shadowColor: Colors.transparent),
+                        ),
+                      ],
+                    )
                   ],
                   const SizedBox(
                     height: 8,

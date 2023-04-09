@@ -31,9 +31,11 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
   bool _isEditingUsersMinerConfig = false;
   final _minerConfigFormKey = GlobalKey<FormState>();
   final _minerConfigFieldController = TextEditingController();
-  final _xmrigCCServerUrlFieldController = TextEditingController();
+  final _xmrigCCServerUrlFieldController =
+      TextEditingController(text: "127.0.0.1:3344");
   final _xmrigCCServerTokenFieldController = TextEditingController();
-  final _xmrigCCWorkerIdFieldController = TextEditingController();
+  final _xmrigCCWorkerIdFieldController =
+      TextEditingController(text: "epc-worker-${getRandomString(6)}");
   final _threadCountFieldController = TextEditingController();
 
   @override
@@ -85,19 +87,12 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
             xmrigCCOptionsJson["xmrigCCServerUrl"];
         _xmrigCCServerTokenFieldController.text =
             xmrigCCOptionsJson["xmrigCCServerToken"];
-        _xmrigCCWorkerIdFieldController.text =
-            xmrigCCOptionsJson["xmrigCCWorkerId"] != null &&
-                    xmrigCCOptionsJson["xmrigCCWorkerId"].isNotEmpty
-                ? xmrigCCOptionsJson["xmrigCCWorkerId"]
-                : "epc-worker-${getRandomString(6)}";
-      } else {
-        _xmrigCCServerUrlFieldController.text = "127.0.0.1:3344";
-        _xmrigCCWorkerIdFieldController.text =
-            "epc-worker-${getRandomString(6)}";
+        if (xmrigCCOptionsJson["xmrigCCWorkerId"] != null &&
+            xmrigCCOptionsJson["xmrigCCWorkerId"].isNotEmpty) {
+          _xmrigCCWorkerIdFieldController.text =
+              xmrigCCOptionsJson["xmrigCCWorkerId"];
+        }
       }
-    } else {
-      _xmrigCCServerUrlFieldController.text = "127.0.0.1:3344";
-      _xmrigCCWorkerIdFieldController.text = "epc-worker-${getRandomString(6)}";
     }
   }
 
@@ -157,7 +152,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                 minerConfigMd5: currentMinerConfigMd5);
           }
           if (minerConfigMd5 != null && poolCredentials.isNotEmpty) {
-            // NOTE: This and WalletAddress widget saves pool credentials
+            // NOTE: VERY IMP: Need ASAP: This and WalletAddress widget saves pool credentials
             // to different key, need to merge this to WalletAddress preference
             // also need to add a merger function on init so that existing
             // preferences gets merged seamlessly
@@ -465,9 +460,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                                 const SizedBox(
                                   width: 10,
                                   height: 10,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
+                                  child: CircularProgressIndicator(),
                                 )
                               ]
                             ],
