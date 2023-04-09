@@ -168,19 +168,20 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Column(children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Chip(
-                  shape: const StadiumBorder(),
-                  avatar: const Icon(Icons.timer, size: 16),
-                  label: Text(
-                    DateFormat.yMd().add_jm().format(
-                        DateTime.fromMillisecondsSinceEpoch(
-                            minerConfig.timeStamp)),
-                  )),
-            ],
-          ),
+          if (minerConfig.timeStamp != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Chip(
+                    shape: const StadiumBorder(),
+                    avatar: const Icon(Icons.timer, size: 16),
+                    label: Text(
+                      DateFormat.yMd().add_jm().format(
+                          DateTime.fromMillisecondsSinceEpoch(
+                              minerConfig.timeStamp!)),
+                    )),
+              ],
+            ),
           const SizedBox(
             height: 8,
           ),
@@ -290,9 +291,6 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
                 width: 4,
               ),
               FilledButton(
-                  style: FilledButton.styleFrom(
-                    shadowColor: Colors.transparent,
-                  ),
                   onPressed: () => _onPressStartMining(minerConfig),
                   child: Wrap(
                     spacing: 4,

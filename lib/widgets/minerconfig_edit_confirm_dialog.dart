@@ -13,35 +13,24 @@ Future<EditConfirm?> showMinerConfigEditConfirmDialog(
           content: const Text(
               "It seems the config is edited, do you want to save this as new or update the same config"),
           actions: [
-            Wrap(
-              alignment: WrapAlignment.end,
-              spacing: 2,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context, EditConfirm.dontSave);
-                  },
-                  child: const Text("Don't save"),
-                ),
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context, EditConfirm.update);
-                    },
-                    child: const Text("Update"),
-                    style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all(Colors.blue.shade900),
-                    )),
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context, EditConfirm.saveAsNew);
-                    },
-                    child: const Text("Save as new"),
-                    style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(Colors.green.shade900)))
-              ],
-            )
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, EditConfirm.dontSave);
+              },
+              child: const Text("Don't save"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, EditConfirm.saveAsNew);
+              },
+              child: const Text("Save as new"),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context, EditConfirm.update);
+              },
+              child: const Text("Update"),
+            ),
           ],
         );
       });

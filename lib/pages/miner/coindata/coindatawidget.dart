@@ -48,6 +48,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
   bool _userUploadedConfigSaving = false;
   bool _userUploadedConfigSaved = false;
   bool _userUploadedConfigSaveHasError = false;
+  String _userUploadedConfigMd5 = "";
   bool _configSaving = false;
 
   void _setCurrentCoinDataWizardStep(
@@ -112,6 +113,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
             setState(() {
               _userUploadedConfigSaving = false;
               _userUploadedConfigSaved = true;
+              _userUploadedConfigMd5 = minerConfigMd5;
               _userUploadedConfigSaveHasError = false;
             });
             ScaffoldMessenger.of(context).showSnackBar(
@@ -183,9 +185,9 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
     if (selectedCoinData != null) {
       final minerConfig = _getMinerConfig(coinDataProvider);
       final minerConfigJSONString = minerConfigToJson(minerConfig);
-      await _saveMinerConfigInBackend(minerConfigJSONString, false);
-      // TODO: restore debug modes
-      if (!kDebugMode) {}
+      if (!kDebugMode) {
+        await _saveMinerConfigInBackend(minerConfigJSONString, false);
+      }
       final filePath = await saveMinerConfigToFile(minerConfigJSONString);
       Provider.of<MinerStatusProvider>(context, listen: false).coinData =
           selectedCoinData;
@@ -211,6 +213,43 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
           .minerConfigPageShowMinerEngineSelect = false;
       widget.setCurrentWizardStep(WizardStep.miner);
     }
+  }
+
+  void _onPressCustomizeConfig(CoinDataProvider coinDataProvider) {
+    if (coinDataProvider.selectedPoolUrl != null &&
+        coinDataProvider.selectedPoolPort != null &&
+        coinDataProvider.walletAddress.isNotEmpty) {
+      final minerConfig = _getMinerConfig(coinDataProvider);
+      Provider.of<MinerStatusProvider>(context, listen: false).coinData =
+          coinDataProvider.selectedCoinData;
+      if (_userUploadedConfigMd5.isNotEmpty) {
+        Provider.of<MinerStatusProvider>(context, listen: false)
+                .usersMinerConfig =
+            UsersMinerConfig(
+                minerConfig: minerConfig.toJson(),
+                minerConfigMd5: _userUploadedConfigMd5);
+      } else {
+        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
+            minerConfig;
+      }
+      if (coinDataProvider.threadCount != null) {
+        Provider.of<MinerStatusProvider>(context, listen: false).threadCount =
+            coinDataProvider.threadCount;
+      }
+      Provider.of<MinerStatusProvider>(context, listen: false)
+          .selectedMinerBinary = coinDataProvider.selectedMinerBinary;
+      if (coinDataProvider.selectedMinerBinary == MinerBinary.xmrigCC) {
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCServerUrl = coinDataProvider.xmrigCCServerUrl;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCServerToken = coinDataProvider.xmrigCCServerToken;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCWorkerId = coinDataProvider.xmrigCCWorkerId;
+      }
+    }
+    Provider.of<UiStateProvider>(context, listen: false)
+        .minerConfigPageShowMinerEngineSelect = true;
+    widget.setCurrentWizardStep(WizardStep.minerConfig);
   }
 
   Widget _showOneCoinData(
@@ -479,7 +518,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                                   : null,
                               shadowColor: Colors.transparent),
                         ),
-                        ElevatedButton(
+                        FilledButton(
                           onPressed: () async {
                             await _onPressStartMining(coinDataProvider);
                           },
@@ -496,8 +535,6 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                                 )
                             ],
                           ),
-                          style: ElevatedButton.styleFrom(
-                              shadowColor: Colors.transparent),
                         ),
                       ],
                     )
@@ -542,11 +579,9 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            Provider.of<UiStateProvider>(context, listen: false)
-                                .minerConfigPageShowMinerEngineSelect = true;
-                            widget.setCurrentWizardStep(WizardStep.minerConfig);
+                            _onPressCustomizeConfig(coinDataProvider);
                           },
-                          child: const Text("Use custom config"),
+                          child: const Text("Customize Config"),
                           style: ElevatedButton.styleFrom(
                               shadowColor: Colors.transparent),
                         ),

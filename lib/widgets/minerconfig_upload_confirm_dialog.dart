@@ -10,23 +10,16 @@ Future<bool?> showMinerConfigUploadConfirmDialog(BuildContext context) async {
           content:
               const Text("Doing so will make it available in my config page"),
           actions: [
-            Wrap(
-              alignment: WrapAlignment.end,
-              spacing: 2,
-              children: [
-                TextButton(
-                    onPressed: () {
-                      Navigator.pop(context, false);
-                    },
-                    child: const Text("No")),
-                ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context, true);
-                    },
-                    child: const Text("Yes"),
-                    style: ElevatedButton.styleFrom(
-                        shadowColor: Colors.transparent))
-              ],
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context, false);
+                },
+                child: const Text("No")),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
+              child: const Text("Yes"),
             )
           ],
         );

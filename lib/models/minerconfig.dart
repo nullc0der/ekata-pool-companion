@@ -167,14 +167,15 @@ class Pool {
 }
 
 class UsersMinerConfig {
-  UsersMinerConfig(
-      {required this.minerConfig,
-      required this.timeStamp,
-      required this.minerConfigMd5});
+  UsersMinerConfig({
+    required this.minerConfig,
+    required this.minerConfigMd5,
+    this.timeStamp,
+  });
 
   Map<String, dynamic> minerConfig;
-  int timeStamp;
   String minerConfigMd5;
+  int? timeStamp;
 
   factory UsersMinerConfig.fromJson(Map<String, dynamic> json) =>
       UsersMinerConfig(

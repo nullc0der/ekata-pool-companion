@@ -59,10 +59,6 @@ class _HomePageState extends State<HomePage> {
     //       true;
     // });
     // _fetchPoolStatPeriodically();
-    _createAndSaveUserId().then((_) {
-      // _initializeMatomoTracker();
-      _addAppVersion();
-    });
     if (!kDebugMode) {
       _createAndSaveUserId().then((_) {
         _initializeMatomoTracker();

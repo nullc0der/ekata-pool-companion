@@ -430,42 +430,38 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
               SizedBox(
                 width: double.infinity,
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Expanded(
-                        child: OutlinedButton(
-                            onPressed: () {
-                              Provider.of<MinerStatusProvider>(context,
-                                      listen: false)
-                                  .minerConfig = null;
-                              widget.setCurrentWizardStep(
-                                  WizardStep.coinNameSelect);
-                            },
-                            child: const Text("Start Over"))),
+                    OutlinedButton(
+                        onPressed: () {
+                          Provider.of<MinerStatusProvider>(context,
+                                  listen: false)
+                              .minerConfig = null;
+                          widget
+                              .setCurrentWizardStep(WizardStep.coinNameSelect);
+                        },
+                        child: const Text("Start Over")),
                     const SizedBox(
                       width: 8,
                     ),
-                    Expanded(
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              shadowColor: Colors.transparent),
-                          onPressed: _onPressStartMining,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text("Start Mining"),
-                              if (_isMinerConfigSaving) ...[
-                                const SizedBox(
-                                  width: 4,
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                  height: 10,
-                                  child: CircularProgressIndicator(),
-                                )
-                              ]
-                            ],
-                          )),
-                    )
+                    FilledButton(
+                        onPressed: _onPressStartMining,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text("Start Mining"),
+                            if (_isMinerConfigSaving) ...[
+                              const SizedBox(
+                                width: 4,
+                              ),
+                              const SizedBox(
+                                width: 10,
+                                height: 10,
+                                child: CircularProgressIndicator(),
+                              )
+                            ]
+                          ],
+                        ))
                   ],
                 ),
               )
