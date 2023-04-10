@@ -433,7 +433,9 @@ class _DesktopMinerState extends State<DesktopMiner> {
                     ] else
                       Text("Currently Mining: ${minerConfig.pools.first.algo}"),
                     const Spacer(),
-                    OutlinedButton(
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            shadowColor: Colors.transparent),
                         onPressed: () {
                           Provider.of<MinerStatusProvider>(context,
                                   listen: false)
@@ -441,7 +443,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
                           widget
                               .setCurrentWizardStep(WizardStep.coinNameSelect);
                         },
-                        child: const Text("Mine Another"))
+                        child: const Text("Edit Config"))
                   ],
                 ),
               ),

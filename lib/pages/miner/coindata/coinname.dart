@@ -256,7 +256,7 @@ class _CoinNameState extends State<CoinName> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Select coin",
+            "Select Coin",
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(

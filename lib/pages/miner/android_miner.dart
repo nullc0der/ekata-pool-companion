@@ -434,7 +434,9 @@ class _AndroidMinerState extends State<AndroidMiner> {
                     ] else
                       Text("Currently Mining: ${minerConfig.pools.first.algo}"),
                     const Spacer(),
-                    OutlinedButton(
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            shadowColor: Colors.transparent),
                         onPressed: () {
                           Provider.of<MinerStatusProvider>(context,
                                   listen: false)
@@ -442,7 +444,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
                           widget
                               .setCurrentWizardStep(WizardStep.coinNameSelect);
                         },
-                        child: const Text("Mine Another"))
+                        child: const Text("Edit Config"))
                   ],
                 ),
               ),

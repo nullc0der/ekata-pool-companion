@@ -160,7 +160,7 @@ class _MiningEngineState extends State<MiningEngine> {
       children: [
         TextFormField(
           controller: _xmrigCCServerUrlFieldController,
-          decoration: const InputDecoration(labelText: "xmrigCC Server url"),
+          decoration: const InputDecoration(labelText: "xmrigCC Server URL"),
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator: (value) {
             if (value == null || value.isEmpty) {

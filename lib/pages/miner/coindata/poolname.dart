@@ -102,7 +102,7 @@ class _PoolNameState extends State<PoolName> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Select pool",
+            "Select Pool",
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(

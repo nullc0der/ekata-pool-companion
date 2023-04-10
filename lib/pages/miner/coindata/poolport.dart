@@ -91,7 +91,7 @@ class _PoolPortState extends State<PoolPort> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Select port",
+            "Select Port",
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(

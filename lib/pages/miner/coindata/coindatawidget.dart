@@ -385,7 +385,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                     color: Color(0xFF273951),
                   )),
             if (selectedPoolUrl != null)
-              _showOneCoinData("Pool Url", [selectedPoolUrl],
+              _showOneCoinData("Pool URL", [selectedPoolUrl],
                   CoinDataWizardStep.poolUrlSelect,
                   prefixIconOrImage: const Icon(
                     Icons.public,
@@ -602,7 +602,7 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                             widget.setCurrentWizardStep(
                                 WizardStep.usersMinerConfigs);
                           },
-                          child: const Text("Saved configs"),
+                          child: const Text("Saved Configs"),
                           style: ElevatedButton.styleFrom(
                               shadowColor: Colors.transparent),
                         ),

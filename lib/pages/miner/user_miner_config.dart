@@ -419,18 +419,9 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Saved Miner Configs",
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-              OutlinedButton(
-                  onPressed: () =>
-                      widget.setCurrentWizardStep(WizardStep.coinNameSelect),
-                  child: const Text("Start Over"))
-            ],
+          Text(
+            "Saved Miner Configs",
+            style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(
             height: 8,
@@ -466,7 +457,18 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(),
-                            )))
+                            ))),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                  style:
+                      ElevatedButton.styleFrom(shadowColor: Colors.transparent),
+                  onPressed: () =>
+                      widget.setCurrentWizardStep(WizardStep.coinNameSelect),
+                  child: const Icon(Icons.arrow_back)),
+            ],
+          )
         ],
       ),
     );

@@ -97,7 +97,7 @@ class _PoolUrlState extends State<PoolUrl> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Select url",
+            "Select URL",
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(

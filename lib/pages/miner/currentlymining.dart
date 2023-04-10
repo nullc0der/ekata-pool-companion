@@ -46,7 +46,9 @@ class CurrentlyMining extends StatelessWidget {
               const SizedBox(
                 width: 16,
               ),
-              OutlinedButton(
+              ElevatedButton(
+                  style:
+                      ElevatedButton.styleFrom(shadowColor: Colors.transparent),
                   onPressed: () {
                     Provider.of<MinerStatusProvider>(context, listen: false)
                         .minerConfig = currentlyMiningMinerConfig;

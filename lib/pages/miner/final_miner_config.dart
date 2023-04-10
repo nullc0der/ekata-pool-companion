@@ -432,7 +432,9 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    OutlinedButton(
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            shadowColor: Colors.transparent),
                         onPressed: () {
                           Provider.of<MinerStatusProvider>(context,
                                   listen: false)
@@ -440,7 +442,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                           widget
                               .setCurrentWizardStep(WizardStep.coinNameSelect);
                         },
-                        child: const Text("Start Over")),
+                        child: const Icon(Icons.arrow_back)),
                     const SizedBox(
                       width: 8,
                     ),

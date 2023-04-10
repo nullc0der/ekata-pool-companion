@@ -106,7 +106,7 @@ class _RegionState extends State<Region> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Select region",
+            "Select Region",
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(
