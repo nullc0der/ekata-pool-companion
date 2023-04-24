@@ -1,7 +1,7 @@
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
-import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
+import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
@@ -18,8 +18,12 @@ class PoolUrl extends StatefulWidget {
 }
 
 class _PoolUrlState extends State<PoolUrl> {
-  Future<void> _onPressDone(CoinData coinData, String poolName,
-      String poolRegion, String poolUrl) async {
+  Future<void> _onPressDone(
+      CoinData coinData,
+      String poolName,
+      String poolRegion,
+      String poolUrl,
+      List<String> supportedMiningEngines) async {
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
           eventCategory: "CoinData Wizard",
@@ -37,6 +41,9 @@ class _PoolUrlState extends State<PoolUrl> {
         .ports
         .first;
     final poolCredentials = await getPoolCredentials("$poolUrl:$poolPort");
+    final minerBinaries = getSupportedMinerBinaries(supportedMiningEngines);
+    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
+        minerBinaries.first;
     Provider.of<CoinDataProvider>(context, listen: false).selectedPoolUrl =
         poolUrl;
     Provider.of<CoinDataProvider>(context, listen: false).selectedPoolPort =
@@ -47,8 +54,6 @@ class _PoolUrlState extends State<PoolUrl> {
         poolCredentials["password"];
     Provider.of<CoinDataProvider>(context, listen: false).rigId =
         poolCredentials["rigId"];
-    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
-        MinerBinary.xmrig;
     Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
@@ -178,7 +183,8 @@ class _PoolUrlState extends State<PoolUrl> {
                             selectedPoolUrl != null &&
                                     poolUrls.contains(selectedPoolUrl)
                                 ? selectedPoolUrl
-                                : poolUrls.first);
+                                : poolUrls.first,
+                            selectedCoinData.supportedMiningEngines);
                       },
                       style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),

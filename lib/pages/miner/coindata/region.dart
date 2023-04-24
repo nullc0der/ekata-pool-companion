@@ -1,7 +1,7 @@
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
-import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
+import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:emoji_flag_converter/emoji_flag_converter.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +19,8 @@ class Region extends StatefulWidget {
 }
 
 class _RegionState extends State<Region> {
-  Future<void> _onPressDone(
-      CoinData coinData, String poolName, String poolRegion) async {
+  Future<void> _onPressDone(CoinData coinData, String poolName,
+      String poolRegion, List<String> supportedMiningEngines) async {
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
           eventCategory: "CoinData Wizard",
@@ -44,6 +44,9 @@ class _RegionState extends State<Region> {
         .ports
         .first;
     final poolCredentials = await getPoolCredentials("$poolUrl:$poolPort");
+    final minerBinaries = getSupportedMinerBinaries(supportedMiningEngines);
+    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
+        minerBinaries.first;
     Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
         poolRegion;
     Provider.of<CoinDataProvider>(context, listen: false).selectedPoolUrl =
@@ -56,8 +59,6 @@ class _RegionState extends State<Region> {
         poolCredentials["password"];
     Provider.of<CoinDataProvider>(context, listen: false).rigId =
         poolCredentials["rigId"];
-    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
-        MinerBinary.xmrig;
     Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
@@ -186,7 +187,8 @@ class _RegionState extends State<Region> {
                             selectedRegion != null &&
                                     regions.contains(selectedRegion)
                                 ? selectedRegion
-                                : regions.first);
+                                : regions.first,
+                            selectedCoinData.supportedMiningEngines);
                       },
                       style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),

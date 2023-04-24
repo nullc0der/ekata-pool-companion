@@ -17,6 +17,7 @@ import 'package:ekatapoolcompanion/services/systeminfo.dart';
 import 'package:ekatapoolcompanion/services/userid.dart';
 import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/about_dialog.dart';
 import 'package:ekatapoolcompanion/widgets/custom_bottom_navigation.dart';
 import 'package:ekatapoolcompanion/widgets/pool_select_action_sheet.dart';
@@ -117,12 +118,15 @@ class _HomePageState extends State<HomePage> {
       Map<String, String> minerStatusFromAndroid) async {
     var minerStatusProvider =
         Provider.of<MinerStatusProvider>(context, listen: false);
+    // TODO: Send this from android side
+    final selectedMinerBinary = MinerBinary.values
+        .byName(minerStatusFromAndroid["minerBinary"] ?? "xmrig");
     if (minerStatusProvider.currentlyMiningMinerConfig == null &&
         minerStatusFromAndroid.containsKey("minerConfigPath") &&
         minerStatusFromAndroid["minerConfigPath"] != null) {
       final jsonString =
           await File(minerStatusFromAndroid["minerConfigPath"]!).readAsString();
-      final minerConfig = minerConfigFromJson(jsonString);
+      final minerConfig = minerConfigFromJson(jsonString, selectedMinerBinary);
       final threadCount = int.tryParse(minerStatusFromAndroid["threadCount"]!);
       minerStatusProvider.minerConfigPath =
           minerStatusFromAndroid["minerConfigPath"];
@@ -130,6 +134,7 @@ class _HomePageState extends State<HomePage> {
       minerStatusProvider.minerConfig = minerConfig;
       minerStatusProvider.threadCount = threadCount;
       minerStatusProvider.isMining = true;
+      minerStatusProvider.selectedMinerBinary = selectedMinerBinary;
       Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
           minerConfig.pools.first.url == "70.35.206.105:3333" ||
               minerConfig.pools.first.url == "70.35.206.105:5555";

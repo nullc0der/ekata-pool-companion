@@ -9,9 +9,10 @@
 import 'dart:convert';
 
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 
-MinerConfig minerConfigFromJson(String str) =>
-    MinerConfig.fromJson(json.decode(str));
+MinerConfig minerConfigFromJson(String str, MinerBinary minerBinary) =>
+    MinerConfig.fromJson(json.decode(str), minerBinary);
 
 String minerConfigToJson(MinerConfig data, {bool prettyPrint = false}) {
   if (prettyPrint) {
@@ -43,7 +44,8 @@ class MinerConfig {
   Gpu? cuda;
   List<Pool> pools;
 
-  factory MinerConfig.fromJson(Map<String, dynamic> json) {
+  factory MinerConfig.fromJson(
+      Map<String, dynamic> json, MinerBinary minerBinary) {
     if (!json.containsKey("pools") || json["pools"].isEmpty) {
       throw const FormatException("Make sure to add atleast one pool block");
     }
@@ -54,7 +56,8 @@ class MinerConfig {
           "Make sure to add atleast one mining backend, such as CPU, CUDA or OpenCl");
     }
     MinerConfig config = MinerConfig(
-      pools: List<Pool>.from(json["pools"].map((x) => Pool.fromJson(x))),
+      pools: List<Pool>.from(
+          json["pools"].map((x) => Pool.fromJson(x, minerBinary))),
     );
     if (json.containsKey("cpu")) {
       config.cpu = Cpu.fromJson(json["cpu"]);
@@ -136,15 +139,23 @@ class Pool {
   String? pass;
   String? rigId;
 
-  factory Pool.fromJson(Map<String, dynamic> json) {
+  factory Pool.fromJson(Map<String, dynamic> json, MinerBinary minerBinary) {
     for (final key in ["url", "user"]) {
       if (!json.containsKey(key) || json[key] == null || json[key].isEmpty) {
         throw FormatException("Ensure $key exist and not empty or null");
       }
     }
     if (json["algo"] != null) {
-      if (!Constants.supportedAlgo.contains(json["algo"])) {
-        throw const FormatException("Ensure algo is valid");
+      if ((minerBinary == MinerBinary.xmrig ||
+              minerBinary == MinerBinary.xmrigCC) &&
+          !Constants.supportedXmrigAlgo.contains(json["algo"])) {
+        throw FormatException(
+            "Ensure algo is supported by ${minerBinary.name}");
+      }
+      if (minerBinary == MinerBinary.ccminer &&
+          !Constants.supportedCCMinerAlgo.contains(json["algo"])) {
+        throw FormatException(
+            "Ensure algo is supported by ${minerBinary.name}");
       }
     }
     Pool pool = Pool(

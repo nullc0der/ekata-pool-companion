@@ -124,7 +124,9 @@ class _MiningEngineState extends State<MiningEngine> {
     );
   }
 
-  Widget _getMinerBackendDropdown(MinerBinary selectedMinerBinary) {
+  Widget _getMinerBackendDropdown(
+      MinerBinary selectedMinerBinary, List<String> supportedMiningEngines) {
+    final minerBinaries = getSupportedMinerBinaries(supportedMiningEngines);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -132,7 +134,7 @@ class _MiningEngineState extends State<MiningEngine> {
             isExpanded: true,
             decoration: const InputDecoration(labelText: "Miner Backend"),
             value: selectedMinerBinary,
-            items: MinerBinary.values
+            items: minerBinaries
                 .map<DropdownMenuItem<MinerBinary>>(
                     (MinerBinary minerBinary) => DropdownMenuItem<MinerBinary>(
                           child: Text(minerBinary.name),
@@ -208,8 +210,10 @@ class _MiningEngineState extends State<MiningEngine> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedMinerBinary =
-        Provider.of<CoinDataProvider>(context).selectedMinerBinary;
+    final coinDataProvider = Provider.of<CoinDataProvider>(context);
+    final selectedMinerBinary = coinDataProvider.selectedMinerBinary;
+    final supportedMiningEngines =
+        coinDataProvider.selectedCoinData!.supportedMiningEngines;
 
     return Form(
         key: _miningEngineFormKey,
@@ -229,7 +233,8 @@ class _MiningEngineState extends State<MiningEngine> {
                   child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _getMinerBackendDropdown(selectedMinerBinary),
+                  _getMinerBackendDropdown(
+                      selectedMinerBinary, supportedMiningEngines),
                   const SizedBox(
                     height: 8,
                   ),

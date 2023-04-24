@@ -1,7 +1,7 @@
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
-import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
+import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
@@ -18,7 +18,8 @@ class PoolName extends StatefulWidget {
 }
 
 class _PoolNameState extends State<PoolName> {
-  Future<void> _onPressDone(CoinData coinData, String poolName) async {
+  Future<void> _onPressDone(CoinData coinData, String poolName,
+      List<String> supportedMiningEngines) async {
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
           eventCategory: "CoinData Wizard",
@@ -44,6 +45,9 @@ class _PoolNameState extends State<PoolName> {
         .ports
         .first;
     final poolCredentials = await getPoolCredentials("$poolUrl:$poolPort");
+    final minerBinaries = getSupportedMinerBinaries(supportedMiningEngines);
+    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
+        minerBinaries.first;
     Provider.of<CoinDataProvider>(context, listen: false).selectedPoolName =
         poolName;
     Provider.of<CoinDataProvider>(context, listen: false).selectedRegion =
@@ -58,8 +62,6 @@ class _PoolNameState extends State<PoolName> {
         poolCredentials["password"];
     Provider.of<CoinDataProvider>(context, listen: false).rigId =
         poolCredentials["rigId"];
-    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
-        MinerBinary.xmrig;
     Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
@@ -180,7 +182,8 @@ class _PoolNameState extends State<PoolName> {
                             selectedPoolName != null &&
                                     poolNames.contains(selectedPoolName)
                                 ? selectedPoolName
-                                : poolNames.first.trim().toLowerCase());
+                                : poolNames.first.trim().toLowerCase(),
+                            selectedCoinData.supportedMiningEngines);
                       },
                       style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),

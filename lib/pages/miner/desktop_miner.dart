@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ekatapoolcompanion/models/ccminersummary.dart';
 import 'package:ekatapoolcompanion/models/chartsdata.dart';
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/models/minersummary.dart';
@@ -9,7 +10,6 @@ import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/providers/minersummary.dart';
 import 'package:ekatapoolcompanion/services/minersummary.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
-import 'package:ekatapoolcompanion/utils/common.dart' as common;
 import 'package:ekatapoolcompanion/utils/constants.dart';
 import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/chart.dart';
@@ -43,15 +43,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
   @override
   void initState() {
     super.initState();
-    final minerStatusProvider =
-        Provider.of<MinerStatusProvider>(context, listen: false);
-    DesktopMinerUtil.instance.initialize(
-        minerConfigPath: widget.minerConfigPath,
-        threadCount: widget.threadCount,
-        currentMinerBinary: minerStatusProvider.selectedMinerBinary,
-        xmrigCCServerToken: minerStatusProvider.xmrigCCServerToken,
-        xmrigCCServerUrl: minerStatusProvider.xmrigCCServerUrl,
-        xmrigCCWorkerId: minerStatusProvider.xmrigCCWorkerId);
+    _initializeMinerBackend();
     _startMinerLogSubscription();
     _restartMinerSummaryFetcher();
     _changeMiningCoin();
@@ -61,31 +53,68 @@ class _DesktopMinerState extends State<DesktopMiner> {
   void dispose() {
     _minerSummaryFetchTimer?.cancel();
     _minerLogStreamSubscription?.cancel();
-    DesktopMinerUtil.instance.clean();
+    MinerService.instance.clean();
     super.dispose();
   }
 
-  _changeMiningCoin() {
+  void _initializeMinerBackend() {
+    final minerStatusProvider =
+        Provider.of<MinerStatusProvider>(context, listen: false);
+    switch (minerStatusProvider.selectedMinerBinary) {
+      case MinerBinary.xmrig:
+        MinerService.instance.initialize({
+          "minerConfigPath": widget.minerConfigPath,
+          "threadCount": widget.threadCount,
+        }, MinerBinary.xmrig);
+        break;
+      case MinerBinary.xmrigCC:
+        MinerService.instance.initialize({
+          "minerConfigPath": widget.minerConfigPath,
+          "threadCount": widget.threadCount,
+          "xmrigCCServerToken": minerStatusProvider.xmrigCCServerToken,
+          "xmrigCCServerUrl": minerStatusProvider.xmrigCCServerUrl,
+          "xmrigCCWorkerId": minerStatusProvider.xmrigCCWorkerId
+        }, MinerBinary.xmrigCC);
+        break;
+      case MinerBinary.ccminer:
+        if (minerStatusProvider.minerConfig != null) {
+          MinerService.instance.initialize({
+            "ccMinerBinaryVariant":
+                minerStatusProvider.minerConfig?.pools.first.algo == "verus"
+                    ? CCMinerBinaryVariant.ccminerVerus
+                    : CCMinerBinaryVariant.ccminer,
+            "algo": minerStatusProvider.minerConfig?.pools.first.algo,
+            "poolUrl": minerStatusProvider.minerConfig?.pools.first.url,
+            "userName": minerStatusProvider.minerConfig?.pools.first.user,
+            "passWord": minerStatusProvider.minerConfig?.pools.first.pass,
+            "rigId": minerStatusProvider.minerConfig?.pools.first.rigId
+          }, MinerBinary.ccminer);
+        }
+        break;
+    }
+  }
+
+  void _changeMiningCoin() {
+    final minerStatusProvider =
+        Provider.of<MinerStatusProvider>(context, listen: false);
     final currentlyMiningMinerConfig =
-        Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentlyMiningMinerConfig;
-    final minerConfig =
-        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
-    final threadCount =
-        Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
-    final currentThreadCount =
-        Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentThreadCount;
+        minerStatusProvider.currentlyMiningMinerConfig;
+    final minerConfig = minerStatusProvider.minerConfig;
+    final threadCount = minerStatusProvider.threadCount;
+    final currentThreadCount = minerStatusProvider.currentThreadCount;
+    final selectedMinerBinary = minerStatusProvider.selectedMinerBinary;
+    final currentMinerBinary = minerStatusProvider.currentMinerBinary;
     if (currentlyMiningMinerConfig != minerConfig ||
-        threadCount != currentThreadCount) {
-      if (Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
+        threadCount != currentThreadCount ||
+        selectedMinerBinary != currentMinerBinary) {
+      if (minerStatusProvider.isMining) {
         _stopMining();
         _startMining();
       } else {
         _startMining();
       }
     } else {
-      if (!Provider.of<MinerStatusProvider>(context, listen: false).isMining) {
+      if (!minerStatusProvider.isMining) {
         _startMining();
       } else {
         _sendHeartBeat();
@@ -94,15 +123,12 @@ class _DesktopMinerState extends State<DesktopMiner> {
   }
 
   void _startMining() {
-    final minerConfig =
-        Provider.of<MinerStatusProvider>(context, listen: false).minerConfig;
-    final threadCount =
-        Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
-    final coinData =
-        Provider.of<MinerStatusProvider>(context, listen: false).coinData;
-    if (DesktopMinerUtil.instance.initialized) {
-      DesktopMinerUtil.instance.startMining().then((value) {
-        _fetchMinerSummaryPeriodically();
+    final minerStatusProvider =
+        Provider.of<MinerStatusProvider>(context, listen: false);
+    final minerConfig = minerStatusProvider.minerConfig;
+    final coinData = minerStatusProvider.coinData;
+    if (MinerService.instance.initialized) {
+      MinerService.instance.startMining().then((value) {
         if (MatomoTracker.instance.initialized) {
           MatomoTracker.instance.trackEvent(
               eventCategory: 'Mining',
@@ -111,33 +137,37 @@ class _DesktopMinerState extends State<DesktopMiner> {
         }
         Provider.of<MinerStatusProvider>(context, listen: false).isMining =
             value;
-        _startMinerLogSubscription();
         File(widget.minerConfigPath).readAsString().then((value) {
           try {
             Provider.of<MinerStatusProvider>(context, listen: false)
-                .currentlyMiningMinerConfig = minerConfigFromJson(value);
+                    .currentlyMiningMinerConfig =
+                minerConfigFromJson(
+                    value, minerStatusProvider.selectedMinerBinary);
           } on FormatException catch (_) {}
         });
         Provider.of<MinerStatusProvider>(context, listen: false)
-            .currentThreadCount = threadCount;
+            .currentThreadCount = minerStatusProvider.threadCount;
         Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
             null;
         Provider.of<MinerStatusProvider>(context, listen: false)
             .sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentMinerBinary = minerStatusProvider.selectedMinerBinary;
+        _fetchMinerSummaryPeriodically();
+        _startMinerLogSubscription();
         _sendHeartBeat();
       });
     }
   }
 
   void _stopMining() {
-    if (DesktopMinerUtil.instance.initialized) {
-      bool stopped = DesktopMinerUtil.instance.stopMining();
+    if (MinerService.instance.initialized) {
+      bool stopped = MinerService.instance.stopMining();
       if (stopped) {
-        final minerConfig =
-            Provider.of<MinerStatusProvider>(context, listen: false)
-                .minerConfig;
-        final coinData =
-            Provider.of<MinerStatusProvider>(context, listen: false).coinData;
+        final minerStatusProvider =
+            Provider.of<MinerStatusProvider>(context, listen: false);
+        final minerConfig = minerStatusProvider.minerConfig;
+        final coinData = minerStatusProvider.coinData;
         _minerSummaryFetchTimer?.cancel();
         if (MatomoTracker.instance.initialized) {
           MatomoTracker.instance.trackEvent(
@@ -151,44 +181,74 @@ class _DesktopMinerState extends State<DesktopMiner> {
             .currentlyMiningMinerConfig = null;
         Provider.of<MinerStatusProvider>(context, listen: false)
             .currentThreadCount = null;
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .currentMinerBinary = null;
       }
     }
+  }
+
+  void _processCCMinerData(CCMinerSummary ccMinerSummary) {
+    Provider.of<MinerSummaryProvider>(context, listen: false).ccMinerSummary =
+        ccMinerSummary;
+    var chartDatas = List<ChartData>.from(_chartDatas);
+    if (chartDatas.length >= 20) {
+      chartDatas =
+          List<ChartData>.from(chartDatas.skip(chartDatas.length - 20));
+    }
+    chartDatas.add(ChartData(
+        time: DateTime.now(),
+        value: (double.tryParse(ccMinerSummary.currentHash) ?? 0).toInt()));
+    setState(() {
+      _chartDatas = chartDatas;
+    });
+  }
+
+  Future<void> _fetchAndProcessXmrigMinerData() async {
+    try {
+      MinerSummary _minerSummary =
+          await MinerSummaryService().getMinerSummary();
+      Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
+          _minerSummary;
+      var chartDatas = List<ChartData>.from(_chartDatas);
+      if (chartDatas.length >= 20) {
+        chartDatas =
+            List<ChartData>.from(chartDatas.skip(chartDatas.length - 20));
+      }
+      chartDatas.add(ChartData(
+          time: DateTime.now(),
+          value: _minerSummary.hashrate.total[0] != null
+              ? _minerSummary.hashrate.total[0]!.toInt()
+              : 0));
+      setState(() {
+        _chartDatas = chartDatas;
+      });
+    } on Exception {
+      bool hasMinerSummary =
+          Provider.of<MinerSummaryProvider>(context, listen: false)
+                  .minerSummary !=
+              null;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: hasMinerSummary
+              ? const Text(
+                  "There is some issue updating miner summary, will retry")
+              : const Text(
+                  "There is some issue fetching miner summary, will retry")));
+    }
+  }
+
+  Future<void> _fetchCCMinerData() async {
+    await CCMinerSummaryService.instance.getSummary(_processCCMinerData);
   }
 
   void _fetchMinerSummaryPeriodically() {
     _minerSummaryFetchTimer?.cancel();
     _minerSummaryFetchTimer =
         Timer.periodic(const Duration(seconds: 10), (_) async {
-      try {
-        MinerSummary _minerSummary =
-            await MinerSummaryService().getMinerSummary();
-        Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
-            _minerSummary;
-        var chartDatas = List<ChartData>.from(_chartDatas);
-        if (chartDatas.length >= 20) {
-          chartDatas =
-              List<ChartData>.from(chartDatas.skip(chartDatas.length - 20));
-        }
-        chartDatas.add(ChartData(
-            time: DateTime.now(),
-            value: _minerSummary.hashrate.total[0] != null
-                ? _minerSummary.hashrate.total[0]!.toInt()
-                : 0));
-        setState(() {
-          _chartDatas = chartDatas;
-        });
-      } on Exception {
-        bool hasMinerSummary =
-            Provider.of<MinerSummaryProvider>(context, listen: false)
-                    .minerSummary !=
-                null;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: hasMinerSummary
-                ? const Text(
-                    "There is some issue updating miner summary, will retry")
-                : const Text(
-                    "There is some issue fetching miner summary, will retry")));
-      }
+      Provider.of<MinerStatusProvider>(context, listen: false)
+                  .currentMinerBinary ==
+              MinerBinary.xmrig
+          ? await _fetchAndProcessXmrigMinerData()
+          : await _fetchCCMinerData();
     });
   }
 
@@ -203,9 +263,9 @@ class _DesktopMinerState extends State<DesktopMiner> {
 
   void _startMinerLogSubscription() {
     _minerLogStreamSubscription?.cancel();
-    if (DesktopMinerUtil.instance.initialized) {
+    if (MinerService.instance.initialized) {
       _minerLogStreamSubscription =
-          DesktopMinerUtil.instance.logStream.distinct().listen((event) {
+          MinerService.instance.logStream.distinct().listen((event) {
         List<String> currentMinerLog = List<String>.from(_currentMinerLog);
         if (currentMinerLog.length >= 10) {
           currentMinerLog = List<String>.from(
@@ -303,7 +363,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: _currentMinerLog.isNotEmpty
               ? _currentMinerLog
-                  .map((e) => FormattedLog(logTexts: common.formatLogs(e)))
+                  .map((e) => FormattedLog(logTexts: formatLogs(e)))
                   .toList()
               : [const Text("Log will appear here once mining starts")]),
     );
@@ -386,19 +446,63 @@ class _DesktopMinerState extends State<DesktopMiner> {
         : [];
   }
 
+  List<Widget> _ccMinerSummaries(CCMinerSummary? ccMinerSummary) {
+    return ccMinerSummary != null
+        ? [
+            _MinerSummaryItem(
+                title: "Algo",
+                data: ccMinerSummary.algo,
+                iconData: Icons.terminal),
+            _MinerSummaryItem(
+                title: "Hashrate",
+                data: "${ccMinerSummary.currentHash} kH/s",
+                iconData: Icons.developer_board),
+            _MinerSummaryItem(
+                title: "Solved",
+                data: ccMinerSummary.solved,
+                iconData: Icons.calculate),
+            _MinerSummaryItem(
+                title: "Accepted",
+                data: ccMinerSummary.accepted,
+                iconData: Icons.check_box),
+            _MinerSummaryItem(
+                title: "Rejected",
+                data: ccMinerSummary.rejected,
+                iconData: Icons.cancel_outlined),
+            _MinerSummaryItem(
+                title: "Difficulty",
+                data: (double.tryParse(ccMinerSummary.diff) ?? 0)
+                    .toInt()
+                    .toString(),
+                iconData: Icons.show_chart),
+            _MinerSummaryItem(
+                title: "Uptime",
+                data: timeStringFromSecond(
+                    int.tryParse(ccMinerSummary.uptime) ?? 0),
+                iconData: Icons.timer),
+          ].map((e) {
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 6.0),
+              child: _summaryRow(e.iconData, e.title, e.data),
+            );
+          }).toList()
+        : [];
+  }
+
   @override
   Widget build(BuildContext context) {
-    var minerSummary = Provider.of<MinerSummaryProvider>(context).minerSummary;
-    var isMining = Provider.of<MinerStatusProvider>(context).isMining;
+    final minerSummaryProvider = Provider.of<MinerSummaryProvider>(context);
+    final minerStatusProvider = Provider.of<MinerStatusProvider>(context);
 
-    final minerConfig = Provider.of<MinerStatusProvider>(context).minerConfig;
-    final selectedMinerBinary =
-        Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
-    final coinData = Provider.of<MinerStatusProvider>(context).coinData;
-    final xmrigCCServerUrl =
-        Provider.of<MinerStatusProvider>(context).xmrigCCServerUrl;
-    final xmrigCCWorkerId =
-        Provider.of<MinerStatusProvider>(context).xmrigCCWorkerId;
+    final minerSummary = minerSummaryProvider.minerSummary;
+    final ccMinerSummary = minerSummaryProvider.ccMinerSummary;
+
+    final isMining = minerStatusProvider.isMining;
+    final minerConfig = minerStatusProvider.minerConfig;
+    final selectedMinerBinary = minerStatusProvider.selectedMinerBinary;
+    final coinData = minerStatusProvider.coinData;
+    final xmrigCCServerUrl = minerStatusProvider.xmrigCCServerUrl;
+    final xmrigCCWorkerId = minerStatusProvider.xmrigCCWorkerId;
 
     return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -450,7 +554,8 @@ class _DesktopMinerState extends State<DesktopMiner> {
             const SizedBox(
               height: 16,
             ),
-            if (selectedMinerBinary == MinerBinary.xmrig)
+            if (selectedMinerBinary == MinerBinary.xmrig ||
+                selectedMinerBinary == MinerBinary.ccminer)
               SizedBox(
                   width: double.infinity,
                   child: _showStartStopMining(isMining: isMining)),
@@ -463,7 +568,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
               Text("Server URL: $xmrigCCServerUrl"),
               Text("Worker Id: $xmrigCCWorkerId")
             ],
-            if (minerSummary != null) ...[
+            if (minerSummary != null || ccMinerSummary != null) ...[
               const SizedBox(
                 height: 8,
               ),
@@ -477,7 +582,11 @@ class _DesktopMinerState extends State<DesktopMiner> {
                   thickness: 2,
                 ),
               ),
-              ..._minerSummaries(minerSummary),
+              if (selectedMinerBinary == MinerBinary.xmrig ||
+                  selectedMinerBinary == MinerBinary.xmrigCC)
+                ..._minerSummaries(minerSummary),
+              if (selectedMinerBinary == MinerBinary.ccminer)
+                ..._ccMinerSummaries(ccMinerSummary)
             ],
             if (_chartDatas.isNotEmpty)
               Chart(

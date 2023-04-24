@@ -1,7 +1,7 @@
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
-import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
+import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/walletaddress.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
@@ -18,8 +18,13 @@ class PoolPort extends StatefulWidget {
 }
 
 class _PoolPortState extends State<PoolPort> {
-  Future<void> _onPressDone(CoinData coinData, String poolName,
-      String poolRegion, String poolUrl, int poolPort) async {
+  Future<void> _onPressDone(
+      CoinData coinData,
+      String poolName,
+      String poolRegion,
+      String poolUrl,
+      int poolPort,
+      List<String> supportedMiningEngines) async {
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
           eventCategory: "CoinData Wizard",
@@ -31,6 +36,9 @@ class _PoolPortState extends State<PoolPort> {
         content:
             Text("Done pressed, first item from next steps will be selected")));
     final poolCredentials = await getPoolCredentials("$poolUrl:$poolPort");
+    final minerBinaries = getSupportedMinerBinaries(supportedMiningEngines);
+    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
+        minerBinaries.first;
     Provider.of<CoinDataProvider>(context, listen: false).selectedPoolPort =
         poolPort;
     Provider.of<CoinDataProvider>(context, listen: false).walletAddress =
@@ -39,8 +47,6 @@ class _PoolPortState extends State<PoolPort> {
         poolCredentials["password"];
     Provider.of<CoinDataProvider>(context, listen: false).rigId =
         poolCredentials["rigId"];
-    Provider.of<CoinDataProvider>(context, listen: false).selectedMinerBinary =
-        MinerBinary.xmrig;
     Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
     widget.setCurrentCoinDataWizardStep(null);
   }
@@ -172,7 +178,8 @@ class _PoolPortState extends State<PoolPort> {
                             selectedPoolPort != null &&
                                     poolPorts.contains(selectedPoolPort)
                                 ? selectedPoolPort
-                                : poolPorts.first);
+                                : poolPorts.first,
+                            selectedCoinData.supportedMiningEngines);
                       },
                       style: ElevatedButton.styleFrom(
                           shape: const StadiumBorder(),

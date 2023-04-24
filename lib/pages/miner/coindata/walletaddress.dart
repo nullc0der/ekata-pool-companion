@@ -4,7 +4,6 @@ import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
-import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:ekatapoolcompanion/widgets/passwordtextformfield.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
@@ -137,7 +136,8 @@ class _WalletAddressState extends State<WalletAddress> {
     }
   }
 
-  Future<void> _onPressDone(String poolUrl, int poolPort) async {
+  Future<void> _onPressDone(
+      String poolUrl, int poolPort, List<String> supportedMiningEngines) async {
     if (_walletAddressFormKey.currentState!.validate()) {
       _walletAddressFormKey.currentState!.save();
       if (MatomoTracker.instance.initialized) {
@@ -151,8 +151,9 @@ class _WalletAddressState extends State<WalletAddress> {
           content: Text(
               "Done pressed, first item from next steps will be selected")));
       _savePoolCredentials("$poolUrl:$poolPort");
+      final minerBinaries = getSupportedMinerBinaries(supportedMiningEngines);
       Provider.of<CoinDataProvider>(context, listen: false)
-          .selectedMinerBinary = MinerBinary.xmrig;
+          .selectedMinerBinary = minerBinaries.first;
       Provider.of<CoinDataProvider>(context, listen: false).threadCount = null;
       widget.setCurrentCoinDataWizardStep(null);
     }
@@ -283,7 +284,9 @@ class _WalletAddressState extends State<WalletAddress> {
                           onPressed: () async {
                             await _onPressDone(
                                 coinDataProvider.selectedPoolUrl!,
-                                coinDataProvider.selectedPoolPort!);
+                                coinDataProvider.selectedPoolPort!,
+                                coinDataProvider
+                                    .selectedCoinData!.supportedMiningEngines);
                           },
                           style: ElevatedButton.styleFrom(
                               shape: const StadiumBorder(),

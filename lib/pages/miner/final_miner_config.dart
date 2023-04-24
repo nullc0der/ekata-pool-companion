@@ -240,7 +240,10 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
           }
         }
         final filePath = await saveMinerConfigToFile(value);
-        final minerConfig = minerConfigFromJson(value);
+        final minerConfig = minerConfigFromJson(
+            value,
+            Provider.of<MinerStatusProvider>(context, listen: false)
+                .selectedMinerBinary);
         Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
             minerConfig;
         Provider.of<MinerStatusProvider>(context, listen: false)
@@ -398,7 +401,7 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                               return "Miner config can't be empty";
                             }
                             try {
-                              minerConfigFromJson(value);
+                              minerConfigFromJson(value, selectedMinerBinary);
                             } on FormatException catch (e) {
                               return e.message;
                             }
@@ -418,10 +421,13 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                             height: 8.0,
                           )
                         ],
-                        _getThreadCountInput(),
-                        const SizedBox(
-                          height: 8.0,
-                        ),
+                        if (selectedMinerBinary == MinerBinary.xmrig ||
+                            selectedMinerBinary == MinerBinary.xmrigCC) ...[
+                          _getThreadCountInput(),
+                          const SizedBox(
+                            height: 8.0,
+                          ),
+                        ]
                       ],
                     ],
                   ),

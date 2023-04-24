@@ -7,6 +7,7 @@ import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:ekatapoolcompanion/services/minerconfig.dart';
 import 'package:ekatapoolcompanion/utils/common.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -105,7 +106,11 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
     final finalUsersMinerConfig = await _getFinalMinerConfig(usersMinerConfig);
     final minerConfigString = jsonEncode(finalUsersMinerConfig.minerConfig);
     final filePath = await saveMinerConfigToFile(minerConfigString);
-    final minerConfig = minerConfigFromJson(minerConfigString);
+    //TODO: The start mining button needs to be a dropdown from where user can
+    // select all applicable miner binary, then this can be used
+    // based on that selection
+    final minerConfig =
+        minerConfigFromJson(minerConfigString, MinerBinary.xmrig);
     Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
         minerConfig;
     Provider.of<MinerStatusProvider>(context, listen: false).minerConfigPath =

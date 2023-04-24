@@ -89,8 +89,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
   Future<bool> _startMining() async {
     final minerStatusProvider =
         Provider.of<MinerStatusProvider>(context, listen: false);
-    final coinData =
-        Provider.of<MinerStatusProvider>(context, listen: false).coinData;
+    final coinData = minerStatusProvider.coinData;
     _fetchMinerSummaryPeriodically();
     if (MatomoTracker.instance.initialized) {
       MatomoTracker.instance.trackEvent(
@@ -110,7 +109,9 @@ class _AndroidMinerState extends State<AndroidMiner> {
       File(widget.minerConfigPath).readAsString().then((value) {
         try {
           Provider.of<MinerStatusProvider>(context, listen: false)
-              .currentlyMiningMinerConfig = minerConfigFromJson(value);
+                  .currentlyMiningMinerConfig =
+              minerConfigFromJson(
+                  value, minerStatusProvider.selectedMinerBinary);
         } on FormatException catch (_) {}
       });
       Provider.of<MinerStatusProvider>(context, listen: false)

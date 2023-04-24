@@ -16,23 +16,39 @@ class MinerStatusProvider extends ChangeNotifier {
   int _sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
   UsersMinerConfig? _usersMinerConfig;
   MinerBinary _selectedMinerBinary = MinerBinary.xmrig;
+  MinerBinary? _currentMinerBinary;
   String? _xmrigCCServerUrl;
   String? _xmrigCCServerToken;
   String? _xmrigCCWorkerId;
 
   bool get isMining => _isMining;
+
   CoinData? get coinData => _coinData;
+
   int? get threadCount => _threadCount;
+
   int? get currentThreadCount => _currentThreadCount;
+
   String? get gpuVendor => _gpuVendor;
+
   MinerConfig? get minerConfig => _minerConfig;
+
   MinerConfig? get currentlyMiningMinerConfig => _currentlyMiningMinerConfig;
+
   String? get minerConfigPath => _minerConfigPath;
+
   int get sendNextHeartBeatInSeconds => _sendNextHeartBeatInSeconds;
+
   UsersMinerConfig? get usersMinerConfig => _usersMinerConfig;
+
   MinerBinary get selectedMinerBinary => _selectedMinerBinary;
+
+  MinerBinary? get currentMinerBinary => _currentMinerBinary;
+
   String? get xmrigCCServerUrl => _xmrigCCServerUrl;
+
   String? get xmrigCCServerToken => _xmrigCCServerToken;
+
   String? get xmrigCCWorkerId => _xmrigCCWorkerId;
 
   set isMining(bool isMiningStatus) {
@@ -87,6 +103,11 @@ class MinerStatusProvider extends ChangeNotifier {
 
   set selectedMinerBinary(MinerBinary selectedMinerBinary) {
     _selectedMinerBinary = selectedMinerBinary;
+    notifyListeners();
+  }
+
+  set currentMinerBinary(MinerBinary? currentMinerBinary) {
+    _currentMinerBinary = currentMinerBinary;
     notifyListeners();
   }
 

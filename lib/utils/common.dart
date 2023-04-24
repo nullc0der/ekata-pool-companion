@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:ekatapoolcompanion/models/logtext.dart';
 import 'package:ekatapoolcompanion/utils/constants.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
@@ -225,4 +226,21 @@ String getRandomString(int length) {
       'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
   return List.generate(length, (index) => _chars[random.nextInt(_chars.length)])
       .join();
+}
+
+Set<MinerBinary> getSupportedMinerBinaries(
+    List<String> supportedMiningEngines) {
+  Set<MinerBinary> _supportedMinerBinaries = {};
+  for (final supportedMiningEngine in supportedMiningEngines) {
+    switch (supportedMiningEngine) {
+      case "xmrig":
+        _supportedMinerBinaries
+            .addAll([MinerBinary.xmrig, MinerBinary.xmrigCC]);
+        break;
+      case "ccminer":
+        _supportedMinerBinaries.add(MinerBinary.ccminer);
+        break;
+    }
+  }
+  return _supportedMinerBinaries;
 }
