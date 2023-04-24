@@ -125,12 +125,23 @@ class _MiningEngineState extends State<MiningEngine> {
   }
 
   Widget _getMinerBackendDropdown(
-      MinerBinary selectedMinerBinary, List<String> supportedMiningEngines) {
-    final minerBinaries = getSupportedMinerBinaries(supportedMiningEngines);
+      MinerBinary selectedMinerBinary, Set<MinerBinary> minerBinaries) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<MinerBinary>(
+            onChanged: (MinerBinary? minerBinary) {
+              if (minerBinary != null) {
+                if (MatomoTracker.instance.initialized) {
+                  MatomoTracker.instance.trackEvent(
+                      eventCategory: "CoinData Wizard",
+                      action: "Selected Mining Engine",
+                      eventName: minerBinary.name);
+                }
+                Provider.of<CoinDataProvider>(context, listen: false)
+                    .selectedMinerBinary = minerBinary;
+              }
+            },
             isExpanded: true,
             decoration: const InputDecoration(labelText: "Miner Backend"),
             value: selectedMinerBinary,
@@ -141,7 +152,7 @@ class _MiningEngineState extends State<MiningEngine> {
                           value: minerBinary,
                         ))
                 .toList(),
-            onChanged: (MinerBinary? minerBinary) {
+            onSaved: (MinerBinary? minerBinary) {
               if (minerBinary != null) {
                 if (MatomoTracker.instance.initialized) {
                   MatomoTracker.instance.trackEvent(
@@ -211,9 +222,15 @@ class _MiningEngineState extends State<MiningEngine> {
   @override
   Widget build(BuildContext context) {
     final coinDataProvider = Provider.of<CoinDataProvider>(context);
-    final selectedMinerBinary = coinDataProvider.selectedMinerBinary;
+
     final supportedMiningEngines =
         coinDataProvider.selectedCoinData!.supportedMiningEngines;
+
+    final minerBinaries = getSupportedMinerBinaries(supportedMiningEngines);
+    final selectedMinerBinary =
+        minerBinaries.contains(coinDataProvider.selectedMinerBinary)
+            ? coinDataProvider.selectedMinerBinary
+            : minerBinaries.first;
 
     return Form(
         key: _miningEngineFormKey,
@@ -233,8 +250,7 @@ class _MiningEngineState extends State<MiningEngine> {
                   child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _getMinerBackendDropdown(
-                      selectedMinerBinary, supportedMiningEngines),
+                  _getMinerBackendDropdown(selectedMinerBinary, minerBinaries),
                   const SizedBox(
                     height: 8,
                   ),

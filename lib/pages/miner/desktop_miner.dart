@@ -19,15 +19,9 @@ import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 class DesktopMiner extends StatefulWidget {
-  const DesktopMiner(
-      {Key? key,
-      this.threadCount,
-      required this.minerConfigPath,
-      required this.setCurrentWizardStep})
+  const DesktopMiner({Key? key, required this.setCurrentWizardStep})
       : super(key: key);
 
-  final int? threadCount;
-  final String minerConfigPath;
   final ValueChanged<WizardStep> setCurrentWizardStep;
 
   @override
@@ -63,14 +57,14 @@ class _DesktopMinerState extends State<DesktopMiner> {
     switch (minerStatusProvider.selectedMinerBinary) {
       case MinerBinary.xmrig:
         MinerService.instance.initialize({
-          "minerConfigPath": widget.minerConfigPath,
-          "threadCount": widget.threadCount,
+          "minerConfigPath": minerStatusProvider.minerConfigPath,
+          "threadCount": minerStatusProvider.threadCount,
         }, MinerBinary.xmrig);
         break;
       case MinerBinary.xmrigCC:
         MinerService.instance.initialize({
-          "minerConfigPath": widget.minerConfigPath,
-          "threadCount": widget.threadCount,
+          "minerConfigPath": minerStatusProvider.minerConfigPath,
+          "threadCount": minerStatusProvider.threadCount,
           "xmrigCCServerToken": minerStatusProvider.xmrigCCServerToken,
           "xmrigCCServerUrl": minerStatusProvider.xmrigCCServerUrl,
           "xmrigCCWorkerId": minerStatusProvider.xmrigCCWorkerId
@@ -87,7 +81,8 @@ class _DesktopMinerState extends State<DesktopMiner> {
             "poolUrl": minerStatusProvider.minerConfig?.pools.first.url,
             "userName": minerStatusProvider.minerConfig?.pools.first.user,
             "passWord": minerStatusProvider.minerConfig?.pools.first.pass,
-            "rigId": minerStatusProvider.minerConfig?.pools.first.rigId
+            "rigId": minerStatusProvider.minerConfig?.pools.first.rigId,
+            "threadCount": minerStatusProvider.threadCount,
           }, MinerBinary.ccminer);
         }
         break;
@@ -137,7 +132,7 @@ class _DesktopMinerState extends State<DesktopMiner> {
         }
         Provider.of<MinerStatusProvider>(context, listen: false).isMining =
             value;
-        File(widget.minerConfigPath).readAsString().then((value) {
+        File(minerStatusProvider.minerConfigPath!).readAsString().then((value) {
           try {
             Provider.of<MinerStatusProvider>(context, listen: false)
                     .currentlyMiningMinerConfig =

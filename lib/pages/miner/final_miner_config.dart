@@ -421,13 +421,10 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                             height: 8.0,
                           )
                         ],
-                        if (selectedMinerBinary == MinerBinary.xmrig ||
-                            selectedMinerBinary == MinerBinary.xmrigCC) ...[
-                          _getThreadCountInput(),
-                          const SizedBox(
-                            height: 8.0,
-                          ),
-                        ]
+                        _getThreadCountInput(),
+                        const SizedBox(
+                          height: 8.0,
+                        ),
                       ],
                     ],
                   ),

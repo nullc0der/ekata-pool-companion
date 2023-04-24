@@ -215,8 +215,8 @@ Future<String> getPackageVersion() async {
 
 Future<String> saveMinerConfigToFile(String config) async {
   final directory = await getApplicationDocumentsDirectory();
-  final file = await File("${directory.path}/epc_xmrig_config.json")
-      .writeAsString(config);
+  final file =
+      await File("${directory.path}/epc_config.json").writeAsString(config);
   return file.path;
 }
 

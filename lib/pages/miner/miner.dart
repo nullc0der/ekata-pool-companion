@@ -51,9 +51,7 @@ class _MinerState extends State<Miner> {
           )
         : Platform.isLinux || Platform.isWindows
             ? DesktopMiner(
-                minerConfigPath: minerConfigPath!,
                 setCurrentWizardStep: setCurrentWizardStep,
-                threadCount: threadCount,
               )
             : const MinerSupport();
   }

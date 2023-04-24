@@ -86,6 +86,9 @@ class MinerService {
       "--api-bind=127.0.0.1:44690",
       "--api-allow=127.0.0.1",
     ];
+    if (initArgs["threadCount"] != null) {
+      _minerProcessArgs?.add("--threads=${initArgs["threadCount"].toString()}");
+    }
   }
 
   void initialize(Map<String, dynamic> initArgs, MinerBinary minerBinary) {
