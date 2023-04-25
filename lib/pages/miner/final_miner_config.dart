@@ -114,7 +114,9 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
   }
 
   Future<void> _saveMinerConfigInBackend(String config, bool userUploaded,
-      {bool update = false, String currentMinerConfigMd5 = ""}) async {
+      {bool update = false,
+      String currentMinerConfigMd5 = "",
+      MinerBinary? minerBinary}) async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString(Constants.userIdSharedPrefs);
     final poolCredentials = {};
@@ -141,10 +143,10 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
           String? minerConfigMd5;
           if (!update) {
             minerConfigMd5 = await MinerConfigService.createMinerConfig(
-              userId: userId,
-              minerConfig: jsonEncode(minerConfig).trim(),
-              userUploaded: true,
-            );
+                userId: userId,
+                minerConfig: jsonEncode(minerConfig).trim(),
+                userUploaded: true,
+                minerBinary: minerBinary);
           } else {
             minerConfigMd5 = await MinerConfigService.updateMinerConfig(
                 userId: userId,
@@ -182,7 +184,9 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
           }
         } else {
           await MinerConfigService.createMinerConfig(
-              userId: userId, minerConfig: jsonEncode(minerConfig).trim());
+              userId: userId,
+              minerConfig: jsonEncode(minerConfig).trim(),
+              minerBinary: minerBinary);
         }
       } on Exception catch (_) {}
     }
@@ -192,6 +196,9 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
     if (_minerConfigFormKey.currentState!.validate()) {
       _minerConfigFormKey.currentState!.save();
       _saveXmrigCCOptions();
+      final selectedMinerBinary =
+          Provider.of<MinerStatusProvider>(context, listen: false)
+              .selectedMinerBinary;
       final String value = _minerConfigFieldController.text;
       if (value.isNotEmpty) {
         bool? userConfirmedUpload;
@@ -203,8 +210,8 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
           userConfirmedUpload =
               await showMinerConfigUploadConfirmDialog(context);
           if (!kDebugMode) {
-            await _saveMinerConfigInBackend(
-                value, userConfirmedUpload ?? false);
+            await _saveMinerConfigInBackend(value, userConfirmedUpload ?? false,
+                minerBinary: selectedMinerBinary);
           }
         } else {
           final usersMinerConfigUnEdited =
@@ -227,13 +234,16 @@ class _FinalMinerConfigState extends State<FinalMinerConfig> {
                           usersMinerConfigUnEdited.minerConfigMd5);
                   break;
                 case EditConfirm.dontSave:
-                  await _saveMinerConfigInBackend(value, false);
+                  await _saveMinerConfigInBackend(value, false,
+                      minerBinary: selectedMinerBinary);
                   break;
                 case EditConfirm.saveAsNew:
-                  await _saveMinerConfigInBackend(value, true);
+                  await _saveMinerConfigInBackend(value, true,
+                      minerBinary: selectedMinerBinary);
                   break;
                 default:
-                  await _saveMinerConfigInBackend(value, false);
+                  await _saveMinerConfigInBackend(value, false,
+                      minerBinary: selectedMinerBinary);
                   break;
               }
             }

@@ -178,25 +178,29 @@ class Pool {
 }
 
 class UsersMinerConfig {
-  UsersMinerConfig({
-    required this.minerConfig,
-    required this.minerConfigMd5,
-    this.timeStamp,
-  });
+  UsersMinerConfig(
+      {required this.minerConfig,
+      required this.minerConfigMd5,
+      this.timeStamp,
+      this.minerBinary});
 
   Map<String, dynamic> minerConfig;
   String minerConfigMd5;
   int? timeStamp;
+  MinerBinary? minerBinary;
 
   factory UsersMinerConfig.fromJson(Map<String, dynamic> json) =>
       UsersMinerConfig(
           minerConfig: json["minerConfig"],
           timeStamp: json["timeStamp"],
-          minerConfigMd5: json["minerConfigMd5"]);
+          minerConfigMd5: json["minerConfigMd5"],
+          minerBinary:
+              MinerBinary.values.byName(json["minerBinary"] ?? "xmrig"));
 
   Map<String, dynamic> toJson() => {
         "minerConfig": minerConfig,
         "timeStamp": timeStamp,
-        "minerConfigMd5": minerConfigMd5
+        "minerConfigMd5": minerConfigMd5,
+        "minerBinary": minerBinary
       };
 }

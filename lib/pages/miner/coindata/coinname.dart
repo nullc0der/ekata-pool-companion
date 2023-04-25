@@ -53,6 +53,9 @@ class _CoinNameState extends State<CoinName> {
         _coinDataFetching = true;
         _hasCoinDataFetchError = false;
       });
+      // TODO: Need to add http call cancel on all widgets dispose where http call happens, to prevent memory leak
+      // [ERROR:flutter/runtime/dart_vm_initializer.cc(41)] Unhandled Exception: This widget has been unmounted, so the State no longer has a context (and should be considered defunct).
+      // Consider canceling any active work during "dispose" or using the "mounted" getter to determine if the State is still active.
       final coinDatas = await CoinDataService.getCoinDatas(
           pageNumber: _pageNumber,
           perPage: 10,

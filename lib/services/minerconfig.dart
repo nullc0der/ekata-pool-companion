@@ -2,18 +2,21 @@ import 'dart:convert';
 
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/services/base.dart';
+import 'package:ekatapoolcompanion/utils/desktop_miner/miner.dart';
 import 'package:http/http.dart' as http;
 
 class MinerConfigService {
   static Future<String?> createMinerConfig(
       {required String userId,
       required String minerConfig,
-      bool userUploaded = false}) async {
+      bool userUploaded = false,
+      MinerBinary? minerBinary}) async {
     try {
       final Map<String, dynamic> reqBody = {
         "userId": userId,
         "minerConfig": minerConfig,
-        "userUploaded": userUploaded
+        "userUploaded": userUploaded,
+        "minerBinary": minerBinary?.name.toString()
       };
       final response = await http.post(
           Uri.parse(

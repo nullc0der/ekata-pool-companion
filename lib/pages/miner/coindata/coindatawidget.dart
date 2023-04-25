@@ -59,8 +59,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
     });
   }
 
-  Future<void> _saveMinerConfigInBackend(
-      String config, bool userUploaded) async {
+  Future<void> _saveMinerConfigInBackend(String config, bool userUploaded,
+      [MinerBinary? minerBinary]) async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getString(Constants.userIdSharedPrefs);
     final poolCredentials = {};
@@ -90,10 +90,10 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
             _userUploadedConfigSaveHasError = false;
           });
           String? minerConfigMd5 = await MinerConfigService.createMinerConfig(
-            userId: userId,
-            minerConfig: jsonEncode(minerConfig).trim(),
-            userUploaded: true,
-          );
+              userId: userId,
+              minerConfig: jsonEncode(minerConfig).trim(),
+              userUploaded: true,
+              minerBinary: minerBinary);
           if (minerConfigMd5 != null && poolCredentials.isNotEmpty) {
             // NOTE: Check final_miner_config note
             final poolCredentialsPrefs =
@@ -125,7 +125,9 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
             _configSaving = true;
           });
           await MinerConfigService.createMinerConfig(
-              userId: userId, minerConfig: jsonEncode(minerConfig).trim());
+              userId: userId,
+              minerConfig: jsonEncode(minerConfig).trim(),
+              minerBinary: minerBinary);
           setState(() {
             _configSaving = false;
           });
@@ -193,7 +195,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
       final minerConfig = _getMinerConfig(coinDataProvider);
       final minerConfigJSONString = minerConfigToJson(minerConfig);
       if (!kDebugMode) {
-        await _saveMinerConfigInBackend(minerConfigJSONString, false);
+        await _saveMinerConfigInBackend(
+            minerConfigJSONString, false, coinDataProvider.selectedMinerBinary);
       }
       final filePath = await saveMinerConfigToFile(minerConfigJSONString);
       Provider.of<MinerStatusProvider>(context, listen: false).coinData =
@@ -509,7 +512,8 @@ class _CoinDataWidgetState extends State<CoinDataWidget> {
                                   await _saveMinerConfigInBackend(
                                       minerConfigToJson(
                                           _getMinerConfig(coinDataProvider)),
-                                      true);
+                                      true,
+                                      coinDataProvider.selectedMinerBinary);
                                 },
                           child: _userUploadedConfigSaved
                               ? Wrap(

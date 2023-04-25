@@ -102,19 +102,38 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
     return usersMinerConfig;
   }
 
+  Future<void> _loadXmrigCCOptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    String xmrigCCOptions =
+        prefs.getString(Constants.xmrigCCOptionsSharedPrefs) ?? "";
+    if (xmrigCCOptions.isNotEmpty) {
+      final xmrigCCOptionsJson = jsonDecode(xmrigCCOptions);
+      if (xmrigCCOptionsJson.isNotEmpty) {
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCServerUrl = xmrigCCOptionsJson["xmrigCCServerUrl"];
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCServerToken = xmrigCCOptionsJson["xmrigCCServerToken"];
+        Provider.of<MinerStatusProvider>(context, listen: false)
+            .xmrigCCWorkerId = xmrigCCOptionsJson["xmrigCCWorkerId"];
+      }
+    }
+  }
+
   Future<void> _onPressStartMining(UsersMinerConfig usersMinerConfig) async {
     final finalUsersMinerConfig = await _getFinalMinerConfig(usersMinerConfig);
     final minerConfigString = jsonEncode(finalUsersMinerConfig.minerConfig);
     final filePath = await saveMinerConfigToFile(minerConfigString);
-    //TODO: The start mining button needs to be a dropdown from where user can
-    // select all applicable miner binary, then this can be used
-    // based on that selection
-    final minerConfig =
-        minerConfigFromJson(minerConfigString, MinerBinary.xmrig);
+    final minerBinary = usersMinerConfig.minerBinary ?? MinerBinary.xmrig;
+    final minerConfig = minerConfigFromJson(minerConfigString, minerBinary);
+    if (minerBinary == MinerBinary.xmrigCC) {
+      _loadXmrigCCOptions();
+    }
     Provider.of<MinerStatusProvider>(context, listen: false).minerConfig =
         minerConfig;
     Provider.of<MinerStatusProvider>(context, listen: false).minerConfigPath =
         filePath;
+    Provider.of<MinerStatusProvider>(context, listen: false)
+        .selectedMinerBinary = minerBinary;
     // Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
     //     minerConfig.pools.first.url == "70.35.206.105:3333" ||
     //         minerConfig.pools.first.url == "70.35.206.105:5555";
@@ -229,7 +248,7 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       spacing: 2,
                       children: [
-                        const Icon(Icons.developer_board, size: 20),
+                        const Icon(Icons.terminal, size: 20),
                         Text(
                           "Algo",
                           style: Theme.of(context).textTheme.titleMedium,
@@ -256,6 +275,31 @@ class _UserMinerConfigState extends State<UserMinerConfig> {
               ],
             );
           }),
+          const SizedBox(
+            height: 8,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Wrap(
+                spacing: 2,
+                children: [
+                  const Icon(
+                    Icons.developer_board,
+                    size: 20,
+                  ),
+                  Text(
+                    "Miner Binary",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ],
+              ),
+              Text(
+                (minerConfig.minerBinary?.name ?? "xmrig").toString(),
+                style: Theme.of(context).textTheme.labelMedium,
+              )
+            ],
+          ),
           const SizedBox(
             height: 8,
           ),
