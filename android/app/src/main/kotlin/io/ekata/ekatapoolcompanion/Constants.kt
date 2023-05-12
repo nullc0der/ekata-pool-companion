@@ -13,4 +13,13 @@ object Constants {
         "io.ekata.ekatapoolcompanion.FROM_MINER_SERVICE_NOTIFICATION"
     const val STOP_MINING = "io.ekata.ekatapoolcompanion.STOP_MINING"
     const val NOTIFICATION_CHANNEL_ID = "io.ekata.ekatapoolcompanion"
+    const val XMRIG_MINER_ARGS = "io.ekata.ekatapoolcompanion.XMRIG_MINER_ARGS"
+    const val XMRIGCC_MINER_ARGS = "io.ekata.ekatapoolcompanion.XMRIGCC_MINER_ARGS"
+    const val CC_MINER_ARGS = "io.ekata.ekatapoolcompanion.CC_MINER_ARGS"
+    const val CC_MINER_BINARY_VARIANT = "io.ekata.ekatapoolcompanion.CC_MINER_BINARY_VARIANT"
+    const val CC_MINER_ALGO = "io.ekata.ekatapoolcompanion.CC_MINER_ALGO"
+    const val CC_MINER_POOL_URL = "io.ekata.ekatapoolcompanion.CC_MINER_POOL_URL"
+    const val CC_MINER_USERNAME = "io.ekata.ekatapoolcompanion.CC_MINER_USERNAME"
+    const val CC_MINER_RIGID = "io.ekata.ekatapoolcompanion.CC_MINER_RIGID"
+    const val CC_MINER_PASSWORD = "io.ekata.ekatapoolcompanion.CC_MINER_PASSWORD"
 }

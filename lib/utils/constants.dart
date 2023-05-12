@@ -11,6 +11,15 @@ class Constants {
       "io.ekata.ekatapoolcompanion.XMRIGCC_SERVER_TOKEN";
   static const xmrigCCWorkerId =
       "io.ekata.ekatapoolcompanion.XMRIGCC_WORKER_ID";
+  static const ccMinerBinaryVariant =
+      "io.ekata.ekatapoolcompanion.CC_MINER_BINARY_VARIANT";
+  static const ccMinerAlgo = "io.ekata.ekatapoolcompanion.CC_MINER_ALGO";
+  static const ccMinerPoolUrl = "io.ekata.ekatapoolcompanion.CC_MINER_POOL_URL";
+  static const ccMinerUsername =
+      "io.ekata.ekatapoolcompanion.CC_MINER_USERNAME";
+  static const ccMinerRigId = "io.ekata.ekatapoolcompanion.CC_MINER_RIGID";
+  static const ccMinerPassword =
+      "io.ekata.ekatapoolcompanion.CC_MINER_PASSWORD";
   static const minerProcessStarted = "MINER_PROCESS_STARTED";
   static const minerProcessStopped = "MINER_PROCESS_STOPPED";
   static const walletAddressKeySharedPrefs = "WALLET_ADDRESS";

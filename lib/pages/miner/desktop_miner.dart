@@ -241,9 +241,9 @@ class _DesktopMinerState extends State<DesktopMiner> {
         Timer.periodic(const Duration(seconds: 10), (_) async {
       Provider.of<MinerStatusProvider>(context, listen: false)
                   .currentMinerBinary ==
-              MinerBinary.xmrig
-          ? await _fetchAndProcessXmrigMinerData()
-          : await _fetchCCMinerData();
+              MinerBinary.ccminer
+          ? await _fetchCCMinerData()
+          : await _fetchAndProcessXmrigMinerData();
     });
   }
 

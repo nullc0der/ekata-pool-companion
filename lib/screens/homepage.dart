@@ -118,7 +118,6 @@ class _HomePageState extends State<HomePage> {
       Map<String, String> minerStatusFromAndroid) async {
     var minerStatusProvider =
         Provider.of<MinerStatusProvider>(context, listen: false);
-    // TODO: Send this from android side
     final selectedMinerBinary = MinerBinary.values
         .byName(minerStatusFromAndroid["minerBinary"] ?? "xmrig");
     if (minerStatusProvider.currentlyMiningMinerConfig == null &&
@@ -130,16 +129,18 @@ class _HomePageState extends State<HomePage> {
       final threadCount = int.tryParse(minerStatusFromAndroid["threadCount"]!);
       minerStatusProvider.minerConfigPath =
           minerStatusFromAndroid["minerConfigPath"];
+      minerStatusProvider.isMining = true;
       minerStatusProvider.currentlyMiningMinerConfig = minerConfig;
       minerStatusProvider.minerConfig = minerConfig;
       minerStatusProvider.threadCount = threadCount;
-      minerStatusProvider.isMining = true;
+      minerStatusProvider.currentThreadCount = threadCount;
       minerStatusProvider.selectedMinerBinary = selectedMinerBinary;
-      Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
-          minerConfig.pools.first.url == "70.35.206.105:3333" ||
-              minerConfig.pools.first.url == "70.35.206.105:5555";
-      Provider.of<UiStateProvider>(context, listen: false)
-          .bottomNavigationIndex = 3;
+      minerStatusProvider.currentMinerBinary = selectedMinerBinary;
+      // Provider.of<UiStateProvider>(context, listen: false).showBottomNavbar =
+      //     minerConfig.pools.first.url == "70.35.206.105:3333" ||
+      //         minerConfig.pools.first.url == "70.35.206.105:5555";
+      // Provider.of<UiStateProvider>(context, listen: false)
+      //     .bottomNavigationIndex = 3;
     }
   }
 

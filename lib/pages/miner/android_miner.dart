@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:ekatapoolcompanion/models/ccminersummary.dart';
 import 'package:ekatapoolcompanion/models/chartsdata.dart';
 import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/models/minersummary.dart';
@@ -20,15 +21,9 @@ import 'package:matomo_tracker/matomo_tracker.dart';
 import 'package:provider/provider.dart';
 
 class AndroidMiner extends StatefulWidget {
-  const AndroidMiner(
-      {Key? key,
-      this.threadCount,
-      required this.minerConfigPath,
-      required this.setCurrentWizardStep})
+  const AndroidMiner({Key? key, required this.setCurrentWizardStep})
       : super(key: key);
 
-  final int? threadCount;
-  final String minerConfigPath;
   final ValueChanged<WizardStep> setCurrentWizardStep;
 
   @override
@@ -71,7 +66,9 @@ class _AndroidMinerState extends State<AndroidMiner> {
     if (minerStatusProvider.currentlyMiningMinerConfig !=
             minerStatusProvider.minerConfig ||
         minerStatusProvider.threadCount !=
-            minerStatusProvider.currentThreadCount) {
+            minerStatusProvider.currentThreadCount ||
+        minerStatusProvider.selectedMinerBinary !=
+            minerStatusProvider.currentMinerBinary) {
       if (minerStatusProvider.isMining) {
         _stopMining().then((_) => _startMining());
       } else {
@@ -98,15 +95,28 @@ class _AndroidMinerState extends State<AndroidMiner> {
               'Started - ${coinData != null ? coinData.coinName : minerStatusProvider.minerConfig?.pools.first.algo}');
     }
     var result = await _methodChannel.invokeMethod("startMining", {
-      Constants.minerConfigPath: widget.minerConfigPath,
-      Constants.threadCount: widget.threadCount,
+      Constants.minerConfigPath: minerStatusProvider.minerConfigPath,
+      Constants.threadCount: minerStatusProvider.threadCount,
       Constants.minerBinary: minerStatusProvider.selectedMinerBinary.name,
       Constants.xmrigCCServerUrl: minerStatusProvider.xmrigCCServerUrl,
       Constants.xmrigCCServerToken: minerStatusProvider.xmrigCCServerToken,
-      Constants.xmrigCCWorkerId: minerStatusProvider.xmrigCCWorkerId
+      Constants.xmrigCCWorkerId: minerStatusProvider.xmrigCCWorkerId,
+      Constants.ccMinerBinaryVariant:
+          minerStatusProvider.minerConfig?.pools.first.algo == "verus"
+              ? "ccminer-verus"
+              : "ccminer",
+      Constants.ccMinerAlgo: minerStatusProvider.minerConfig?.pools.first.algo,
+      Constants.ccMinerPoolUrl:
+          minerStatusProvider.minerConfig?.pools.first.url,
+      Constants.ccMinerUsername:
+          minerStatusProvider.minerConfig?.pools.first.user,
+      Constants.ccMinerRigId:
+          minerStatusProvider.minerConfig?.pools.first.rigId,
+      Constants.ccMinerPassword:
+          minerStatusProvider.minerConfig?.pools.first.pass,
     });
     if (result) {
-      File(widget.minerConfigPath).readAsString().then((value) {
+      File(minerStatusProvider.minerConfigPath!).readAsString().then((value) {
         try {
           Provider.of<MinerStatusProvider>(context, listen: false)
                   .currentlyMiningMinerConfig =
@@ -120,6 +130,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
           null;
       Provider.of<MinerStatusProvider>(context, listen: false)
           .sendNextHeartBeatInSeconds = Constants.initialHeartBeatInSeconds;
+      Provider.of<MinerStatusProvider>(context, listen: false)
+          .currentMinerBinary = minerStatusProvider.selectedMinerBinary;
       _sendHeartBeat();
     }
     return result;
@@ -143,6 +155,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
           .currentlyMiningMinerConfig = null;
       Provider.of<MinerStatusProvider>(context, listen: false)
           .currentThreadCount = null;
+      Provider.of<MinerStatusProvider>(context, listen: false)
+          .currentMinerBinary = null;
     }
     return result;
   }
@@ -154,6 +168,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
         .listen((event) {
       Provider.of<MinerStatusProvider>(context, listen: false).isMining =
           event.toString() == Constants.minerProcessStarted;
+      // NOTE: Maybe cleanup other provider data too which are cleaned up in
+      // _stopMining
       if (event.toString() != Constants.minerProcessStarted) {
         Provider.of<MinerStatusProvider>(context, listen: false)
             .currentlyMiningMinerConfig = null;
@@ -178,40 +194,68 @@ class _AndroidMinerState extends State<AndroidMiner> {
     });
   }
 
+  void _processCCMinerData(CCMinerSummary ccMinerSummary) {
+    Provider.of<MinerSummaryProvider>(context, listen: false).ccMinerSummary =
+        ccMinerSummary;
+    var chartDatas = List<ChartData>.from(_chartDatas);
+    if (chartDatas.length >= 20) {
+      chartDatas =
+          List<ChartData>.from(chartDatas.skip(chartDatas.length - 20));
+    }
+    chartDatas.add(ChartData(
+        time: DateTime.now(),
+        value: (double.tryParse(ccMinerSummary.currentHash) ?? 0).toInt()));
+    setState(() {
+      _chartDatas = chartDatas;
+    });
+  }
+
+  Future<void> _fetchAndProcessXmrigMinerData() async {
+    try {
+      MinerSummary _minerSummary =
+          await MinerSummaryService().getMinerSummary();
+      Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
+          _minerSummary;
+      var chartDatas = List<ChartData>.from(_chartDatas);
+      if (chartDatas.length >= 20) {
+        chartDatas =
+            List<ChartData>.from(chartDatas.skip(chartDatas.length - 20));
+      }
+      chartDatas.add(ChartData(
+          time: DateTime.now(),
+          value: _minerSummary.hashrate.total[0] != null
+              ? _minerSummary.hashrate.total[0]!.toInt()
+              : 0));
+      setState(() {
+        _chartDatas = chartDatas;
+      });
+    } on Exception {
+      bool hasMinerSummary =
+          Provider.of<MinerSummaryProvider>(context, listen: false)
+                  .minerSummary !=
+              null;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: hasMinerSummary
+              ? const Text(
+                  "There is some issue updating miner summary, will retry")
+              : const Text(
+                  "There is some issue fetching miner summary, will retry")));
+    }
+  }
+
+  Future<void> _fetchCCMinerData() async {
+    await CCMinerSummaryService.instance.getSummary(_processCCMinerData);
+  }
+
   void _fetchMinerSummaryPeriodically() {
     _minerSummaryFetchTimer?.cancel();
     _minerSummaryFetchTimer =
         Timer.periodic(const Duration(seconds: 10), (_) async {
-      try {
-        MinerSummary _minerSummary =
-            await MinerSummaryService().getMinerSummary();
-        Provider.of<MinerSummaryProvider>(context, listen: false).minerSummary =
-            _minerSummary;
-        var chartDatas = List<ChartData>.from(_chartDatas);
-        if (chartDatas.length >= 20) {
-          chartDatas =
-              List<ChartData>.from(chartDatas.skip(chartDatas.length - 20));
-        }
-        chartDatas.add(ChartData(
-            time: DateTime.now(),
-            value: _minerSummary.hashrate.total[0] != null
-                ? _minerSummary.hashrate.total[0]!.toInt()
-                : 0));
-        setState(() {
-          _chartDatas = chartDatas;
-        });
-      } on Exception {
-        bool hasMinerSummary =
-            Provider.of<MinerSummaryProvider>(context, listen: false)
-                    .minerSummary !=
-                null;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: hasMinerSummary
-                ? const Text(
-                    "There is some issue updating miner summary, will retry")
-                : const Text(
-                    "There is some issue fetching miner summary, will retry")));
-      }
+      Provider.of<MinerStatusProvider>(context, listen: false)
+                  .currentMinerBinary ==
+              MinerBinary.ccminer
+          ? await _fetchCCMinerData()
+          : await _fetchAndProcessXmrigMinerData();
     });
   }
 
@@ -388,19 +432,63 @@ class _AndroidMinerState extends State<AndroidMiner> {
         : [];
   }
 
+  List<Widget> _ccMinerSummaries(CCMinerSummary? ccMinerSummary) {
+    return ccMinerSummary != null
+        ? [
+            _MinerSummaryItem(
+                title: "Algo",
+                data: ccMinerSummary.algo,
+                iconData: Icons.terminal),
+            _MinerSummaryItem(
+                title: "Hashrate",
+                data: "${ccMinerSummary.currentHash} kH/s",
+                iconData: Icons.developer_board),
+            _MinerSummaryItem(
+                title: "Solved",
+                data: ccMinerSummary.solved,
+                iconData: Icons.calculate),
+            _MinerSummaryItem(
+                title: "Accepted",
+                data: ccMinerSummary.accepted,
+                iconData: Icons.check_box),
+            _MinerSummaryItem(
+                title: "Rejected",
+                data: ccMinerSummary.rejected,
+                iconData: Icons.cancel_outlined),
+            _MinerSummaryItem(
+                title: "Difficulty",
+                data: (double.tryParse(ccMinerSummary.diff) ?? 0)
+                    .toInt()
+                    .toString(),
+                iconData: Icons.show_chart),
+            _MinerSummaryItem(
+                title: "Uptime",
+                data: timeStringFromSecond(
+                    int.tryParse(ccMinerSummary.uptime) ?? 0),
+                iconData: Icons.timer),
+          ].map((e) {
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 6.0),
+              child: _summaryRow(e.iconData, e.title, e.data),
+            );
+          }).toList()
+        : [];
+  }
+
   @override
   Widget build(BuildContext context) {
-    var minerSummary = Provider.of<MinerSummaryProvider>(context).minerSummary;
-    var isMining = Provider.of<MinerStatusProvider>(context).isMining;
-    final selectedMinerBinary =
-        Provider.of<MinerStatusProvider>(context).selectedMinerBinary;
+    final minerSummaryProvider = Provider.of<MinerSummaryProvider>(context);
+    final minerStatusProvider = Provider.of<MinerStatusProvider>(context);
 
-    final minerConfig = Provider.of<MinerStatusProvider>(context).minerConfig;
-    final coinData = Provider.of<MinerStatusProvider>(context).coinData;
-    final xmrigCCServerUrl =
-        Provider.of<MinerStatusProvider>(context).xmrigCCServerUrl;
-    final xmrigCCWorkerId =
-        Provider.of<MinerStatusProvider>(context).xmrigCCWorkerId;
+    final minerSummary = minerSummaryProvider.minerSummary;
+    final ccMinerSummary = minerSummaryProvider.ccMinerSummary;
+
+    final isMining = minerStatusProvider.isMining;
+    final minerConfig = minerStatusProvider.minerConfig;
+    final selectedMinerBinary = minerStatusProvider.selectedMinerBinary;
+    final coinData = minerStatusProvider.coinData;
+    final xmrigCCServerUrl = minerStatusProvider.xmrigCCServerUrl;
+    final xmrigCCWorkerId = minerStatusProvider.xmrigCCWorkerId;
 
     return SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -452,7 +540,8 @@ class _AndroidMinerState extends State<AndroidMiner> {
             const SizedBox(
               height: 16,
             ),
-            if (selectedMinerBinary == MinerBinary.xmrig)
+            if (selectedMinerBinary == MinerBinary.xmrig ||
+                selectedMinerBinary == MinerBinary.ccminer)
               SizedBox(
                   width: double.infinity,
                   child: _showStartStopMining(isStarted: isMining)),
@@ -465,7 +554,7 @@ class _AndroidMinerState extends State<AndroidMiner> {
               Text("Server URL: $xmrigCCServerUrl"),
               Text("Worker Id: $xmrigCCWorkerId")
             ],
-            if (minerSummary != null) ...[
+            if (minerSummary != null || ccMinerSummary != null) ...[
               const SizedBox(
                 height: 8,
               ),
@@ -479,7 +568,11 @@ class _AndroidMinerState extends State<AndroidMiner> {
                   thickness: 2,
                 ),
               ),
-              ..._minerSummaries(minerSummary),
+              if (selectedMinerBinary == MinerBinary.xmrig ||
+                  selectedMinerBinary == MinerBinary.xmrigCC)
+                ..._minerSummaries(minerSummary),
+              if (selectedMinerBinary == MinerBinary.ccminer)
+                ..._ccMinerSummaries(ccMinerSummary)
             ],
             if (_chartDatas.isNotEmpty)
               Chart(

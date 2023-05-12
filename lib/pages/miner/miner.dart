@@ -1,17 +1,13 @@
 import 'dart:io';
 
-import 'package:ekatapoolcompanion/models/coindata.dart';
-import 'package:ekatapoolcompanion/models/minerconfig.dart';
 import 'package:ekatapoolcompanion/pages/miner/android_miner.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/pages/miner/desktop_miner.dart';
 import 'package:ekatapoolcompanion/pages/miner/final_miner_config.dart';
 import 'package:ekatapoolcompanion/pages/miner/miner_support.dart';
 import 'package:ekatapoolcompanion/pages/miner/user_miner_config.dart';
-import 'package:ekatapoolcompanion/providers/minerstatus.dart';
 import 'package:flutter/material.dart';
 import 'package:matomo_tracker/matomo_tracker.dart';
-import 'package:provider/provider.dart';
 
 enum WizardStep { coinNameSelect, minerConfig, usersMinerConfigs, miner }
 
@@ -40,14 +36,10 @@ class _MinerState extends State<Miner> {
     });
   }
 
-  Widget _getMiner(
-      String? minerConfigPath, ValueChanged<WizardStep> setCurrentWizardStep,
-      [int? threadCount]) {
+  Widget _getMiner(ValueChanged<WizardStep> setCurrentWizardStep) {
     return Platform.isAndroid
         ? AndroidMiner(
-            minerConfigPath: minerConfigPath!,
             setCurrentWizardStep: setCurrentWizardStep,
-            threadCount: threadCount,
           )
         : Platform.isLinux || Platform.isWindows
             ? DesktopMiner(
@@ -56,8 +48,7 @@ class _MinerState extends State<Miner> {
             : const MinerSupport();
   }
 
-  Widget _getCurrentWizard(WizardStep wizardStep, MinerConfig? currentlyMining,
-      CoinData? coinData, int? threadCount, String? minerConfigPath) {
+  Widget _getCurrentWizard(WizardStep wizardStep) {
     switch (wizardStep) {
       case WizardStep.coinNameSelect:
         return CoinDataWidget(setCurrentWizardStep: _setCurrentWizardStep);
@@ -70,7 +61,7 @@ class _MinerState extends State<Miner> {
           setCurrentWizardStep: _setCurrentWizardStep,
         );
       case WizardStep.miner:
-        return _getMiner(minerConfigPath, _setCurrentWizardStep, threadCount);
+        return _getMiner(_setCurrentWizardStep);
       default:
         return CoinDataWidget(setCurrentWizardStep: _setCurrentWizardStep);
     }
@@ -78,15 +69,6 @@ class _MinerState extends State<Miner> {
 
   @override
   Widget build(BuildContext context) {
-    CoinData? coinData = Provider.of<MinerStatusProvider>(context).coinData;
-    MinerConfig? currentlyMiningMinerConfig =
-        Provider.of<MinerStatusProvider>(context).currentlyMiningMinerConfig;
-    int? threadCount =
-        Provider.of<MinerStatusProvider>(context, listen: false).threadCount;
-    String? minerConfigPath =
-        Provider.of<MinerStatusProvider>(context).minerConfigPath;
-
-    return _getCurrentWizard(_currentWizardStep, currentlyMiningMinerConfig,
-        coinData, threadCount, minerConfigPath);
+    return _getCurrentWizard(_currentWizardStep);
   }
 }

@@ -5,11 +5,15 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.annotation.NonNull
 import io.ekata.ekatapoolcompanion.events.MinerLogEvent
 import io.ekata.ekatapoolcompanion.events.MiningStartEvent
 import io.ekata.ekatapoolcompanion.events.MiningStopEvent
 import io.ekata.ekatapoolcompanion.events.NotificationTapEvent
+import io.ekata.ekatapoolcompanion.models.CCMinerArgs
+import io.ekata.ekatapoolcompanion.models.XmrigCCMinerArgs
+import io.ekata.ekatapoolcompanion.models.XmrigMinerArgs
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -45,6 +49,7 @@ class MainActivity : FlutterActivity() {
         ) {
             val minerConfigPath = intentExtras.getString(Constants.MINER_CONFIG_PATH)
             val threadCount = intentExtras.getInt(Constants.THREAD_COUNT, 0)
+            val minerBinary = intentExtras.getString(Constants.MINER_BINARY)
             minerServiceIntent = Intent(this, MinerService::class.java)
             EventBus.getDefault()
                 .postSticky(
@@ -52,6 +57,7 @@ class MainActivity : FlutterActivity() {
                         mapOf(
                             "minerConfigPath" to minerConfigPath.toString(),
                             "threadCount" to threadCount.toString(),
+                            "minerBinary" to minerBinary.toString()
                         )
                     )
                 )
@@ -67,34 +73,39 @@ class MainActivity : FlutterActivity() {
         ).setMethodCallHandler { call, result ->
             if (call.method == "startMining") {
                 minerServiceIntent = Intent(this, MinerService::class.java)
-                minerServiceIntent.putExtra(
-                    Constants.MINER_CONFIG_PATH, call.argument<String>(
-                        Constants.MINER_CONFIG_PATH
+                val minerBinary = call.argument<String>(Constants.MINER_BINARY)
+                minerServiceIntent.putExtra(Constants.MINER_BINARY, minerBinary)
+                if (minerBinary == "xmrig") {
+                    val xmrigMinerArgs = XmrigMinerArgs(
+                        call.argument<String>(Constants.MINER_CONFIG_PATH),
+                        call.argument<Int>(Constants.THREAD_COUNT) ?: 0
                     )
-                )
-                minerServiceIntent.putExtra(
-                    Constants.THREAD_COUNT,
-                    call.argument<Int>(Constants.THREAD_COUNT)
-                )
-                minerServiceIntent.putExtra(
-                    Constants.MINER_BINARY,
-                    call.argument<String>(Constants.MINER_BINARY)
-                )
-                minerServiceIntent.putExtra(
-                    Constants.XMRIGCC_SERVER_URL,
-                    call.argument<String>(Constants.XMRIGCC_SERVER_URL)
-                )
-                minerServiceIntent.putExtra(
-                    Constants.XMRIGCC_SERVER_TOKEN,
-                    call.argument<String>(Constants.XMRIGCC_SERVER_TOKEN)
-                )
-                minerServiceIntent.putExtra(
-                    Constants.XMRIGCC_WORKER_ID,
-                    call.argument<String>(Constants.XMRIGCC_WORKER_ID)
-                )
-                startForegroundService(
-                    minerServiceIntent
-                )
+                    minerServiceIntent.putExtra(Constants.XMRIG_MINER_ARGS, xmrigMinerArgs)
+                }
+                if (minerBinary == "xmrigCC") {
+                    val xmrigCCMinerArgs = XmrigCCMinerArgs(
+                        call.argument<String>(Constants.MINER_CONFIG_PATH),
+                        call.argument<Int>(Constants.THREAD_COUNT) ?: 0,
+                        call.argument<String>(Constants.XMRIGCC_SERVER_URL),
+                        call.argument<String>(Constants.XMRIGCC_SERVER_TOKEN),
+                        call.argument<String>(Constants.XMRIGCC_WORKER_ID)
+                    )
+                    minerServiceIntent.putExtra(Constants.XMRIGCC_MINER_ARGS, xmrigCCMinerArgs)
+                }
+                if (minerBinary == "ccminer") {
+                    val ccMinerArgs = CCMinerArgs(
+                        call.argument<String>(Constants.CC_MINER_BINARY_VARIANT),
+                        call.argument<String>(Constants.CC_MINER_ALGO),
+                        call.argument<String>(Constants.CC_MINER_POOL_URL),
+                        call.argument<String>(Constants.CC_MINER_USERNAME),
+                        call.argument<String>(Constants.CC_MINER_RIGID),
+                        call.argument<String>(Constants.CC_MINER_PASSWORD),
+                        call.argument<Int>(Constants.THREAD_COUNT) ?: 0,
+                        call.argument<String>(Constants.MINER_CONFIG_PATH),
+                    )
+                    minerServiceIntent.putExtra(Constants.CC_MINER_ARGS, ccMinerArgs)
+                }
+                startForegroundService(minerServiceIntent)
                 result.success(true)
             }
             if (call.method == "stopMining") {

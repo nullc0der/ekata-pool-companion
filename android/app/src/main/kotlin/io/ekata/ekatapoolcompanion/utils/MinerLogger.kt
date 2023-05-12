@@ -1,6 +1,5 @@
 package io.ekata.ekatapoolcompanion.utils
 
-import android.util.Log
 import io.ekata.ekatapoolcompanion.events.MinerLogEvent
 import org.greenrobot.eventbus.EventBus
 import java.io.BufferedReader
