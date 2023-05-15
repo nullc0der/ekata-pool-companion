@@ -80,10 +80,17 @@ class _RegionState extends State<Region> {
       },
       horizontalTitleGap: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      leading: Text(EmojiConverter.fromAlpha2CountryCode(region)),
-      title: Text(
-        region,
-      ),
+      leading: region == "WW"
+          ? const Text(
+              "🌐",
+              style: TextStyle(fontSize: 24),
+            )
+          : Text(EmojiConverter.fromAlpha2CountryCode(region)),
+      title: region == "WW"
+          ? const Text("World Wide")
+          : Text(
+              region,
+            ),
     );
   }
 

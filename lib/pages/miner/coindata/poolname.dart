@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:ekatapoolcompanion/models/coindata.dart';
 import 'package:ekatapoolcompanion/pages/miner/coindata/coindatawidget.dart';
 import 'package:ekatapoolcompanion/providers/coindata.dart';
@@ -95,7 +97,8 @@ class _PoolNameState extends State<PoolName> {
     final selectedPoolName = coinDataProvider.selectedPoolName;
 
     final poolNames = selectedCoinData != null
-        ? Set<String>.from(selectedCoinData.pools.map((e) => e.poolName))
+        ? SplayTreeSet<String>.from(
+            selectedCoinData.pools.map((e) => e.poolName))
         : <String>{};
 
     return Padding(
