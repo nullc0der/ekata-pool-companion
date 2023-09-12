@@ -3,6 +3,8 @@
 Ekata Pool Companion is a Flutter app which targets Android, Linux and Windows. It helps user to mine cryptocurrency easily with various backend
 like xmrig, xmrigcc, ccminer etc.
 
+![Screenshot](/screenshots/main.png?raw=true)
+
 ### Features
 
 - Configuration wizard for creating miner config
