@@ -48,7 +48,6 @@ dependencies:
   package_info_plus: ^3.0.2
   url_launcher: ^6.1.5
   matomo_tracker: ^2.0.0
-  sentry_flutter: ^6.6.3
   path: ^1.8.1
   path_provider: ^2.0.11
   system_info2: ^2.0.4
@@ -56,6 +55,7 @@ dependencies:
   fluttericon: ^2.0.0
   flex_color_scheme: ^7.0.0-dev.3
   meta: ^1.8.0
+  sentry_flutter: ^7.9.0
 
 dev_dependencies:
   flutter_test:

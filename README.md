@@ -1,16 +1,18 @@
-# ekatapoolcompanion
+## Ekata Pool Companion
 
-Companion app for CryptoNight based mining pool
+Ekata Pool Companion is a Flutter app which targets Android, Linux and Windows. It helps user to mine cryptocurrency easily with various backend
+like xmrig, xmrigcc, ccminer etc.
 
-## Getting Started
+### Features
 
-This project is a starting point for a Flutter application.
+- Configuration wizard for creating miner config
+- Easy to get started with crypto mining
+- Supports mining in Android, Windows and Linux
+- Option to save user miner configs and retrieve later for quick start mining
+- Pool stats for selected pool
+- Supports multiple mining backends
+- Miner stats, logs and hashrate chart while mining
 
-A few resources to get you started if this is your first Flutter project:
+### Screenshots
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Head over to [screenshots](/screenshots) to check app screenshots
